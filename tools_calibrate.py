@@ -133,7 +133,7 @@ def draw_corners(img, corners, imgpts):
     img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
     return img
 # ---------------------------------------------------------------------------------------------------------------------
-def get_stitched_images(img1, img2, M,background=(255, 255, 255)):
+def get_stitched_images_using_homography(img1, img2, M,background=(255, 255, 255)):
     w1, h1 = img1.shape[:2]
     w2, h2 = img2.shape[:2]
 
@@ -152,7 +152,32 @@ def get_stitched_images(img1, img2, M,background=(255, 255, 255)):
     transform_array = numpy.array([[1, 0, transform_dist[0]], [0, 1, transform_dist[1]], [0, 0, 1]])
 
     # Warp images to get the resulting image
-    result_img1 = cv2.warpPerspective(img2, transform_array.dot(M), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
+    result_img_2 = cv2.warpPerspective(img2, transform_array.dot(M), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
+    result_img_1 = numpy.full(result_img_2.shape,background)
+    result_img_1[transform_dist[1]:w1 + transform_dist[1], transform_dist[0]:h1 + transform_dist[0]] = img1
+
+    return result_img_1, result_img_2
+# ---------------------------------------------------------------------------------------------------------------------
+def get_stitched_images_using_translation(img1, img2, M,background=(255, 255, 255)):
+    w1, h1 = img1.shape[:2]
+    w2, h2 = img2.shape[:2]
+
+
+    img1_dims      = numpy.float32([[0, 0], [0, w1], [h1, w1], [h1, 0]]).reshape(-1, 1, 2)
+    img2_dims_temp = numpy.float32([[0, 0], [0, w2], [h2, w2], [h2, 0]]).reshape(-1, 1, 2)
+
+    img2_dims = cv2.transform(img2_dims_temp, M)  # Get relative perspective of second image
+    result_dims = numpy.concatenate((img1_dims, img2_dims), axis=0)  # Resulting dimensions
+
+    [x_min, y_min] = numpy.int32(result_dims.min(axis=0).ravel() - 0.5)
+    [x_max, y_max] = numpy.int32(result_dims.max(axis=0).ravel() + 0.5)
+
+    transform_dist = [-x_min, -y_min]
+
+    M[0, 2]+=-x_min
+    M[1, 2]+=-y_min
+
+    result_img1 = cv2.warpAffine(img2, M, (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
     result_img2 = numpy.full(result_img1.shape,background)
     result_img2 [transform_dist[1]:w1 + transform_dist[1], transform_dist[0]:h1 + transform_dist[0]] = img1
 
@@ -176,71 +201,76 @@ def get_stitched_images_middle(img1,img2,H1,H2,background=(255, 255, 255)):
     result_img2 = cv2.warpPerspective(img2, transform_array.dot(H2), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
 
     return result_img1,result_img2
-# ---------------------------------------------------------------------------------------------------------------------
-def get_BF_homography(im_src, im_dst):
-    MIN_MATCHES = 15
-    orb = cv2.ORB_create()
+# --------------------------------------------------------------------------------------------------------------------------
+def get_matches_on_desc(des_source, des_destin):
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    kp_model, des_model = orb.detectAndCompute(im_dst, None)
-    kp_frame, des_frame = orb.detectAndCompute(im_src, None)
-    matches = bf.match(des_model, des_frame)
+    matches = bf.match(des_destin, des_source)
     matches = sorted(matches, key=lambda x: x.distance)
+    return matches
+# --------------------------------------------------------------------------------------------------------------------------
+def get_matches_on_desc_knn(des_source, des_destin):
 
-    if len(matches) > MIN_MATCHES:
-        im_matches = cv2.drawMatches(im_dst, kp_model, im_src, kp_frame, matches[:MIN_MATCHES], 0, flags=2)
-
-
-    src_pts = numpy.float32([kp_model[m.queryIdx].pt for m in matches]).reshape(-1, 1, 2)
-    dst_pts = numpy.float32([kp_frame[m.trainIdx].pt for m in matches]).reshape(-1, 1, 2)
-
-    M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0)
-
-    # h = im_dst.shape[0]
-    # w = im_dst.shape[1]
-    # pts = numpy.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
-    # dst = cv2.perspectiveTransform(pts, M)
-    # img2 = cv2.polylines(im_src, [numpy.int32(dst)], True, (0, 0, 255), 3, cv2.LINE_AA)
-    # cv2.imshow('frame', img2)
-    return M, im_matches
-# ---------------------------------------------------------------------------------------------------------------------
-def get_sift_homography(img_source, img_destination):  # Find SIFT and return Homography Matrix
-
-    sift = cv2.xfeatures2d.SIFT_create()
-    k1, d1 = sift.detectAndCompute(img_source, None)
-    k2, d2 = sift.detectAndCompute(img_destination, None)
     bf = cv2.BFMatcher()
-    matches = bf.knnMatch(d1, d2, k=2)
+    matches = bf.knnMatch(des_destin, des_source, k=2)
 
-    # Make sure that the matches are good
-    verify_ratio = 0.8  # Source: stackoverflow
+    verify_ratio = 0.8
     verified_matches = []
     for m1, m2 in matches:
-        # Add to array only if it's a good match
         if m1.distance < 0.8 * m2.distance:
             verified_matches.append(m1)
 
-    # Mimnum number of matches
-    M = numpy.zeros((2, 3))#for estimateRigidTransform
-    M = numpy.zeros((3, 3))#for findHomography
-    min_matches = 8
-    if len(verified_matches) > min_matches:
+    return verified_matches
+# --------------------------------------------------------------------------------------------------------------------------
+def get_matches_on_desc_flann(des_source, des_destin):
 
-        # Array to store matching points
-        img1_pts = []
-        img2_pts = []
+    FLANN_INDEX_KDTREE = 1
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    search_params = dict(checks=50)  # or pass empty dictionary
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    matches = flann.knnMatch(des_destin.astype(numpy.float32), des_source.astype(numpy.float32), k=2)
 
-        # Add matching points to array
-        for match in verified_matches:
-            img1_pts.append(k1[match.queryIdx].pt)
-            img2_pts.append(k2[match.trainIdx].pt)
-        img1_pts = numpy.float32(img1_pts).reshape(-1, 1, 2)
-        img2_pts = numpy.float32(img2_pts).reshape(-1, 1, 2)
+    verify_ratio = 0.8
+    verified_matches = []
+    for m1, m2 in matches:
+        if m1.distance < 0.8 * m2.distance:
+            verified_matches.append(m1)
 
-        # Compute homography matrix
-        #M, mask = cv2.findHomography(img1_pts, img2_pts, cv2.RANSAC, 5.0)
-        M = cv2.estimateRigidTransform(img1_pts, img2_pts,False)
-        return M
+    return verified_matches
+# --------------------------------------------------------------------------------------------------------------------------
+def get_homography_by_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
 
+    src, dst, distance = get_matches_from_keypoints_desc(points_source, des_source, points_destin, des_destin, matchtype='knn')
+    M = get_homography_by_keypoints(src, dst)
+    return M
+# ---------------------------------------------------------------------------------------------------------------------
+def get_matches_from_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
+
+    if matchtype=='knn':
+        matches = get_matches_on_desc_knn(des_source, des_destin)
+    elif matchtype=='flann':
+        matches = get_matches_on_desc_flann(des_source, des_destin)
+    else:
+        if des_destin.shape[0]>des_source.shape[0]:
+            zzz = numpy.zeros((+des_destin.shape[0] - des_source.shape[0], des_destin.shape[1]))
+            des_source=numpy.vstack((des_source,zzz))
+        if des_destin.shape[0]<des_source.shape[0]:
+            zzz = numpy.zeros((-des_destin.shape[0] + des_source.shape[0], des_destin.shape[1]))
+            des_destin=numpy.vstack((des_destin,zzz))
+
+        matches = get_matches_on_desc(des_source.astype(numpy.uint8),des_destin.astype(numpy.uint8) )
+
+    src,dst, distance= [],[],[]
+    for m in matches:
+        if m.queryIdx < points_destin.shape[0] and m.trainIdx < points_source.shape[0]:
+            src.append(points_source[m.trainIdx])
+            dst.append(points_destin[m.queryIdx])
+            distance.append(m.distance)
+
+    return numpy.array(src), numpy.array(dst), numpy.array(distance)
+# ---------------------------------------------------------------------------------------------------------------------
+def get_homography_by_keypoints(src,dst):
+
+    M, mask = cv2.findHomography(src, dst, cv2.RANSAC, 3.0)
     return M
 #----------------------------------------------------------------------------------------------------------------------
 def get_homography_middle(img_source, img_destination):

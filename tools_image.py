@@ -78,7 +78,7 @@ def crop_image(img, bbox):
 #--------------------------------------------------------------------------------------------------------------------------
 def put_layer_on_image(image_background,image_layer):
 
-    ret, mask = cv2.threshold(image_layer, 1, 255, cv2.THRESH_BINARY)
+    ret, mask = cv2.threshold(image_layer, 0, 255, cv2.THRESH_BINARY)
 
     mask = mask[:,:,0]
     mask_inv = cv2.bitwise_not(mask)
@@ -109,6 +109,16 @@ def capture_image_to_disk(out_filename):
     cap.release()
     cv2.destroyAllWindows()
     return
+#--------------------------------------------------------------------------------------------------------------------------
+def desaturate(image):
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    result = numpy.zeros((image.shape[0], image.shape[1], 3)).astype(numpy.uint8)
+    result[:, :, 0] = gray[:, :]
+    result[:, :, 1] = gray[:, :]
+    result[:, :, 2] = gray[:, :]
+    return result
 #--------------------------------------------------------------------------------------------------------------------------
 def hitmap2d_to_jet(hitmap_2d):
     colormap = cv2.COLORMAP_JET

@@ -1134,11 +1134,10 @@ def plot_tp_fp(plt,fig,tpr,fpr,roc_auc,caption=''):
     plt.plot([0, 1.05], [0, 1.05], color='lightgray', lw=lw, linestyle='--')
     #plt.xlabel('False Positive Rate')
     #plt.ylabel('True Positive Rate')
-    plt.set_title(caption+'AUC = %0.4f' % roc_auc)
+    #plt.set_title(caption + ('AUC = %0.4f' % roc_auc))
     #plt.legend(loc="lower right")
     plt.grid(which='major', color='lightgray', linestyle='--')
-
-
+    fig.canvas.set_window_title(caption + ('AUC = %0.4f' % roc_auc))
     #plt.show()
 # ----------------------------------------------------------------------------------------------------------------------
 def plot_multiple_tp_fp(tpr,fpr,roc_auc,desc,caption=''):

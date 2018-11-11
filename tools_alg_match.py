@@ -343,56 +343,81 @@ def filter_outliers(image_base, coordinates,pattern,th=1.0,path_debug=''):
             toimage(im_aligned).save(path_debug + '%03d_%03d.bmp' % (value,i))
 
     return coordinates[idx]
-# ----------------------------------------------------------------------------------------------------------------------
-def get_keypoints_desc_ORB(image1,image2):
-
-    if len(image1.shape) == 2:
-        im1_gray = im1.copy()
-    else:
-        im1_gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-
-    if len(image2.shape) == 2:
-        im2_gray = im1.copy()
-    else:
-        im2_gray = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
-
-    detector = cv2.ORB_create()
-    k1, d1= detector.detectAndCompute(im1_gray, None)
-    k2, d2= detector.detectAndCompute(im2_gray, None)
-    return k1, d1, k2, d2
 # ---------------------------------------------------------------------------------------------------------------------
-def get_keypoints_desc_SIFT(image1, image2):
+def get_keypoints_desc(image1,detector='SIFT'):
     if len(image1.shape) == 2:
         im1_gray = im1.copy()
     else:
         im1_gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
 
-    if len(image2.shape) == 2:
-        im2_gray = im1.copy()
-    else:
-        im2_gray = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+    if detector == 'SIFT':
+        detector = cv2.xfeatures2d.SIFT_create()
+    elif detector == 'SURF':
+        detector = cv2.xfeatures2d.SURF_create()
+    else: #detector == 'ORB'
+        detector = cv2.ORB_create()
 
-    detector = cv2.xfeatures2d.SIFT_create()
-    k1, d1= detector.detectAndCompute(image1, None)
-    k2, d2= detector.detectAndCompute(image2, None)
-    return k1, d1, k2, d2
+    kp, desc = detector.detectAndCompute(im1_gray, None)
+
+    points=[]
+    if (len(kp) > 0):
+        points = numpy.array([kp[int(idx)].pt for idx in range(0, len(kp))]).astype(int)
+
+    return points, desc
 # ---------------------------------------------------------------------------------------------------------------------
-def get_keypoints_desc_SURF(image1, image2):
+def get_corners_Fast(image1):
     if len(image1.shape) == 2:
         im1_gray = im1.copy()
     else:
         im1_gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
 
-    if len(image2.shape) == 2:
-        im2_gray = im1.copy()
+    detector = cv2.FastFeatureDetector_create()
+    kp = detector.detect(image1)
+
+    points = []
+    if (len(kp) > 0):
+        points = numpy.array([kp[int(idx)].pt for idx in range(0, len(kp))]).astype(int)
+
+    return points
+# ---------------------------------------------------------------------------------------------------------------------
+def get_corners_Shi_Tomasi(image1):
+    if len(image1.shape) == 2:
+        im1_gray = im1.copy()
     else:
-        im2_gray = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+        im1_gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
 
-    detector = cv2.xfeatures2d.SURF_create()
+    detector = cv2.FastFeatureDetector_create()
 
-    k1, d1 = detector.detectAndCompute(image1, None)
-    k2, d2 = detector.detectAndCompute(image2, None)
-    return k1, d1, k2, d2
+    corners = cv2.goodFeaturesToTrack(im1_gray, 25, 0.01, 10)
+    corners = corners.reshape(corners.shape[0], corners.shape[2]).astype(int)
+
+    return corners
+# ---------------------------------------------------------------------------------------------------------------------
+def get_corners_Harris(image1):
+    if len(image1.shape) == 2:
+        im1_gray = im1.copy()
+    else:
+        im1_gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+
+
+    # find Harris corners
+    gray = numpy.float32(im1_gray)
+    dst = cv2.cornerHarris(gray, 2, 3, 0.04)
+    # cv2.imwrite(filename_out2, 255*(dst-numpy.min(dst))/(numpy.max(dst)-numpy.min(dst)))
+
+    dst = cv2.dilate(dst, None)
+    ret, dst = cv2.threshold(dst, 0.01 * dst.max(), 255, 0)
+    # cv2.imwrite(filename_out3, 255 * (dst - numpy.min(dst)) / (numpy.max(dst) - numpy.min(dst)))
+    dst = numpy.uint8(dst)
+
+    # find centroids
+    ret, labels, stats, centroids = cv2.connectedComponentsWithStats(dst)
+
+    # define the criteria to stop and refine the corners
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.001)
+    corners = cv2.cornerSubPix(gray, numpy.float32(centroids), (5, 5), (-1, -1), criteria).astype(int)
+    centroids = centroids.astype(int)
+    return corners
 # ---------------------------------------------------------------------------------------------------------------------
 def get_matches_from_desc(d1, d2,normType=cv2.NORM_L1, crossCheck=True):
     matcher = cv2.BFMatcher(normType=normType, crossCheck=crossCheck)
