@@ -1,22 +1,12 @@
 import cv2
 import numpy
+from os import listdir
 from glob import glob
+import fnmatch
 import math
 #----------------------------------------------------------------------------------------------------------------------
-def draw_chess_corners(filename,chess_rows,chess_cols):
-    cv_image = cv2.imread(filename)
-    ret, corners = cv2.findChessboardCorners(cv_image, (chess_rows, chess_cols))
-
-
-    if (ret == True):
-        corners = numpy.array(corners).reshape(corners.shape[0],corners.shape[2])
-
-        radius = 5
-        color = (0, 0, 255,128)
-        for each in corners:
-            cv2.circle(cv_image, (each[0],each[1]), radius, color, -1)
-
-    return cv_image
+import tools_draw_numpy
+import tools_image
 #----------------------------------------------------------------------------------------------------------------------
 def get_proj_dist_mat_for_image(filename,chess_rows,chess_cols):
 
@@ -32,8 +22,8 @@ def get_proj_dist_mat_for_image(filename,chess_rows,chess_cols):
     dist=[]
     if ret:
         corners = cv2.cornerSubPix(im, corners, (11, 11), (-1, -1),(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
-        _2d_points.append(corners)  # append current 2D points
-        _3d_points.append(world_points)  # 3D points are always the same
+        _2d_points.append(corners)
+        _3d_points.append(world_points)
 
         ret, cameraMatrix, distCoeffs, rvecs, tvecs = cv2.calibrateCamera(_3d_points, _2d_points, (im.shape[1], im.shape[0]), None, None)
         cv_im_undistorted = cv2.undistort(im, cameraMatrix, distCoeffs)
@@ -43,7 +33,7 @@ def get_proj_dist_mat_for_image(filename,chess_rows,chess_cols):
 
     return cameraMatrix, distCoeffs,cv_im_undistorted
 #----------------------------------------------------------------------------------------------------------------------
-def get_proj_dist_mat_for_images(foldername,chess_rows,chess_cols):
+def get_proj_dist_mat_for_images(folder_in,chess_rows,chess_cols,folder_out=None):
 
     x, y = numpy.meshgrid(range(chess_rows), range(chess_cols))
     world_points = numpy.hstack((x.reshape(chess_rows*chess_cols, 1), y.reshape(chess_rows*chess_cols, 1), numpy.zeros((chess_rows*chess_cols, 1)))).astype(numpy.float32)
@@ -51,41 +41,46 @@ def get_proj_dist_mat_for_images(foldername,chess_rows,chess_cols):
     _3d_points = []
     _2d_points = []
 
-    img_paths = glob(foldername + '*.jpg')
-    for path in img_paths:
-        im = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY)
-        ret, corners = cv2.findChessboardCorners(im, (chess_rows, chess_cols))
+
+    for image_name in fnmatch.filter(listdir(folder_in), '*.jpg'):
+        im = cv2.imread(folder_in+image_name)
+        im_gray=cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+        im_gray_RGB = tools_image.desaturate(im)
+        ret, corners = cv2.findChessboardCorners(im_gray, (chess_rows, chess_cols))
 
         if ret:
-            corners = cv2.cornerSubPix(im, corners, (11, 11), (-1, -1),(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
+            corners = cv2.cornerSubPix(im_gray, corners, (11, 11), (-1, -1),(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
             _2d_points.append(corners)
             _3d_points.append(world_points)
+            corners = corners.reshape(-1, 2)
+            for i in range(0,corners.shape[0]):
+                im_gray_RGB = tools_draw_numpy.draw_circle(im_gray_RGB, corners[i, 1], corners[i, 0], 3, [0, 0, 255], alpha_transp=0)
 
+        if folder_out!=None:
+            cv2.imwrite(folder_out + image_name, im_gray_RGB)
 
-    ret, cameraMatrix, dist, rvecs, tvecs = cv2.calibrateCamera(_3d_points, _2d_points, (im.shape[1], im.shape[0]),None,None)
+    camera_matrix = numpy.array([[im.shape[1], 0, im.shape[0]], [0, im.shape[0], im.shape[1]], [0, 0, 1]]).astype(numpy.float64)
+    dist=numpy.zeros((1,5))
 
-    projectPoints = []
-    for c in range(0,len(rvecs)):
-        points = numpy.array(cv2.projectPoints(world_points, numpy.array(rvecs[c]), numpy.array(tvecs[c]), cameraMatrix, dist))[0]
-        corners = _2d_points[c]
-        points  = points.reshape(points.shape[0], points.shape[2])
-        corners = corners.reshape(corners.shape[0], corners.shape[2])
+    flag = cv2.CALIB_USE_INTRINSIC_GUESS + cv2.CALIB_ZERO_TANGENT_DIST + cv2.CALIB_RATIONAL_MODEL
 
-    return cameraMatrix,dist
+    matrix_init = numpy.zeros((3, 3), numpy.float32)
+    matrix_init[0][0] = im.shape[0]/2
+    matrix_init[0][2] = im.shape[1]/2
+    matrix_init[1][1] = matrix_init[0][0]
+    matrix_init[1][2] = matrix_init[0][2]
+    matrix_init[2][2] = 1.0
+    dist_init = numpy.zeros((1, 4), numpy.float32)
+    ret, camera_matrix, dist, rvecs, tvecs = cv2.calibrateCamera(_3d_points, _2d_points, (im.shape[1], im.shape[0]), matrix_init, dist_init,flags=flag)
+
+    return camera_matrix,dist
 #----------------------------------------------------------------------------------------------------------------------
-def undistort_image(mtx,dist,filename):
+def rectify_pair(mtx,dist,image1,image2,chess_rows,chess_cols):
 
-    image = cv2.imread(filename)
-    undistorted_image = cv2.undistort(image, mtx, dist, None, mtx)
+    gray_image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    gray_image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
 
-    # crop the image
-    #x, y, w, h = roi
-    #dst = dst[y:y + h, x:x + w]
-    return undistorted_image
-#----------------------------------------------------------------------------------------------------------------------
-def rectify_pair(mtx,dist,filename1,filename2,chess_rows,chess_cols):
-    im1 = cv2.cvtColor(cv2.imread(filename1), cv2.COLOR_BGR2GRAY)
-    im2 = cv2.cvtColor(cv2.imread(filename2), cv2.COLOR_BGR2GRAY)
+
     x, y = numpy.meshgrid(range(chess_rows), range(chess_cols))
     world_points = numpy.hstack((x.reshape(chess_rows*chess_cols, 1), y.reshape(chess_rows*chess_cols, 1), numpy.zeros((chess_rows*chess_cols, 1)))).astype(numpy.float32)
 
@@ -95,8 +90,8 @@ def rectify_pair(mtx,dist,filename1,filename2,chess_rows,chess_cols):
     im1_remapped = []
     im2_remapped = []
 
-    ret1, corners1 = cv2.findChessboardCorners(im1, (chess_rows, chess_cols))
-    ret2, corners2 = cv2.findChessboardCorners(im2, (chess_rows, chess_cols))
+    ret1, corners1 = cv2.findChessboardCorners(gray_image1, (chess_rows, chess_cols))
+    ret2, corners2 = cv2.findChessboardCorners(gray_image2, (chess_rows, chess_cols))
 
     if ret1 and ret2:
         all_corners1.append(corners1)
@@ -104,36 +99,29 @@ def rectify_pair(mtx,dist,filename1,filename2,chess_rows,chess_cols):
         all_3d_points.append(world_points)
 
         flg = cv2.CALIB_FIX_INTRINSIC + cv2.CALIB_FIX_FOCAL_LENGTH +cv2.CALIB_SAME_FOCAL_LENGTH + cv2.CALIB_ZERO_TANGENT_DIST + cv2.CALIB_USE_INTRINSIC_GUESS
-        retval, _, _, _, _, R, T, E, F = cv2.stereoCalibrate(all_3d_points, all_corners1, all_corners2,mtx, dist, mtx, dist,(im1.shape[1], im1.shape[0]),flags=flg)
+        retval, _, _, _, _, R, T, E, F = cv2.stereoCalibrate(all_3d_points, all_corners1, all_corners2,mtx, dist, mtx, dist,(gray_image1.shape[1], gray_image1.shape[0]),flags=flg)
 
         R1 = numpy.zeros((3, 3))
         R2 = numpy.zeros((3, 3))
         P1 = numpy.zeros((3, 4))
         P2 = numpy.zeros((3, 4))
 
-        RL, RR, PL, PR, _, _, _ = cv2.stereoRectify(mtx,dist,mtx,dist,(im1.shape[1],im1.shape[0]),R,T, R1,R2,P1,P2)
+        RL, RR, PL, PR, _, _, _ = cv2.stereoRectify(mtx,dist,mtx,dist,(gray_image1.shape[1],gray_image1.shape[0]),R,T, R1,R2,P1,P2)
 
         R1 = numpy.array(R1)
         R2 = numpy.array(R2)
         P1 = numpy.array(P1)
         P2 = numpy.array(P2)
 
-        map1_x, map1_y = cv2.initUndistortRectifyMap(mtx, dist, R1, P1, (im1.shape[1],im1.shape[0]),cv2.CV_32FC1)
-        map2_x, map2_y = cv2.initUndistortRectifyMap(mtx, dist, R2, P2, (im1.shape[1],im1.shape[0]),cv2.CV_32FC1)
+        map1_x, map1_y = cv2.initUndistortRectifyMap(mtx, dist, R1, P1, (gray_image1.shape[1],gray_image1.shape[0]),cv2.CV_32FC1)
+        map2_x, map2_y = cv2.initUndistortRectifyMap(mtx, dist, R2, P2, (gray_image1.shape[1],gray_image1.shape[0]),cv2.CV_32FC1)
 
-        im1_remapped = cv2.remap(im1, map1_x, map1_y, cv2.INTER_LINEAR)
-        im2_remapped = cv2.remap(im2, map2_x, map2_y, cv2.INTER_LINEAR)
+        im1_remapped = cv2.remap(image1, map1_x, map1_y, cv2.INTER_LINEAR)
+        im2_remapped = cv2.remap(image2, map2_x, map2_y, cv2.INTER_LINEAR)
 
     return im1_remapped, im2_remapped
-#----------------------------------------------------------------------------------------------------------------------
-def draw_corners(img, corners, imgpts):
-    corner = tuple(corners[0].ravel())
-    img = cv2.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
-    img = cv2.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
-    img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
-    return img
 # ---------------------------------------------------------------------------------------------------------------------
-def get_stitched_images_using_homography(img1, img2, M,background=(255, 255, 255)):
+def get_stitched_images_using_homography(img1, img2, M,background_color=(255, 255, 255)):
     w1, h1 = img1.shape[:2]
     w2, h2 = img2.shape[:2]
 
@@ -152,8 +140,8 @@ def get_stitched_images_using_homography(img1, img2, M,background=(255, 255, 255
     transform_array = numpy.array([[1, 0, transform_dist[0]], [0, 1, transform_dist[1]], [0, 0, 1]])
 
     # Warp images to get the resulting image
-    result_img_2 = cv2.warpPerspective(img2, transform_array.dot(M), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
-    result_img_1 = numpy.full(result_img_2.shape,background)
+    result_img_2 = cv2.warpPerspective(img2, transform_array.dot(M), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background_color)
+    result_img_1 = numpy.full(result_img_2.shape,background_color,dtype=numpy.uint8)
     result_img_1[transform_dist[1]:w1 + transform_dist[1], transform_dist[0]:h1 + transform_dist[0]] = img1
 
     return result_img_1, result_img_2
@@ -240,7 +228,9 @@ def get_matches_on_desc_flann(des_source, des_destin):
 def get_homography_by_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
 
     src, dst, distance = get_matches_from_keypoints_desc(points_source, des_source, points_destin, des_destin, matchtype='knn')
-    M = get_homography_by_keypoints(src, dst)
+    M = []
+    if src.size!=0:
+        M = get_homography_by_keypoints(src, dst)
     return M
 # ---------------------------------------------------------------------------------------------------------------------
 def get_matches_from_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
@@ -268,9 +258,43 @@ def get_matches_from_keypoints_desc(points_source,des_source, points_destin,des_
 
     return numpy.array(src), numpy.array(dst), numpy.array(distance)
 # ---------------------------------------------------------------------------------------------------------------------
-def get_homography_by_keypoints(src,dst):
+def get_matches_from_desc_limit_by_disp(points_source,des_source, points_destin,des_destin,disp_v1, disp_v2, disp_h1, disp_h2,matchtype='knn'):
 
-    M, mask = cv2.findHomography(src, dst, cv2.RANSAC, 3.0)
+    all_matches_scr = numpy.zeros((1,2))
+    all_matches_dst = numpy.zeros((1, 2))
+    distances = []
+    for i in range (0,len(points_source)):
+        row1, col1 = points_source[i][1], points_source[i][0]
+        idx = []
+        for j in range(0, len(points_destin)):
+            row2, col2 = points_destin[j][1], points_destin[j][0]
+            if (col2 - col1 >= disp_h1) and (col2 - col1 < disp_h2) and (row2 - row1 >= disp_v1) and (row2 - row1 < disp_v2):
+                idx.append(j)
+
+        idx = numpy.array(idx)
+
+        if idx.size!=0:
+            pnts_src = numpy.array(points_source[i]).reshape(-1, 2)
+            des_src  = numpy.array(des_source[i]).reshape(-1, 2)
+            pnts_dest = numpy.array(points_destin[idx]).reshape(-1, 2)
+            des_dest = numpy.array(des_destin[idx]).reshape(-1, 2)
+            match1, match2, dist = get_matches_from_keypoints_desc(pnts_src,des_src , pnts_dest, des_dest, matchtype)
+            if match1.size!=0:
+                all_matches_scr = numpy.vstack((all_matches_scr, match1))
+                all_matches_dst = numpy.vstack((all_matches_dst, match2))
+                distances.append(dist)
+
+    all_matches_scr = numpy.array(all_matches_scr).astype(numpy.int)
+    all_matches_dst = numpy.array(all_matches_dst).astype(numpy.int)
+
+
+    return all_matches_scr[1:], all_matches_dst[1:], distances
+# ---------------------------------------------------------------------------------------------------------------------
+def get_homography_by_keypoints(src,dst):
+    method = cv2.RANSAC
+    #method = cv2.LMEDS
+    #method = cv2.RHO
+    M, mask = cv2.findHomography(src, dst, method, 3.0)
     return M
 #----------------------------------------------------------------------------------------------------------------------
 def get_homography_middle(img_source, img_destination):
@@ -332,94 +356,6 @@ def get_homography_middle(img_source, img_destination):
     #print(img1_pts_transformed_all-img2_pts_transformed_all)
 
     return HB1,HB2
-#----------------------------------------------------------------------------------------------------------------------
-def blend_multi_band(left, rght, bg=(255,255,255)):
-    def GaussianPyramid(img, leveln):
-        GP = [img]
-        for i in range(leveln - 1):
-            GP.append(cv2.pyrDown(GP[i]))
-        return GP
-    # --------------------------------------------------------------------------------------------------------------------------
-    def LaplacianPyramid(img, leveln):
-        LP = []
-        for i in range(leveln - 1):
-            next_img = cv2.pyrDown(img)
-            size = img.shape[1::-1]
-
-            temp_image = cv2.pyrUp(next_img, dstsize=img.shape[1::-1])
-            LP.append(img - temp_image)
-            img = next_img
-        LP.append(img)
-        return LP
-    # --------------------------------------------------------------------------------------------------------------------------
-    def blend_pyramid(LPA, LPB, MP):
-        blended = []
-        for i, M in enumerate(MP):
-            blended.append(LPA[i] * M + LPB[i] * (1.0 - M))
-        return blended
-
-    # --------------------------------------------------------------------------------------------------------------------------
-    def reconstruct_from_pyramid(LS):
-        img = LS[-1]
-        for lev_img in LS[-2::-1]:
-            img = cv2.pyrUp(img, dstsize=lev_img.shape[1::-1])
-            img += lev_img
-        return img
-
-    # --------------------------------------------------------------------------------------------------------------------------
-    def get_borders(image, bg=(255, 255, 255)):
-
-        if (bg == (255, 255, 255)):
-            prj = numpy.min(image, axis=0)
-        else:
-            prj = numpy.max(image, axis=0)
-
-        flg = (prj == bg)[:, 0]
-
-        l = numpy.argmax(flg == False)
-        r = numpy.argmin(flg == False)
-        return l, r, 0, 0
-    # --------------------------------------------------------------------------------------------------------------------------
-    left_l, left_r, left_t, left_b = get_borders(left, bg)
-    rght_l, rght_r, rght_t, rght_b = get_borders(rght, bg)
-    border = int((left_r+rght_l)/2)
-
-    mask = numpy.zeros(left.shape)
-    mask[:, :border] = 1
-
-    leveln = int(numpy.floor(numpy.log2(min(left.shape[0], left.shape[1]))))
-
-    MP = GaussianPyramid(mask, leveln)
-    LPA = LaplacianPyramid(numpy.array(left).astype('float'), leveln)
-    LPB = LaplacianPyramid(numpy.array(rght).astype('float'), leveln)
-    blended = blend_pyramid(LPA, LPB, MP)
-
-    result = reconstruct_from_pyramid(blended)
-    result[result > 255] = 255
-    result[result < 0] = 0
-    return result
-#----------------------------------------------------------------------------------------------------------------------
-def blend_avg(img1, img2,bg=(255,255,255)):
-
-    res = img1.copy()
-    bg = numpy.array(bg)
-
-    for i in range(0,img1.shape[0]):
-        for j in range(0, img1.shape[1]):
-            c1=numpy.array(img1[i, j])
-            c2=numpy.array(img2[i, j])
-            c=0
-            if(numpy.array_equal(bg,c1)):
-                c=c2
-            else:
-                if(numpy.array_equal(bg,c2)):
-                    c=c1
-                else:
-                    c=c1/2+c2/2
-
-            res[i,j] = c
-
-    return res
 #----------------------------------------------------------------------------------------------------------------------
 def rotationMatrixToEulerAngles(R):
 
@@ -547,4 +483,18 @@ def align_and_average(pattern,images):
         average+=aligned
 
     return ((average)/images.shape[0]).astype(numpy.uint8)
+# ---------------------------------------------------------------------------------------------------------------------
+def get_rvecs_tvecs(img,chess_rows, chess_cols,cameraMatrix, dist):
+    corners_3d = numpy.zeros((chess_rows * chess_cols, 3), numpy.float32)
+    corners_3d[:, :2] = numpy.mgrid[0:chess_cols, 0:chess_rows].T.reshape(-1, 2)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, corners_2d = cv2.findChessboardCorners(gray, (chess_cols, chess_rows), None)
+
+    rvecs, tvecs=numpy.array([]),numpy.array([])
+
+    if ret == True:
+        corners_2d = cv2.cornerSubPix(gray, corners_2d, (11, 11), (-1, -1),(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
+        _, rvecs, tvecs, inliers = cv2.solvePnPRansac(corners_3d, corners_2d, cameraMatrix, dist)
+
+    return rvecs, tvecs
 # ---------------------------------------------------------------------------------------------------------------------

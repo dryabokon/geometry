@@ -76,17 +76,22 @@ def crop_image(img, bbox):
         return temp_img[y1:y2, x1:x2, :]
     return img[y1:y2, x1:x2, :]
 #--------------------------------------------------------------------------------------------------------------------------
-def put_layer_on_image(image_background,image_layer):
+def put_layer_on_image(image_background,image_layer,background_color=(0,0,0)):
 
-    ret, mask = cv2.threshold(image_layer, 0, 255, cv2.THRESH_BINARY)
+    mask_layer = numpy.zeros((image_layer.shape[0],image_layer.shape[1]),numpy.uint8)
+    mask_layer[numpy.where(image_layer[:, :, 0] == background_color[0])] += 1
+    mask_layer[numpy.where(image_layer[:, :, 1] == background_color[1])] += 1
+    mask_layer[numpy.where(image_layer[:, :, 2] == background_color[2])] += 1
+    mask_layer[mask_layer !=3 ] = 255
+    mask_layer[mask_layer == 3] = 0
 
-    mask = mask[:,:,0]
-    mask_inv = cv2.bitwise_not(mask)
+    mask_layer_inv = cv2.bitwise_not(mask_layer)
 
-    img1 = cv2.bitwise_and(image_background, image_background, mask=mask_inv)
-    img2 = cv2.bitwise_and(image_layer     , image_layer     , mask=mask)
 
-    im_result = cv2.add(img1, img2)
+    img1 = cv2.bitwise_and(image_background, image_background, mask=mask_layer_inv)
+    img2 = cv2.bitwise_and(image_layer     , image_layer     , mask=mask_layer)
+
+    im_result = cv2.add(img1, img2).astype(numpy.uint8)
 
     return im_result
 #--------------------------------------------------------------------------------------------------------------------------
@@ -127,11 +132,12 @@ def hitmap2d_to_jet(hitmap_2d):
     hitmap_RGB_gre[:, :, 0] = hitmap_2d[:, :]
     hitmap_RGB_gre[:, :, 1] = hitmap_2d[:, :]
     hitmap_RGB_gre[:, :, 2] = hitmap_2d[:, :]
-    hitmap_RGB_jet = cv2.applyColorMap(255 - hitmap_2d, colormap)
+    hitmap_RGB_jet = cv2.applyColorMap(hitmap_2d, colormap)
     return hitmap_RGB_gre, hitmap_RGB_jet
 # ----------------------------------------------------------------------------------------------------------------------
 def hitmap2d_to_viridis(hitmap_2d):
     colormap = (numpy.array(cm.cmaps_listed['viridis'].colors)*256).astype(int)
+    colormap = numpy.flip(colormap,axis=1)
 
     hitmap_RGB_gre  = numpy.zeros((hitmap_2d.shape[0],hitmap_2d.shape[1],3)).astype(numpy.uint8)
     hitmap_RGB_gre[:, :, 0] = hitmap_2d[:, :]
@@ -182,3 +188,79 @@ def shift_image(gray,dv,dh):
 
     return res2
 # ----------------------------------------------------------------------------------------------------------------------
+
+def blend_multi_band(left, rght, background_color=(255, 255, 255)):
+    def GaussianPyramid(img, leveln):
+        GP = [img]
+        for i in range(leveln - 1):
+            GP.append(cv2.pyrDown(GP[i]))
+        return GP
+    # --------------------------------------------------------------------------------------------------------------------------
+    def LaplacianPyramid(img, leveln):
+        LP = []
+        for i in range(leveln - 1):
+            next_img = cv2.pyrDown(img)
+            size = img.shape[1::-1]
+
+            temp_image = cv2.pyrUp(next_img, dstsize=img.shape[1::-1])
+            LP.append(img - temp_image)
+            img = next_img
+        LP.append(img)
+        return LP
+    # --------------------------------------------------------------------------------------------------------------------------
+    def blend_pyramid(LPA, LPB, MP):
+        blended = []
+        for i, M in enumerate(MP):
+            blended.append(LPA[i] * M + LPB[i] * (1.0 - M))
+        return blended
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    def reconstruct_from_pyramid(LS):
+        img = LS[-1]
+        for lev_img in LS[-2::-1]:
+            img = cv2.pyrUp(img, dstsize=lev_img.shape[1::-1])
+            img += lev_img
+        return img
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    def get_borders(image, bg=(255, 255, 255)):
+
+        if (bg == (255, 255, 255)):
+            prj = numpy.min(image, axis=0)
+        else:
+            prj = numpy.max(image, axis=0)
+
+        flg = (prj == bg)[:, 0]
+
+        l = numpy.argmax(flg == False)
+        r = numpy.argmin(flg == False)
+        return l, r, 0, 0
+    # --------------------------------------------------------------------------------------------------------------------------
+    left_l, left_r, left_t, left_b = get_borders(left, background_color)
+    rght_l, rght_r, rght_t, rght_b = get_borders(rght, background_color)
+    border = int((left_r+rght_l)/2)
+
+    mask = numpy.zeros(left.shape)
+    mask[:, :border] = 1
+
+    leveln = int(numpy.floor(numpy.log2(min(left.shape[0], left.shape[1]))))
+
+    MP = GaussianPyramid(mask, leveln)
+    LPA = LaplacianPyramid(numpy.array(left).astype('float'), leveln)
+    LPB = LaplacianPyramid(numpy.array(rght).astype('float'), leveln)
+    blended = blend_pyramid(LPA, LPB, MP)
+
+    result = reconstruct_from_pyramid(blended)
+    result[result > 255] = 255
+    result[result < 0] = 0
+    return result
+#----------------------------------------------------------------------------------------------------------------------
+def blend_avg(img1, img2,background_color=(255,255,255)):
+
+    im1 = put_layer_on_image(img1, img2,background_color)
+    im2 = put_layer_on_image(img2, img1,background_color)
+
+    res = cv2.add(im1/2, im2/2)
+
+    return res
+#----------------------------------------------------------------------------------------------------------------------
