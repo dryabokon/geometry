@@ -12,11 +12,6 @@ Welcome to ilustrative examples of using the Projective Geometry in Computer Vis
 8. Template matching
 9. Stereo Vision
 10. Pose estimation
-11. Structure from motion
-12. SLAM
-13. Augmented reality
-14. Aruco
-15. HDR
-16. Super Resolution
-17. Video Stabilization
+11. Aruco
+12. Augmented reality
 
