@@ -26,4 +26,4 @@ Tutorial | Description
 ![alt text](/images/ex00/Image07.png)| Stereopair rectification
 ![alt text](/images/ex00/Image08.png)| Template Matching
 ![alt text](/images/ex00/Image09.png)| Stereo Vision
-
+![alt text](/images/ex00/Image11.png)| Augmented reality by Aruco
