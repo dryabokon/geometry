@@ -1,12 +1,6 @@
 # About
 Welcome to ilustrative tutorials of using the Projective Geometry in Computer Vision. 
 
-## Content 
-
-Tutorial | Description
------------- | -------------
-![alt text](/images/ex00/Image01.png)| KeyPoints detection
-![alt text](/images/ex00/Image03.png)| Homography
 
 ## Content 
 1. KeyPoints detection
@@ -21,4 +15,15 @@ Tutorial | Description
 10. Pose estimation
 11. Aruco
 12. Augmented reality
+
+
+Tutorial | Description
+------------ | -------------
+![alt text](/images/ex00/Image01.png)| KeyPoints detection
+![alt text](/images/ex00/Image03.png)| Homography
+![alt text](/images/ex00/Image04.png)| Blending
+![alt text](/images/ex00/Image06.png)| Camera Calibration
+![alt text](/images/ex00/Image07.png)| Stereopair rectification
+![alt text](/images/ex00/Image08.png)| Template Matching
+![alt text](/images/ex00/Image09.png)| Stereo Vision
 
