@@ -7,6 +7,8 @@ import math
 #----------------------------------------------------------------------------------------------------------------------
 import tools_draw_numpy
 import tools_image
+import tools_alg_match
+import tools_IO
 #----------------------------------------------------------------------------------------------------------------------
 def get_proj_dist_mat_for_image(filename,chess_rows,chess_cols):
 
@@ -121,40 +123,44 @@ def rectify_pair(mtx,dist,image1,image2,chess_rows,chess_cols):
 
     return im1_remapped, im2_remapped
 # ---------------------------------------------------------------------------------------------------------------------
-def get_stitched_images_using_homography(img1, img2, M,background_color=(255, 255, 255)):
+def get_stitched_images_using_homography(img1, img2, M,background_color=(255, 255, 255),borderMode=cv2.BORDER_CONSTANT):
+
     w1, h1 = img1.shape[:2]
     w2, h2 = img2.shape[:2]
 
-    # Get the canvas dimesions
-    img1_dims      = numpy.float32([[0, 0], [0, w1], [h1, w1], [h1, 0]]).reshape(-1, 1, 2)
-    img2_dims_temp = numpy.float32([[0, 0], [0, w2], [h2, w2], [h2, 0]]).reshape(-1, 1, 2)
-
-    img2_dims = cv2.perspectiveTransform(img2_dims_temp, M)  # Get relative perspective of second image
+    img2_dims      = numpy.float32([[0, 0], [0, w2], [h2, w2], [h2, 0]]).reshape(-1, 1, 2)
+    img1_dims_temp = numpy.float32([[0, 0], [0, w1], [h1, w1], [h1, 0]]).reshape(-1, 1, 2)
+    img1_dims = cv2.perspectiveTransform(img1_dims_temp, M)  # Get relative perspective of second image
     result_dims = numpy.concatenate((img1_dims, img2_dims), axis=0)  # Resulting dimensions
 
     [x_min, y_min] = numpy.int32(result_dims.min(axis=0).ravel() - 0.5)
     [x_max, y_max] = numpy.int32(result_dims.max(axis=0).ravel() + 0.5)
 
-    # Create output array after affine transformation
     transform_dist = [-x_min, -y_min]
     transform_array = numpy.array([[1, 0, transform_dist[0]], [0, 1, transform_dist[1]], [0, 0, 1]])
 
-    # Warp images to get the resulting image
-    result_img_2 = cv2.warpPerspective(img2, transform_array.dot(M), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background_color)
-    result_img_1 = numpy.full(result_img_2.shape,background_color,dtype=numpy.uint8)
-    result_img_1[transform_dist[1]:w1 + transform_dist[1], transform_dist[0]:h1 + transform_dist[0]] = img1
+    result_img_1 = cv2.warpPerspective(img1, transform_array.dot(M), (x_max - x_min, y_max - y_min),borderMode=borderMode, borderValue=background_color)
+
+    result_img_2 = numpy.full(result_img_1.shape,background_color,dtype=numpy.uint8)
+    result_img_2[transform_dist[1]:w2 + transform_dist[1], transform_dist[0]:h2 + transform_dist[0]] = img2
+    if borderMode == cv2.BORDER_REPLICATE:
+        result_img_2 = tools_image.fill_border(result_img_2,transform_dist[1],transform_dist[0],w2+transform_dist[1],h2 + transform_dist[0])
 
     return result_img_1, result_img_2
 # ---------------------------------------------------------------------------------------------------------------------
-def get_stitched_images_using_translation(img1, img2, M,background=(255, 255, 255)):
+def get_stitched_images_using_translation(img1, img2, translation,background_color=(255, 255, 255),borderMode=cv2.BORDER_CONSTANT,keep_shape=False):
+    #cv2.BORDER_CONSTANT
+    #cv2.BORDER_REPLICATE
+
+    M = translation.copy()
+
     w1, h1 = img1.shape[:2]
     w2, h2 = img2.shape[:2]
 
+    img2_dims      = numpy.float32([[0, 0], [0, w2], [h2, w2], [h2, 0]]).reshape(-1, 1, 2)
+    img1_dims_temp = numpy.float32([[0, 0], [0, w1], [h1, w1], [h1, 0]]).reshape(-1, 1, 2)
 
-    img1_dims      = numpy.float32([[0, 0], [0, w1], [h1, w1], [h1, 0]]).reshape(-1, 1, 2)
-    img2_dims_temp = numpy.float32([[0, 0], [0, w2], [h2, w2], [h2, 0]]).reshape(-1, 1, 2)
-
-    img2_dims = cv2.transform(img2_dims_temp, M)  # Get relative perspective of second image
+    img1_dims = cv2.transform(img1_dims_temp, M)  # Get relative perspective of second image
     result_dims = numpy.concatenate((img1_dims, img2_dims), axis=0)  # Resulting dimensions
 
     [x_min, y_min] = numpy.int32(result_dims.min(axis=0).ravel() - 0.5)
@@ -165,197 +171,67 @@ def get_stitched_images_using_translation(img1, img2, M,background=(255, 255, 25
     M[0, 2]+=-x_min
     M[1, 2]+=-y_min
 
-    result_img1 = cv2.warpAffine(img2, M, (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
-    result_img2 = numpy.full(result_img1.shape,background)
-    result_img2 [transform_dist[1]:w1 + transform_dist[1], transform_dist[0]:h1 + transform_dist[0]] = img1
+    result_img1 = cv2.warpAffine(img1, M, (x_max - x_min, y_max - y_min),borderMode=borderMode, borderValue=background_color)
+    #print(M)
+    #print(result_img1.shape)
 
-    return result_img1,result_img2
-# ---------------------------------------------------------------------------------------------------------------------
-def get_stitched_images_middle(img1,img2,H1,H2,background=(255, 255, 255)):
-    w1, h1 = img1.shape[:2]
-    w2, h2 = img2.shape[:2]
+    #!!!
+    result_img2 = numpy.full(result_img1.shape,background_color,dtype=numpy.uint8)
+    result_img2 [transform_dist[1]:w2 + transform_dist[1], transform_dist[0]:h2 + transform_dist[0]] = img2
 
-    img1_dims = cv2.perspectiveTransform(numpy.float32([[0, 0], [0, w1], [h1, w1], [h1, 0]]).reshape(-1, 1, 2), H1)
-    img2_dims = cv2.perspectiveTransform(numpy.float32([[0, 0], [0, w2], [h2, w2], [h2, 0]]).reshape(-1, 1, 2), H2)
+    if keep_shape==False:
+        if borderMode == cv2.BORDER_REPLICATE:
+            result_img2 = tools_image.fill_border(result_img2,transform_dist[1],transform_dist[0],w2+transform_dist[1],h2 + transform_dist[0])
+    else:
+        result_img2 = result_img2[transform_dist[1]:transform_dist[1] + img1.shape[0],transform_dist[0]:transform_dist[0] + img1.shape[1]]
+        result_img1 = result_img1[transform_dist[1]:transform_dist[1] + img1.shape[0],transform_dist[0]:transform_dist[0] + img1.shape[1]]
 
-    result_dims = numpy.concatenate((img1_dims, img2_dims), axis=0)
-    [x_min, y_min] = numpy.int32(result_dims.min(axis=0).ravel() - 0.5)
-    [x_max, y_max] = numpy.int32(result_dims.max(axis=0).ravel() + 0.5)
+    return result_img1, result_img2
 
-    transform_dist = [-x_min, -y_min]
-    transform_array = numpy.array([[1, 0, transform_dist[0]], [0, 1, transform_dist[1]], [0, 0, 1]])
-
-    result_img1 = cv2.warpPerspective(img1, transform_array.dot(H1), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
-    result_img2 = cv2.warpPerspective(img2, transform_array.dot(H2), (x_max - x_min, y_max - y_min),borderMode=cv2.BORDER_CONSTANT, borderValue=background)
-
-    return result_img1,result_img2
 # --------------------------------------------------------------------------------------------------------------------------
-def get_matches_on_desc(des_source, des_destin):
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = bf.match(des_destin, des_source)
-    matches = sorted(matches, key=lambda x: x.distance)
-    return matches
-# --------------------------------------------------------------------------------------------------------------------------
-def get_matches_on_desc_knn(des_source, des_destin):
+def get_transform_by_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
 
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(des_destin, des_source, k=2)
+    M = None
+    if points_source==[] or des_source==[] or points_destin==[] or des_destin==[]:
+        return M
 
-    verify_ratio = 0.8
-    verified_matches = []
-    for m1, m2 in matches:
-        if m1.distance < 0.8 * m2.distance:
-            verified_matches.append(m1)
+    src, dst, distance = tools_alg_match.get_matches_from_keypoints_desc(points_source, des_source, points_destin, des_destin, matchtype=matchtype)
 
-    return verified_matches
-# --------------------------------------------------------------------------------------------------------------------------
-def get_matches_on_desc_flann(des_source, des_destin):
+    if src.size!=0:
+        M = get_transform_by_keypoints(src, dst)
 
-    FLANN_INDEX_KDTREE = 1
-    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-    search_params = dict(checks=50)  # or pass empty dictionary
-    flann = cv2.FlannBasedMatcher(index_params, search_params)
-    matches = flann.knnMatch(des_destin.astype(numpy.float32), des_source.astype(numpy.float32), k=2)
 
-    verify_ratio = 0.8
-    verified_matches = []
-    for m1, m2 in matches:
-        if m1.distance < 0.8 * m2.distance:
-            verified_matches.append(m1)
-
-    return verified_matches
+    return M
 # --------------------------------------------------------------------------------------------------------------------------
 def get_homography_by_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
 
-    src, dst, distance = get_matches_from_keypoints_desc(points_source, des_source, points_destin, des_destin, matchtype='knn')
-    M = []
+    M = None
+    if points_source==[] or des_source==[] or points_destin==[] or des_destin==[]:
+        return M
+
+    src, dst, distance = tools_alg_match.get_matches_from_keypoints_desc(points_source, des_source, points_destin, des_destin, matchtype=matchtype)
+
     if src.size!=0:
         M = get_homography_by_keypoints(src, dst)
     return M
 # ---------------------------------------------------------------------------------------------------------------------
-def get_matches_from_keypoints_desc(points_source,des_source, points_destin,des_destin,matchtype='knn'):
+def get_transform_by_keypoints(src,dst):
 
-    if matchtype=='knn':
-        matches = get_matches_on_desc_knn(des_source, des_destin)
-    elif matchtype=='flann':
-        matches = get_matches_on_desc_flann(des_source, des_destin)
-    else:
-        if des_destin.shape[0]>des_source.shape[0]:
-            zzz = numpy.zeros((+des_destin.shape[0] - des_source.shape[0], des_destin.shape[1]))
-            des_source=numpy.vstack((des_source,zzz))
-        if des_destin.shape[0]<des_source.shape[0]:
-            zzz = numpy.zeros((-des_destin.shape[0] + des_source.shape[0], des_destin.shape[1]))
-            des_destin=numpy.vstack((des_destin,zzz))
+    #M,_ = cv2.estimateAffine2D(src, dst,confidence=0.95)
+    M, _ = cv2.estimateAffinePartial2D(src, dst)
 
-        matches = get_matches_on_desc(des_source.astype(numpy.uint8),des_destin.astype(numpy.uint8) )
-
-    src,dst, distance= [],[],[]
-    for m in matches:
-        if m.queryIdx < points_destin.shape[0] and m.trainIdx < points_source.shape[0]:
-            src.append(points_source[m.trainIdx])
-            dst.append(points_destin[m.queryIdx])
-            distance.append(m.distance)
-
-    return numpy.array(src), numpy.array(dst), numpy.array(distance)
-# ---------------------------------------------------------------------------------------------------------------------
-def get_matches_from_desc_limit_by_disp(points_source,des_source, points_destin,des_destin,disp_v1, disp_v2, disp_h1, disp_h2,matchtype='knn'):
-
-    all_matches_scr = numpy.zeros((1,2))
-    all_matches_dst = numpy.zeros((1, 2))
-    distances = []
-    for i in range (0,len(points_source)):
-        row1, col1 = points_source[i][1], points_source[i][0]
-        idx = []
-        for j in range(0, len(points_destin)):
-            row2, col2 = points_destin[j][1], points_destin[j][0]
-            if (col2 - col1 >= disp_h1) and (col2 - col1 < disp_h2) and (row2 - row1 >= disp_v1) and (row2 - row1 < disp_v2):
-                idx.append(j)
-
-        idx = numpy.array(idx)
-
-        if idx.size!=0:
-            pnts_src = numpy.array(points_source[i]).reshape(-1, 2)
-            des_src  = numpy.array(des_source[i]).reshape(-1, 2)
-            pnts_dest = numpy.array(points_destin[idx]).reshape(-1, 2)
-            des_dest = numpy.array(des_destin[idx]).reshape(-1, 2)
-            match1, match2, dist = get_matches_from_keypoints_desc(pnts_src,des_src , pnts_dest, des_dest, matchtype)
-            if match1.size!=0:
-                all_matches_scr = numpy.vstack((all_matches_scr, match1))
-                all_matches_dst = numpy.vstack((all_matches_dst, match2))
-                distances.append(dist)
-
-    all_matches_scr = numpy.array(all_matches_scr).astype(numpy.int)
-    all_matches_dst = numpy.array(all_matches_dst).astype(numpy.int)
+    return M
+#----------------------------------------------------------------------------------------------------------------------
 
 
-    return all_matches_scr[1:], all_matches_dst[1:], distances
-# ---------------------------------------------------------------------------------------------------------------------
 def get_homography_by_keypoints(src,dst):
     method = cv2.RANSAC
     #method = cv2.LMEDS
     #method = cv2.RHO
     M, mask = cv2.findHomography(src, dst, method, 3.0)
+
     return M
-#----------------------------------------------------------------------------------------------------------------------
-def get_homography_middle(img_source, img_destination):
 
-    sift = cv2.xfeatures2d.SIFT_create()
-    k1, d1 = sift.detectAndCompute(img_source, None)
-    k2, d2 = sift.detectAndCompute(img_destination, None)
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(d1, d2, k=2)
-
-    verify_ratio = 0.8  # Source: stackoverflow
-    verified_matches = []
-    for m1, m2 in matches:
-        if m1.distance < 0.8 * m2.distance:
-            verified_matches.append(m1)
-
-    img1_pts = []
-    img2_pts = []
-
-    for match in verified_matches:
-        img1_pts.append(k1[match.queryIdx].pt)
-        img2_pts.append(k2[match.trainIdx].pt)
-    img1_pts = numpy.float32(img1_pts).reshape(-1, 1, 2)
-    img2_pts = numpy.float32(img2_pts).reshape(-1, 1, 2)
-
-    M, mask = cv2.findHomography(img1_pts, img2_pts, cv2.RANSAC, 5.0)
-
-    H = M
-    H_inv = get_inverse_homography(M)
-
-    img2_pts_transformed_all = []
-    img1_pts_transformed_all = []
-    for alpha in range(0,100):
-        HB1 = bend_homography(H    , alpha/99.0)
-        HB2 = bend_homography(H_inv, alpha/99.0)
-        img1_pts_transformed_all.append(cv2.perspectiveTransform(img1_pts, HB1).reshape(img1_pts.shape[0],2))
-        img2_pts_transformed_all.append(cv2.perspectiveTransform(img2_pts, HB2).reshape(img1_pts.shape[0],2))
-
-    th = 2
-
-    Hits_large = numpy.zeros((100,100))
-
-    for i in range(0,100):
-        for j in range(0, 100):
-            dist = numpy.abs(img1_pts_transformed_all[i] - img2_pts_transformed_all[j])
-            error = numpy.sum(dist,axis=1)
-            Hits_large[i,j] = numpy.sum(1*(error<=th))
-
-    Hits = Hits_large[10:90,10:90]
-    i=numpy.argmax(Hits)
-    alpha1 = int(i / Hits.shape[1])+10
-    alpha2 = int(i % Hits.shape[1])+10
-
-    HB1 = bend_homography(H    , alpha1 / 99.0)
-    HB2 = bend_homography(H_inv, alpha2 / 99.0)
-    img1_pts_transformed_all = cv2.perspectiveTransform(img1_pts, HB1).reshape(img1_pts.shape[0], 2)
-    img2_pts_transformed_all = cv2.perspectiveTransform(img2_pts, HB2).reshape(img1_pts.shape[0], 2)
-
-    #print(img1_pts_transformed_all-img2_pts_transformed_all)
-
-    return HB1,HB2
 #----------------------------------------------------------------------------------------------------------------------
 def rotationMatrixToEulerAngles(R):
 
@@ -364,7 +240,7 @@ def rotationMatrixToEulerAngles(R):
     I = numpy.identity(3, dtype=R.dtype)
     n = numpy.linalg.norm(I - shouldBeIdentity)
 
-    if(n < 1e-6):
+    if True or (n < 1e-6):
 
         sy = math.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
 
@@ -448,7 +324,76 @@ def bend_homography(H,alpha,K=numpy.array([[1000,0,0],[0,1000,0],[0,0,1]])):
 
     return H
 # ---------------------------------------------------------------------------------------------------------------------
-def align_images(im1, im2,mode = cv2.MOTION_AFFINE):
+def align_two_images_translation(img1, img2,detector='SIFT',matchtype='knn',borderMode=cv2.BORDER_REPLICATE, background_color=(0, 255, 255)):
+
+    points1, des1 = tools_alg_match.get_keypoints_desc(img1, detector)
+    points2, des2 = tools_alg_match.get_keypoints_desc(img2, detector)
+    coord1, coord2, distance = tools_alg_match.get_matches_from_keypoints_desc(points1, des1, points2, des2, matchtype)
+
+    translation= None
+    if coord1 is not None and coord1.size >= 8:
+        translation= get_transform_by_keypoints(coord1, coord2)
+        if translation is None or math.isnan(translation[0,0]):
+            return img1,img2,0
+        #T = numpy.eye(3,dtype=numpy.float32)
+        #T[0:2,0:2] = translation[0:2,0:2]
+        #angle = math.fabs(rotationMatrixToEulerAngles(T)[2])
+
+        #if translation[0, 2] >= 0.10*img1.shape[0] or translation[1, 2] >= 0.10*img1.shape[1]:# or angle>0.05:
+        #    return img1, img2, 0
+    else:
+        return img1, img2,0
+
+    if borderMode==cv2.BORDER_REPLICATE:
+        result_image1, result_image2 = get_stitched_images_using_translation(img1, img2, translation, borderMode=cv2.BORDER_REPLICATE,keep_shape=True)
+    else:
+
+        result_image1a, result_image2 = get_stitched_images_using_translation(img1, img2, translation,borderMode=cv2.BORDER_CONSTANT,background_color=(0  ,255  ,0  ), keep_shape=True)
+        result_image1b, result_image2 = get_stitched_images_using_translation(img1, img2, translation,borderMode=cv2.BORDER_CONSTANT,background_color=(255,0,255), keep_shape=True)
+
+        result_image1 = result_image1b.copy()
+        idx2 = numpy.all(result_image1a != result_image1b, axis=-1)
+        result_image1[idx2] = background_color
+
+
+    q = ((cv2.matchTemplate(result_image1,result_image2, method=cv2.TM_CCOEFF_NORMED)[0, 0])+1)*128
+
+    return result_image1,result_image2,int(q)
+
+# ---------------------------------------------------------------------------------------------------------------------
+def align_two_images_homography(img1, img2,detector='SIFT',matchtype='knn'):
+
+    img1_gray_rgb = tools_image.desaturate(img1)
+    img2_gray_rgb = tools_image.desaturate(img2)
+
+    points1, des1 = tools_alg_match.get_keypoints_desc(img1, detector)
+    points2, des2 = tools_alg_match.get_keypoints_desc(img2, detector)
+
+    match1, match2, distance = tools_alg_match.get_matches_from_keypoints_desc(points1, des1, points2, des2, matchtype)
+
+    homography= None
+    if match1.size != 0:
+        homography= get_homography_by_keypoints_desc(points1, des1, points2, des2, matchtype)
+        if homography is None:
+            return img1,img2
+    else:
+        return img1, img2
+
+
+    for each in match1:
+        cv2.circle(img1_gray_rgb, (int(each[0]), int(each[1])), 3, [0, 0, 255],thickness=-1)
+    for each in match2:
+        cv2.circle(img2_gray_rgb, (int(each[0]), int(each[1])), 3, [255, 255, 0], thickness=-1)
+
+
+    result_image1, result_image2 = get_stitched_images_using_homography(img2_gray_rgb, img1_gray_rgb, homography, borderMode=cv2.BORDER_REPLICATE,background_color=(255, 255, 255))
+    q = cv2.matchTemplate(result_image1, result_image2, method=cv2.TM_CCOEFF_NORMED)[0, 0]
+    q = int((1 + q) * 128)
+
+    return result_image1,result_image2, q
+
+# ---------------------------------------------------------------------------------------------------------------------
+def align_two_images_ECC(im1, im2,mode = cv2.MOTION_AFFINE):
 
     if len(im1.shape) == 2:
         im1_gray = im1.copy()
@@ -473,17 +418,6 @@ def align_images(im1, im2,mode = cv2.MOTION_AFFINE):
         aligned = cv2.warpAffine(im2, warp_matrix, (im2_gray.shape[1], im2_gray.shape[0]),borderMode=cv2.BORDER_REPLICATE, flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
         return im1, aligned
 # ---------------------------------------------------------------------------------------------------------------------
-def align_and_average(pattern,images):
-    if(images.size==0):
-        return pattern
-
-    average = numpy.zeros((images.shape[1], images.shape[2],3))
-    for i in range(0, images.shape[0]):
-        pattern, aligned = align_images(pattern, images[i],mode = cv2.MOTION_AFFINE)
-        average+=aligned
-
-    return ((average)/images.shape[0]).astype(numpy.uint8)
-# ---------------------------------------------------------------------------------------------------------------------
 def get_rvecs_tvecs(img,chess_rows, chess_cols,cameraMatrix, dist):
     corners_3d = numpy.zeros((chess_rows * chess_cols, 3), numpy.float32)
     corners_3d[:, :2] = numpy.mgrid[0:chess_cols, 0:chess_rows].T.reshape(-1, 2)
@@ -498,3 +432,4 @@ def get_rvecs_tvecs(img,chess_rows, chess_cols,cameraMatrix, dist):
 
     return rvecs, tvecs
 # ---------------------------------------------------------------------------------------------------------------------
+

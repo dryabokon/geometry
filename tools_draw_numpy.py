@@ -7,7 +7,7 @@ def draw_circle(array_rgb, row, col, rad, color, alpha_transp=0):
     color = numpy.array(color)
     res_rgb = array_rgb.copy()
     if alpha_transp > 0:
-        res_rgb[circle(int(row), int(col), int(rad), shape=array_rgb.shape)] = color * (1 - alpha_transp) + array_rgb[int(row), int(col)] * alpha_transp
+        res_rgb[circle(int(row), int(col), int(rad), shape=array_rgb.shape)] = array_rgb[circle(int(row), int(col), int(rad), shape=array_rgb.shape)]* alpha_transp + color * (1 - alpha_transp)
     else:
         res_rgb[circle(int(row), int(col), int(rad), shape=array_rgb.shape)] = color
     return res_rgb
