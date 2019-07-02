@@ -103,7 +103,7 @@ def example_ORB(filename_in, filename_out, R=2):
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-	path_in = 'images/ex02/'
+	path_in = 'images/ex_keypoints/'
 	filename_in = path_in + 'left.jpg'
 
 	path_out = 'images/output/'

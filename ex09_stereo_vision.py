@@ -11,7 +11,7 @@ import tools_draw_numpy
 # ---------------------------------------------------------------------------------------------------------------------
 
 def demo_stereo_01_SGBM():
-	folder_input = 'images/ex09/'
+	folder_input = 'images/ex_stereo/'
 	folder_output = 'images/output/'
 
 	filenameL = '1L.png'
@@ -38,7 +38,7 @@ def demo_stereo_01_SGBM():
 	return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_stereo_02_BM():
-	folder_input = 'images/ex09/'
+	folder_input = 'images/ex_stereo/'
 	folder_output = 'images/output/'
 
 	filenameL = '1L.png'
@@ -65,7 +65,7 @@ def demo_stereo_02_BM():
 	return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_stereo_03_keypoints():
-	folder_input = 'images/ex09/'
+	folder_input = 'images/ex_stereo/'
 	folder_output = 'images/output/'
 
 	filenameL = '1L.png'
@@ -110,7 +110,7 @@ def demo_stereo_03_keypoints():
 	return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_stereo_04_keypoints_limited():
-	folder_input = 'images/ex09/'
+	folder_input = 'images/ex_stereo/'
 	folder_output = 'images/output/'
 
 	filenameL = '1L.png'
@@ -147,7 +147,7 @@ def demo_stereo_04_keypoints_limited():
 	return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_stereo_05_matchTemplate():
-	folder_input = 'images/ex09/'
+	folder_input = 'images/ex_stereo/'
 	folder_output = 'images/output/'
 
 	filenameL = '1L.png'

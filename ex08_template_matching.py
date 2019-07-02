@@ -15,7 +15,7 @@ import tools_draw_numpy
 # ---------------------------------------------------------------------------------------------------------------------
 def example_00():
 
-    folder_input = 'images/ex08/'
+    folder_input = 'images/ex_match/'
     folder_output = 'images/output/'
 
     if not os.path.exists(folder_output):
@@ -38,7 +38,7 @@ def example_00():
 
 # ---------------------------------------------------------------------------------------------------------------------
 def example_01():
-    folder_input = 'images/ex08/'
+    folder_input = 'images/ex_match/'
     folder_output = 'images/output/'
 
     if not os.path.exists(folder_output):
@@ -68,5 +68,5 @@ def example_01():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    example_00()
-    #example_01()
+    #example_00()
+    example_01()

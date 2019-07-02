@@ -9,7 +9,7 @@ import tools_IO
 # ---------------------------------------------------------------------------------------------------------------------
 def example_calibrate_camera():
 
-    folder_input  = 'images/ex06a/'
+    folder_input  = 'images/ex_chessboard_one/'
     filename_input = '01.jpg'
     folder_output = 'images/output/'
     chess_rows,chess_cols  = 6, 6

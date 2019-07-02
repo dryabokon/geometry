@@ -9,9 +9,9 @@ import tools_IO
 # --------------------------------------------------------------------------------------------------------------------
 def example_rectify_pair():
 
-    folder_calibr = 'images/ex06/'
+    folder_calibr = 'images/ex_chessboard/'
 
-    folder_input = 'images/ex06/'
+    folder_input = 'images/ex_chessboard/'
     filename_in1 = '01.jpg'
     filename_in2 = '09.jpg'
     folder_output = 'images/output/'

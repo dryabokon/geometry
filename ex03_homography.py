@@ -11,7 +11,7 @@ import tools_draw_numpy
 
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
-    folder_input = 'images/ex03_manual/'
+    folder_input = 'images/ex_homography_manual/'
     im_scene = cv2.imread(folder_input + 'background.jpg')
     im_rect = cv2.imread(folder_input + 'rect.jpg')
     folder_output = 'images/output/'
@@ -26,11 +26,9 @@ def example_03_find_homography_manual():
     pts_scene = numpy.array([[262, 22],[644, 135], [404, 614], [130, 531]])
     pts_rect = numpy.array([[0, 0], [300, 0], [300, 400], [0, 400]])
 
-    homography, status = cv2.findHomography(pts_rect, pts_scene)
+    #homography, status = cv2.findHomography(pts_rect, pts_scene)
     homography_afine, status = cv2.estimateAffine2D(pts_rect, pts_scene)
     homography = numpy.vstack((homography_afine,numpy.array([0,0,1])))
-
-
 
 
     #K = numpy.array([[1000, 0, 0], [0, 1000, 0], [0, 0, 1]])
@@ -53,7 +51,7 @@ def example_03_find_homography_manual():
 # --------------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_by_keypoints(detector='SIFT', matchtype='knn'):
 
-    folder_input = 'images/ex02/'
+    folder_input = 'images/ex_keypoints/'
     img1 = cv2.imread(folder_input + 'left.jpg')
     img2 = cv2.imread(folder_input + 'rght.jpg')
 
@@ -94,7 +92,7 @@ def example_03_find_homography_by_keypoints(detector='SIFT', matchtype='knn'):
 # --------------------------------------------------------------------------------------------------------------------------
 def example_03_find_translateion_by_keypoints(detector='SIFT', matchtype='knn'):
 
-    folder_input = 'images/ex02/'
+    folder_input = 'images/ex_keypoints/'
     img1 = cv2.imread(folder_input + 'left.jpg')
     img2 = cv2.imread(folder_input + 'rght.jpg')
 
@@ -142,7 +140,7 @@ def example_03_find_translation_with_ECC(warp_mode=cv2.MOTION_TRANSLATION):
     # warp_mode = cv2.MOTION_AFFINE
     # warp_mode = cv2.MOTION_HOMOGRAPHY
 
-    folder_input = 'images/ex03_affine/'
+    folder_input = 'images/ex_homography_affine/'
     im1 = cv2.imread(folder_input + 'first.jpg')
     im2 = cv2.imread(folder_input + 'scond.jpg')
 
@@ -225,11 +223,11 @@ def example_03_find_homography_live():
 
 if __name__ == '__main__':
 
-    #example_03_find_homography_manual()
+    example_03_find_homography_manual()
     #example_03_find_homography_by_keypoints('ORB')
     #example_03_find_translateion_by_keypoints('ORB')
 
     #example_03_find_translation_with_ECC()
-    example_03_find_homography_live()
+    #example_03_find_homography_live()
 
 

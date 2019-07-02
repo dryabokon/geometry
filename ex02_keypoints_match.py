@@ -14,7 +14,7 @@ import tools_IO
 
 # ---------------------------------------------------------------------------------------------------------------------
 def example_find_matches_for_homography(detector='SIFT', matchtype='knn'):
-	folder_input = 'images/ex02/'
+	folder_input = 'images/ex_keypoints/'
 	img1 = cv2.imread(folder_input + 'left.jpg')
 	img2 = cv2.imread(folder_input + 'rght.jpg')
 	img1_gray_rgb = tools_image.desaturate(img1)

@@ -68,7 +68,7 @@ def example_augment_board_live(chess_rows, chess_cols,camera_matrix, dist):
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    path_input = 'images/ex06/'
+    path_input = 'images/ex_chessboard/'
     path_output = 'images/output/'
     chess_rows, chess_cols = 7,7
     width,height =1200, 800

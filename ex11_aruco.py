@@ -3,7 +3,7 @@ import numpy
 import cv2.aruco as aruco
 import tools_image
 # ---------------------------------------------------------------------------------------------------------------------
-filename_in = 'images/ex11/01.jpg'
+filename_in = 'images/ex_aruco/01.jpg'
 filename_out = 'images/output/aruco_out.jpg'
 USE_CAMERA = False
 
