@@ -23,10 +23,24 @@ def example_03_find_homography_manual():
     else:
         tools_IO.remove_files(folder_output)
 
-    pts_scene = numpy.array([[296, 95], [571, 178], [404, 614], [130, 531]])
+    pts_scene = numpy.array([[262, 22],[644, 135], [404, 614], [130, 531]])
     pts_rect = numpy.array([[0, 0], [300, 0], [300, 400], [0, 400]])
 
     homography, status = cv2.findHomography(pts_rect, pts_scene)
+    homography_afine, status = cv2.estimateAffine2D(pts_rect, pts_scene)
+    homography = numpy.vstack((homography_afine,numpy.array([0,0,1])))
+
+
+
+
+    #K = numpy.array([[1000, 0, 0], [0, 1000, 0], [0, 0, 1]])
+    #n, R, T, normal = cv2.decomposeHomographyMat(homography, K)
+    #R = numpy.array(R[0])
+    #T = numpy.array(T[0])
+    #normal = numpy.array(normal[0])
+    #HH=tools_calibrate.compose_homography(R,T,normal,K)
+    #print(homography-HH)
+
     im_rect_out = cv2.warpPerspective(im_rect, homography, (im_scene.shape[1], im_scene.shape[0]))
     im_scene = tools_image.put_layer_on_image(im_scene, im_rect_out, background_color=(0,0,0))
 

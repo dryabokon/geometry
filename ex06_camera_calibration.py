@@ -9,10 +9,10 @@ import tools_IO
 # ---------------------------------------------------------------------------------------------------------------------
 def example_calibrate_camera():
 
-    folder_input  = 'images/ex06/'
-    filename_input = '02.jpg'
+    folder_input  = 'images/ex06a/'
+    filename_input = '01.jpg'
     folder_output = 'images/output/'
-    chess_rows,chess_cols  = 7, 7
+    chess_rows,chess_cols  = 6, 6
 
     if not os.path.exists(folder_output):
         os.makedirs(folder_output)

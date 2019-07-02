@@ -13,7 +13,7 @@ def example_rectify_pair():
 
     folder_input = 'images/ex06/'
     filename_in1 = '01.jpg'
-    filename_in2 = '02.jpg'
+    filename_in2 = '09.jpg'
     folder_output = 'images/output/'
 
     if not os.path.exists(folder_output):
