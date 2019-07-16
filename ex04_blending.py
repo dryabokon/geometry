@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
 	#example_04_blend_black_avg()
 	#example_04_blend_white_avg()
-	#example_04_blend_multi_band_black()
+	example_04_blend_multi_band_black()
 	#example_04_blend_multi_band_white()
-	example_04_find_homography_blend_multi_band()
+	#example_04_find_homography_blend_multi_band()
 

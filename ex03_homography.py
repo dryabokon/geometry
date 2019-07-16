@@ -8,7 +8,6 @@ import tools_image
 import tools_alg_match
 import tools_draw_numpy
 
-
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
     folder_input = 'images/ex_homography_manual/'
@@ -223,7 +222,8 @@ def example_03_find_homography_live():
 
 if __name__ == '__main__':
 
-    example_03_find_homography_manual()
+    xxx()
+    #example_03_find_homography_manual()
     #example_03_find_homography_by_keypoints('ORB')
     #example_03_find_translateion_by_keypoints('ORB')
 
