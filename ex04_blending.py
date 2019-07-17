@@ -5,8 +5,6 @@ import tools_calibrate
 import tools_IO
 import tools_alg_match
 import tools_image
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 def example_04_blend_white_avg():
 	folder_input = 'images/ex_blend/'
@@ -23,8 +21,6 @@ def example_04_blend_white_avg():
 	cv2.imwrite(folder_output + 'avg.png', tools_image.blend_avg(img1, img2, (255, 255, 255)))
 
 	return
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 def example_04_blend_black_avg():
 	folder_input = 'images/ex_blend/'
@@ -41,10 +37,7 @@ def example_04_blend_black_avg():
 	cv2.imwrite(folder_output + 'avg.png', tools_image.blend_avg(img1, img2, (0, 0, 0)))
 
 	return
-
-
 # ---------------------------------------------------------------------------------------------------------------------
-
 def example_04_blend_multi_band_black():
 	folder_input = 'images/ex_blend/'
 	img1 = cv2.imread(folder_input + 'black_L.png')
@@ -58,10 +51,21 @@ def example_04_blend_multi_band_black():
 
 	cv2.imwrite(folder_output + 'blend_multi_band.png', tools_image.blend_multi_band(img1, img2,(0, 0, 0)))
 	return
-
-
 # ---------------------------------------------------------------------------------------------------------------------
+def example_04_blend_multi_band_mask():
+	folder_input = 'images/ex_blend/'
+	img1 = cv2.imread(folder_input + 'part1.png')
+	img2 = cv2.imread(folder_input + 'part2.png')
+	folder_output = 'images/output/'
 
+	if not os.path.exists(folder_output):
+		os.makedirs(folder_output)
+	else:
+		tools_IO.remove_files(folder_output)
+
+	cv2.imwrite(folder_output + 'res.png', tools_image.blend_multi_band_large_small(img1, img2,(0, 0, 0)))
+	return
+# ---------------------------------------------------------------------------------------------------------------------
 def example_04_blend_multi_band_white():
 	folder_input = 'images/ex_blend/'
 	img1 = cv2.imread(folder_input + 'white_L.png')
@@ -75,8 +79,6 @@ def example_04_blend_multi_band_white():
 
 	cv2.imwrite(folder_output + 'blend_multi_band.png', tools_image.blend_multi_band(img1, img2,(255, 255, 255)))
 	return
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 def example_04_find_homography_blend_multi_band():
 
@@ -106,14 +108,13 @@ def example_04_find_homography_blend_multi_band():
 	result_image = tools_image.blend_multi_band(result_left,result_right)
 	cv2.imwrite(output_rght, result_image)
 	return
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
 	#example_04_blend_black_avg()
 	#example_04_blend_white_avg()
-	example_04_blend_multi_band_black()
+	#example_04_blend_multi_band_black()
 	#example_04_blend_multi_band_white()
 	#example_04_find_homography_blend_multi_band()
 
+	example_04_blend_multi_band_mask()
