@@ -63,30 +63,35 @@ def face_swap():
     folder_in = './images/ex_faceswap/'
 
     image1 = cv2.imread(folder_in + 'personA-2.jpg')
-    image2 = cv2.imread(folder_in + 'personB-1.jpg')
+    image2 = cv2.imread(folder_in + 'personB-4.jpg')
     D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
     L1 = D.get_landmarks(image1)
     L2 = D.get_landmarks(image2)
 
-    H = tools_calibrate.get_transform_by_keypoints(L1,L2)
+    idx = [1,2,3,4,14,15,16,17,18,19,20,21,22,23,24,25,26,27,8,9,10,32,33,34,35,36,37,38,38,40,41,42,43,44,45,46,47,48]
+
+    H = tools_calibrate.get_transform_by_keypoints(L1[idx],L2[idx])
     aligned1, aligned2= tools_calibrate.get_stitched_images_using_translation(image1, image2, H)
-
-    #aligned1 = D.draw_landmarks(aligned1)
-    #aligned2 = D.draw_landmarks(aligned2)
-
-    cv2.imwrite('./images/output/aligned1.jpg', aligned1)
-    cv2.imwrite('./images/output/aligned2.jpg', aligned2)
 
     L1 = D.get_landmarks(aligned1)
     L2 = D.get_landmarks(aligned2)
 
-
     DlN = Delaunay(L1)
     del_triangles = DlN.vertices
 
-    for a in range(0,25):
-        res = get_morph(aligned1,aligned2,L1,L2,del_triangles,alpha=float(a/25))
-        cv2.imwrite('./images/output/res%02d.jpg'%a, res)
+    face1 = get_morph(aligned1,aligned2,L1,L2,del_triangles,alpha=0)
+    face2 = get_morph(aligned1, aligned2, L1, L2, del_triangles, alpha=1)
+
+    result1 = tools_image.blend_multi_band_large_small(aligned2, face1, (0, 0, 0))
+    result2 = tools_image.blend_multi_band_large_small(aligned1, face2, (0, 0, 0))
+
+    cv2.imwrite('./images/output/face1.jpg', face1)
+    cv2.imwrite('./images/output/face2.jpg', face2)
+    cv2.imwrite('./images/output/aligned1.jpg', aligned1)
+    cv2.imwrite('./images/output/aligned2.jpg', aligned2)
+    cv2.imwrite('./images/output/result1.jpg', result1)
+    cv2.imwrite('./images/output/result2.jpg', result2)
+
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -94,11 +99,11 @@ if __name__ == '__main__':
 
     face_swap()
 
-    folder_in = './images/ex_faceswap/'
+    #folder_in = './images/ex_faceswap/'
 
-    large= cv2.imread(folder_in + 'aligned.jpg')
-    mask = cv2.imread(folder_in + 'mask.jpg')
+    #large= cv2.imread(folder_in + 'aligned.jpg')
+    #mask = cv2.imread(folder_in + 'mask.jpg')
 
-    result = tools_image.blend_multi_band_large_small(large, mask, background_color=(0, 0, 0))
-    cv2.imwrite('./images/output/res.jpg', result)
+    #result = tools_image.blend_multi_band_large_small(large, mask, background_color=(0, 0, 0))
+    #cv2.imwrite('./images/output/res.jpg', result)
 
