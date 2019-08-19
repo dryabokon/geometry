@@ -39,10 +39,13 @@ def main():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
+    image0 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
+    L0 = D.get_landmarks(image0)
+    del_triangles = Delaunay(L0).vertices
 
     image1 = cv2.imread(default_filename_in)
     L1_original = D.get_landmarks(image1)
-    del_triangles = Delaunay(L1_original).vertices
+
     cap = cv2.VideoCapture(0)
 
     while (True):
@@ -56,12 +59,17 @@ def demo_live(filename_out):
         key = cv2.waitKey(1)
         if key & 0xFF == 27:break
         if (key & 0xFF == 13) or (key & 0xFF == 32):cv2.imwrite(filename_out, result2)
-        if key & 0xFF == ord('a'):
-            image1 = cv2.imread('./images/ex_faceswap/01/personA-1.jpg')
-            L1_original = D.get_landmarks(image1)
-        if key & 0xFF == ord('b'):
-            image1 = cv2.imread('./images/ex_faceswap/01/personB-1.jpg')
-            L1_original = D.get_landmarks(image1)
+        if key & 0xFF == ord('1'): image1 = cv2.imread('./images/ex_faceswap/01/personA-2.jpg')
+        if key & 0xFF == ord('2'): image1 = cv2.imread('./images/ex_faceswap/01/personB-1.jpg')
+        if key & 0xFF == ord('3'): image1 = cv2.imread('./images/ex_faceswap/01/personC-1.jpg')
+        if key & 0xFF == ord('4'): image1 = cv2.imread('./images/ex_faceswap/01/personC-2.jpg')
+        if key & 0xFF == ord('5'): image1 = cv2.imread('./images/ex_faceswap/01/personD-1.jpg')
+        if key & 0xFF == ord('6'): image1 = cv2.imread('./images/ex_faceswap/01/personE-1.jpg')
+        if key & 0xFF == ord('7'): image1 = cv2.imread('./images/ex_faceswap/01/personH-2.jpg')
+        if key & 0xFF == ord('7'): image1 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
+
+
+        if (key & 0xFF >= ord('1')) and (key & 0xFF <= ord('9')): L1_original = D.get_landmarks(image1)
 
     cap.release()
     cv2.destroyAllWindows()
