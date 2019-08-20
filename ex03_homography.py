@@ -7,7 +7,7 @@ import tools_IO
 import tools_image
 import tools_alg_match
 import tools_draw_numpy
-
+import tools_video
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
     folder_input = 'images/ex_homography_manual/'
@@ -180,54 +180,56 @@ def example_03_find_translation_with_ECC(warp_mode=cv2.MOTION_TRANSLATION):
 
 # --------------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_live():
+    USE_CAMERA = True
 
-    filename_in = 'images/ex03_live/jack.jpg'
-    filename_out = 'images/output/frame.jpg'
-    if os.path.exists(filename_in):
-        image_model = cv2.imread(filename_in, 0)
-    else:
-        image_model=numpy.zeros((480,640),dtype=numpy.uint8)
-    h, w = image_model.shape
+    filename_out = './images/output/frame.jpg'
+    image_deck = cv2.imread('./images/ex_homography_live/frame.jpg')
+    image_card = cv2.imread('./images/ex_homography_live/jack3.jpg')
+    image_sbst = cv2.imread('./images/ex_homography_live/jack3.jpg')
 
-    capture = cv2.VideoCapture(0)
+    points1, des1 = tools_alg_match.get_keypoints_desc(image_card, 'ORB')
+    if USE_CAMERA:
+        capture = cv2.VideoCapture(1)
 
     while (True):
-        ret, image_captr = capture.read()
+        if USE_CAMERA:
+            ret, image_deck = capture.read()
 
         key = cv2.waitKey(1)
 
-        if key & 0xFF == 27:
-            break
-        if (key & 0xFF == 13) or (key & 0xFF == 32):
-            cv2.imwrite(filename_out,image_captr)
-
-        points1, des1 = tools_alg_match.get_keypoints_desc(image_model, 'ORB',)
-        points2, des2 = tools_alg_match.get_keypoints_desc(image_captr, 'ORB',)
-        homography = tools_calibrate.get_homography_by_keypoints_desc(points1, des1, points2, des2, 'knn')
+        if key & 0xFF == 27:break
+        if (key & 0xFF == 13) or (key & 0xFF == 32):cv2.imwrite(filename_out,image_deck)
 
 
-        if (homography== []):
-            pts = numpy.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
-            dst = cv2.perspectiveTransform(pts, homography)
-            img2 = cv2.polylines(image_captr, [numpy.int32(dst)], True, (0, 0, 255), 3, cv2.LINE_AA)
-            cv2.imshow('frame', img2)
-            print(homography)
+        points2, des2 = tools_alg_match.get_keypoints_desc(image_deck, 'ORB')
+        H = tools_calibrate.get_transform_by_keypoints_desc(points1, des1, points2, des2, 'knn')
+
+        if (H is not None):
+            #aligned1, aligned2 = tools_calibrate.get_stitched_images_using_translation(image_sbst, image_deck, H, background_color=(0, 0, 0),keep_shape=True)
+            #result = tools_image.blend_multi_band_large_small(aligned2, aligned1, background_color=(0, 0, 0))
+            cv2.imshow('frame', image_deck)
         else:
-            cv2.imshow('frame', image_captr)
+            cv2.imshow('frame', image_deck)
 
-    capture.release()
+    if USE_CAMERA:
+        capture.release()
+
     cv2.destroyAllWindows()
+    return
 # ---------------------------------------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
 
-    xxx()
+
     #example_03_find_homography_manual()
     #example_03_find_homography_by_keypoints('ORB')
     #example_03_find_translateion_by_keypoints('ORB')
 
     #example_03_find_translation_with_ECC()
-    #example_03_find_homography_live()
+    example_03_find_homography_live()
+    #filename_out = './images/output/frame.jpg'
+    #tools_video.capture_image_to_disk(filename_out)
+
 
 

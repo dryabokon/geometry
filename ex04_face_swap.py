@@ -39,10 +39,10 @@ def main():
 if __name__ == '__main__':
 
     #main()
-    #res2 = tools_landmark.transferface_first_to_second(D, default_filename_in , default_filename_in2, default_folder_out)
-    #res1 = tools_landmark.transferface_first_to_second(D, default_filename_in2, default_filename_in , default_folder_out)
-    #cv2.imwrite(default_folder_out + 'first.jpg' , res2)
-    #cv2.imwrite(default_folder_out + 'second.jpg', res1)
+    res2 = tools_landmark.transferface_first_to_second(D, default_filename_in , default_filename_in2, default_folder_out)
+    res1 = tools_landmark.transferface_first_to_second(D, default_filename_in2, default_filename_in , default_folder_out)
+    cv2.imwrite(default_folder_out + 'first.jpg' , res2)
+    cv2.imwrite(default_folder_out + 'second.jpg', res1)
 
     #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
 
@@ -50,13 +50,13 @@ if __name__ == '__main__':
     #tools_landmark.transferface_first_to_second_manual(default_filename_in2, default_filename_in, './images/ex_faceswap/markup_true.txt')
     #tools_landmark.morph_first_to_second_manual(D,default_filename_in2, default_filename_in,'./images/ex_faceswap/markup_true.txt',default_folder_out,numpy.arange(0.1,0.9,0.1))
 
-    im = cv2.imread('D:\image1.png')
-    im = tools_image.de_vignette(im)
-    im = tools_image.desaturate_2d(im)
-    im = tools_image.hitmap2d_to_viridis(im)
+    #im = cv2.imread('D:\image1.png')
+    #im = tools_image.de_vignette(im)
+    #im = tools_image.desaturate_2d(im)
+    #im = tools_image.hitmap2d_to_viridis(im)
 
-    scale = 6
-    im = tools_image.fade_left_right(im, 40, im.shape[1]-40)
-    im = tools_image.canvas_extrapolate(im, im.shape[0], im.shape[1] * scale)
-    im = tools_image.fade_header(im,im[0,im.shape[1]//2],20)
-    cv2.imwrite('D:\image1a.png',im)
+    #scale = 6
+    #im = tools_image.fade_left_right(im, 40, im.shape[1]-40)
+    #im = tools_image.canvas_extrapolate(im, im.shape[0], im.shape[1] * scale)
+    #im = tools_image.fade_header(im,im[0,im.shape[1]//2],20)
+    #cv2.imwrite('D:\image1a.png',im)
