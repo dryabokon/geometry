@@ -181,13 +181,16 @@ def example_03_find_translation_with_ECC(warp_mode=cv2.MOTION_TRANSLATION):
 # --------------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_live():
     USE_CAMERA = True
+    USE_TRANSFORM = True
 
     filename_out = './images/output/frame.jpg'
     image_deck = cv2.imread('./images/ex_homography_live/frame.jpg')
     image_card = cv2.imread('./images/ex_homography_live/jack3.jpg')
-    image_sbst = cv2.imread('./images/ex_homography_live/jack3.jpg')
+    image_sbst = cv2.imread('./images/ex_homography_live/jack2.jpg')
 
-    points1, des1 = tools_alg_match.get_keypoints_desc(image_card, 'ORB')
+    image_sbst = cv2.resize(image_sbst,(image_card.shape[1],image_card.shape[0]))
+
+    points1, des1 = tools_alg_match.get_keypoints_desc(image_card, 'SURF')
     if USE_CAMERA:
         capture = cv2.VideoCapture(1)
 
@@ -195,21 +198,28 @@ def example_03_find_homography_live():
         if USE_CAMERA:
             ret, image_deck = capture.read()
 
-        key = cv2.waitKey(1)
+        points2, des2 = tools_alg_match.get_keypoints_desc(image_deck, 'SURF')
 
-        if key & 0xFF == 27:break
-        if (key & 0xFF == 13) or (key & 0xFF == 32):cv2.imwrite(filename_out,image_deck)
+        if USE_TRANSFORM:
+            H = tools_calibrate.get_transform_by_keypoints_desc(points1, des1, points2, des2, 'knn')
+        else:
+            H = tools_calibrate.get_homography_by_keypoints_desc(points1, des1, points2, des2, 'knn')
 
-
-        points2, des2 = tools_alg_match.get_keypoints_desc(image_deck, 'ORB')
-        H = tools_calibrate.get_transform_by_keypoints_desc(points1, des1, points2, des2, 'knn')
 
         if (H is not None):
-            #aligned1, aligned2 = tools_calibrate.get_stitched_images_using_translation(image_sbst, image_deck, H, background_color=(0, 0, 0),keep_shape=True)
-            #result = tools_image.blend_multi_band_large_small(aligned2, aligned1, background_color=(0, 0, 0))
-            cv2.imshow('frame', image_deck)
+            if USE_TRANSFORM:
+                aligned1, aligned2 = tools_calibrate.get_stitched_images_using_translation(image_sbst, image_deck, H, background_color=(0, 0, 0),keep_shape=True)
+            else:
+                aligned1, aligned2 = tools_calibrate.get_stitched_images_using_homography(image_sbst, image_deck, H,background_color=(0, 0, 0))
+            im_result = tools_image.put_layer_on_image(aligned2,aligned1,background_color=(0,0,0))
+            cv2.imshow('frame', im_result)
         else:
             cv2.imshow('frame', image_deck)
+
+
+        key = cv2.waitKey(1)
+        if key & 0xFF == 27:break
+        if (key & 0xFF == 13) or (key & 0xFF == 32):cv2.imwrite(filename_out,image_deck)
 
     if USE_CAMERA:
         capture.release()
