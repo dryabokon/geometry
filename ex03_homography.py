@@ -184,15 +184,15 @@ def example_03_find_homography_live():
     USE_TRANSFORM = True
 
     filename_out = './images/output/frame.jpg'
-    image_deck = cv2.imread('./images/ex_homography_live/frame.jpg')
-    image_card = cv2.imread('./images/ex_homography_live/jack3.jpg')
-    image_sbst = cv2.imread('./images/ex_homography_live/jack2.jpg')
+    image_deck = cv2.imread('./images/ex_homography_live/frame2.jpg')
+    image_card = cv2.imread('./images/ex_homography_live/card.jpg')
+    image_sbst = cv2.imread('./images/ex_homography_live/card2.jpg')
 
     image_sbst = cv2.resize(image_sbst,(image_card.shape[1],image_card.shape[0]))
 
     points1, des1 = tools_alg_match.get_keypoints_desc(image_card, 'SURF')
     if USE_CAMERA:
-        capture = cv2.VideoCapture(1)
+        capture = cv2.VideoCapture(0)
 
     while (True):
         if USE_CAMERA:
@@ -211,7 +211,8 @@ def example_03_find_homography_live():
                 aligned1, aligned2 = tools_calibrate.get_stitched_images_using_translation(image_sbst, image_deck, H, background_color=(0, 0, 0),keep_shape=True)
             else:
                 aligned1, aligned2 = tools_calibrate.get_stitched_images_using_homography(image_sbst, image_deck, H,background_color=(0, 0, 0))
-            im_result = tools_image.put_layer_on_image(aligned2,aligned1,background_color=(0,0,0))
+            #im_result = tools_image.put_layer_on_image(aligned2,aligned1,background_color=(0,0,0))
+            im_result = tools_image.blend_multi_band_large_small(aligned2,aligned1, background_color=(0, 0, 0), do_color_balance=False,filter_size=10,leveln_default=1)
             cv2.imshow('frame', im_result)
         else:
             cv2.imshow('frame', image_deck)
@@ -241,5 +242,6 @@ if __name__ == '__main__':
     #filename_out = './images/output/frame.jpg'
     #tools_video.capture_image_to_disk(filename_out)
 
+    #tools_video.capture_video(0,)
 
 
