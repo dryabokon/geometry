@@ -8,6 +8,7 @@ import tools_image
 import tools_alg_match
 import tools_draw_numpy
 import tools_video
+import tools_animation
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
     folder_input = 'images/ex_homography_manual/'
@@ -243,5 +244,6 @@ if __name__ == '__main__':
     #tools_video.capture_image_to_disk(filename_out)
 
     #tools_video.capture_video(0,)
-
+    #tools_video.extract_frames('d://Projects/VZ/data/test81.avi','d://Projects/VZ/output/')
+    #tools_animation.folder_to_animated_gif_imageio('d://Projects/VZ/output/', 'd://Projects/VZ/data/res.gif', mask='*.jpg', framerate=20,resize_H=360//2, resize_W=640//2)
 
