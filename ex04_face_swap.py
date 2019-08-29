@@ -39,8 +39,8 @@ def main():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
-    image0 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
-    L0 = D.get_landmarks(image0)
+    image1 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
+    L0 = D.get_landmarks(image1)
     del_triangles = Delaunay(L0).vertices
 
     cap = cv2.VideoCapture(0)
@@ -49,7 +49,7 @@ def demo_live(filename_out):
         ret, image2 = cap.read()
 
         L2_original = D.get_landmarks(image2)
-        result2 = tools_landmark.do_reansfer(image1, image2, L1_original, L2_original, del_triangles)
+        result2 = tools_landmark.do_transfer(image1, image2, L0, L2_original, del_triangles)
         #result2 = D.draw_landmarks(image2)
 
         cv2.imshow('frame', result2)
