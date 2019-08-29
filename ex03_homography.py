@@ -239,11 +239,11 @@ if __name__ == '__main__':
     #example_03_find_translateion_by_keypoints('ORB')
 
     #example_03_find_translation_with_ECC()
-    #example_03_find_homography_live()
+    example_03_find_homography_live()
     #filename_out = './images/output/frame.jpg'
     #tools_video.capture_image_to_disk(filename_out)
 
     #tools_video.capture_video(0,)
     #tools_video.extract_frames('d://Projects/VZ/data/booster.mp4','d://Projects/VZ/output/')
-    tools_animation.folder_to_animated_gif_imageio('d://Projects/VZ/output/', 'd://Projects/VZ/data/Booster.gif', mask='*.jpg', framerate=20,resize_W=450, resize_H=360,do_reverce=False)
+    #tools_animation.folder_to_animated_gif_imageio('d://Projects/VZ/output/', 'd://Projects/VZ/data/Booster.gif', mask='*.jpg', framerate=20,resize_W=450, resize_H=360,do_reverce=False)
 
