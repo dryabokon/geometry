@@ -51,12 +51,17 @@ def example_find_matches_for_homography(detector='SIFT', matchtype='knn'):
 
 	img2_gray_rgb, img1_gray_rgb = tools_calibrate.get_stitched_images_using_homography(img2_gray_rgb, img1_gray_rgb,homography)
 
+	fig = plt.figure(figsize=(12, 6))
+	fig.subplots_adjust(hspace=0.01)
+
 	roc_auc = 0
 	if hit.size >= 2:
 		fpr, tpr, thresholds = metrics.roc_curve(hit, -distance)
 		roc_auc = auc(fpr, tpr)
-		tools_IO.plot_tp_fp(plt, plt.figure(), tpr, fpr, roc_auc)
-		plt.savefig(folder_output + ('_ROC_%s_%s_auc_%1.3f.png' % (detector, matchtype, roc_auc)))
+		filename_out = folder_output + ('_ROC_%s_%s_auc_%1.3f.png' % (detector, matchtype, roc_auc))
+		tools_IO.plot_tp_fp(plt.subplot(1, 1, 1), fig, tpr, fpr, roc_auc)
+		plt.savefig(filename_out)
+
 
 	cv2.imwrite(folder_output + ('%s_%s_auc_%1.3f_left_matches.png' % (detector, matchtype, roc_auc)), img1_gray_rgb)
 	cv2.imwrite(folder_output + ('%s_%s_auc_%1.3f_rght_matches.png' % (detector, matchtype, roc_auc)), img2_gray_rgb)

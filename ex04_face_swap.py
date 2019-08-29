@@ -72,18 +72,18 @@ def demo_live(filename_out):
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_auto():
     res2 = tools_landmark.transferface_first_to_second(D, default_filename_in , default_filename_in2, default_folder_out)
-    #res1 = tools_landmark.transferface_first_to_second(D, default_filename_in2, default_filename_in , default_folder_out)
+    res1 = tools_landmark.transferface_first_to_second(D, default_filename_in2, default_filename_in , default_folder_out)
     cv2.imwrite(default_folder_out + 'first.jpg' , res2)
-    #cv2.imwrite(default_folder_out + 'second.jpg', res1)
-    #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
+    cv2.imwrite(default_folder_out + 'second.jpg', res1)
+    tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_manual():
-    tools_landmark.transferface_first_to_second_manual(default_filename_in, default_filename_in2, './images/ex_faceswap/markup_CD.txt')
-    tools_landmark.morph_first_to_second_manual(D,default_filename_in2, default_filename_in,'./images/ex_faceswap/markup_CD.txt',default_folder_out,numpy.arange(0.1,0.9,0.1))
+    tools_landmark.transferface_first_to_second_manual(default_filename_in, default_filename_in2, './images/ex_faceswap/markup.txt')
+    tools_landmark.morph_first_to_second_manual(D,default_filename_in2, default_filename_in,'./images/ex_faceswap/markup.txt',default_folder_out,numpy.arange(0.1,0.9,0.1))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    demo_live(default_folder_out+'result.jpg')
-    #demo_manual()
+    #demo_live(default_folder_out+'result.jpg')
+    demo_manual()
     #demo_auto()
