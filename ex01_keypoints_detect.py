@@ -131,4 +131,6 @@ if __name__ == '__main__':
 	parser.add_argument('--folder_out', default='./images/output/')
 	args = parser.parse_args()
 
-	main(args.filename_in,args.folder_out)
+	#main(args.filename_in,args.folder_out)
+	res = tools_IO.get_filenames('./','*.*')
+	print(res)
