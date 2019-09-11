@@ -11,6 +11,8 @@ import tools_IO
 # ----------------------------------------------------------------------------------------------------------------------
 def example_harris_corner_detection(filename_in, filename_out, R=2):
 	img = cv2.imread(filename_in)
+	print(filename_in)
+	print(img.shape)
 	gray_rgb = tools_image.desaturate(img)
 
 	for each in tools_alg_match.get_corners_Harris(img):
