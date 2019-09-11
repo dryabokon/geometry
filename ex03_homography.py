@@ -23,8 +23,13 @@ def example_03_find_homography_manual():
     else:
         tools_IO.remove_files(folder_output)
 
-    pts_scene = numpy.array([[262, 22],[644, 135], [404, 614], [130, 531]])
-    pts_rect = numpy.array([[0, 0], [300, 0], [300, 400], [0, 400]])
+    c1,r1 = 262, 22
+    c2,r2 = 644, 135
+    c3,r3 = 404, 614
+    c4,r4 = 130, 531
+
+    pts_scene = numpy.array([[c1,r1],[c2,r2], [c3,r3], [c4,r4]])
+    pts_rect = numpy.array([[0, 0], [im_rect.shape[1], 0], [im_rect.shape[1], im_rect.shape[0]], [0, im_rect.shape[0]]])
 
     #homography, status = cv2.findHomography(pts_rect, pts_scene)
     homography_afine, status = cv2.estimateAffine2D(pts_rect, pts_scene)
@@ -230,14 +235,12 @@ def example_03_find_homography_live():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 
-
 if __name__ == '__main__':
 
-    #example_03_find_homography_manual()
+    example_03_find_homography_manual()
     #example_03_find_homography_by_keypoints('ORB')
     #example_03_find_translateion_by_keypoints('ORB')
 
     #example_03_find_translation_with_ECC()
-    example_03_find_homography_live()
-
+    #example_03_find_homography_live()
 
