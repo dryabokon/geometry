@@ -118,7 +118,7 @@ def main(filename_in,path_out):
 	example_Fast_Corner_Detector(filename_in, path_out + 'fast_corners.png', R)
 	example_STAR_Detector(filename_in, path_out + 'star.png', R)
 	#example_SIFT(filename_in, path_out + 'sift.png', R)
-	example_SURF(filename_in, path_out + 'surf.png', R)
+	#example_SURF(filename_in, path_out + 'surf.png', R)
 	example_ORB(filename_in, path_out + 'orb.png', R)
 
 # ----------------------------------------------------------------------------------------------------------------------
