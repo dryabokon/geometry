@@ -1,0 +1,8 @@
+version: '2.0'  
+services: 
+  test:
+    build: .
+    volumes:
+      - ./:/app
+    working_dir: $
+    command: /bin/bash -c "python3 video_publisher.py"
