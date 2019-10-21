@@ -1,5 +1,6 @@
 import cv2
 import os
+import argparse
 # ---------------------------------------------------------------------------------------------------------------------
 import tools_alg_match
 import tools_image
@@ -101,12 +102,7 @@ def example_ORB(filename_in, filename_out, R=2):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-if __name__ == '__main__':
-
-	path_in = 'images/ex_keypoints/'
-	filename_in = path_in + 'left.jpg'
-
-	path_out = 'images/output/'
+def main(filename_in,path_out):
 
 	if not os.path.exists(path_out):
 		os.makedirs(path_out)
@@ -119,6 +115,19 @@ if __name__ == '__main__':
 	example_shi_tomasi_corner_detector(filename_in, path_out + 'shi.png', R)
 	example_Fast_Corner_Detector(filename_in, path_out + 'fast_corners.png', R)
 	example_STAR_Detector(filename_in, path_out + 'star.png', R)
-	example_SIFT(filename_in, path_out + 'sift.png', R)
-	example_SURF(filename_in, path_out + 'surf.png', R)
+	#example_SIFT(filename_in, path_out + 'sift.png', R)
+	#example_SURF(filename_in, path_out + 'surf.png', R)
 	example_ORB(filename_in, path_out + 'orb.png', R)
+
+# ----------------------------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--command', default='')
+	parser.add_argument('--filename_in', default='./images/ex_keypoints/left.jpg')
+	parser.add_argument('--folder_in', default='')
+	parser.add_argument('--folder_out', default='./images/output/')
+	args = parser.parse_args()
+
+	main(args.filename_in,args.folder_out)
+

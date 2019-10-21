@@ -1,19 +1,17 @@
 import cv2
-import numpy
 import os
 import argparse
 from scipy.spatial import Delaunay
 # ---------------------------------------------------------------------------------------------------------------------
-import tools_image
+import time
 import tools_IO
 import tools_landmark
 import detector_landmarks
-import tools_calibrate
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-default_filename_in  = './images/ex_faceswap/01/personN-3.jpg'
-default_filename_in2 = './images/ex_faceswap/01/personN-6.jpg'
+default_filename_in  = './images/ex_faceswap/01/personD-1.jpg'
+default_filename_in2 = './images/ex_faceswap/01/personF-1.jpg'
 default_folder_in   = './images/ex_faceswap/02/'
 default_folder_out  = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
@@ -39,12 +37,14 @@ def main():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
-    image1 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
+    image1 = cv2.imread('./images/ex_faceswap/01/personC-1.jpg')
+    image2 = cv2.imread('./images/ex_faceswap/01/personD-2.jpg')
     L1_original = D.get_landmarks(image1)
     del_triangles = Delaunay(L1_original).vertices
 
-    cap = cv2.VideoCapture(0)
 
+    cap = cv2.VideoCapture(0)
+    cnt, start_time, fps = 0, time.time(), 0
     while (True):
         ret, image2 = cap.read()
 
@@ -52,19 +52,43 @@ def demo_live(filename_out):
         result2 = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
         #result2 = D.draw_landmarks(image2)
 
+        if time.time() > start_time: fps = cnt / (time.time() - start_time)
+        result2 = cv2.putText(result2, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6,(0, 0, 0), 1, cv2.LINE_AA)
         cv2.imshow('frame', result2)
+        cnt += 1
         key = cv2.waitKey(1)
         if key & 0xFF == 27:break
-        if (key & 0xFF == 13) or (key & 0xFF == 32):cv2.imwrite(filename_out, result2)
+
         if key & 0xFF == ord('1'): image1 = cv2.imread('./images/ex_faceswap/01/personA-2.jpg')
-        if key & 0xFF == ord('2'): image1 = cv2.imread('./images/ex_faceswap/01/personB-1.jpg')
+        if key & 0xFF == ord('2'): image1 = cv2.imread('./images/ex_faceswap/01/personB-4.jpg')
         if key & 0xFF == ord('3'): image1 = cv2.imread('./images/ex_faceswap/01/personC-1.jpg')
         if key & 0xFF == ord('4'): image1 = cv2.imread('./images/ex_faceswap/01/personC-2.jpg')
         if key & 0xFF == ord('5'): image1 = cv2.imread('./images/ex_faceswap/01/personD-1.jpg')
         if key & 0xFF == ord('6'): image1 = cv2.imread('./images/ex_faceswap/01/personE-1.jpg')
         if key & 0xFF == ord('7'): image1 = cv2.imread('./images/ex_faceswap/01/personH-2.jpg')
-        if key & 0xFF == ord('7'): image1 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
-        if (key & 0xFF >= ord('1')) and (key & 0xFF <= ord('9')): L1_original = D.get_landmarks(image1)
+        if key & 0xFF == ord('8'): image1 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
+
+        if key & 0xFF == ord('a'): image2 = cv2.imread('./images/ex_faceswap/01/personA-2.jpg')
+        if key & 0xFF == ord('b'): image2 = cv2.imread('./images/ex_faceswap/01/personB-4.jpg')
+        if key & 0xFF == ord('c'): image2 = cv2.imread('./images/ex_faceswap/01/personC-1.jpg')
+        if key & 0xFF == ord('d'): image2 = cv2.imread('./images/ex_faceswap/01/personD-2.jpg')
+        if key & 0xFF == ord('e'): image2 = cv2.imread('./images/ex_faceswap/01/personE-1.jpg')
+        if key & 0xFF == ord('f'): image2 = cv2.imread('./images/ex_faceswap/01/personF-1.jpg')
+        if key & 0xFF == ord('h'): image2 = cv2.imread('./images/ex_faceswap/01/personH-1.jpg')
+        if key & 0xFF == ord('j'): image2 = cv2.imread('./images/ex_faceswap/01/personJ-1.jpg')
+        if key & 0xFF == ord('k'): image2 = cv2.imread('./images/ex_faceswap/01/personK-1.jpg')
+        if key & 0xFF == ord('l'): image2 = cv2.imread('./images/ex_faceswap/01/personL-1.jpg')
+
+        if (key & 0xFF >= ord('1')) and (key & 0xFF <= ord('9')):
+            L1_original = D.get_landmarks(image1)
+            del_triangles = Delaunay(L1_original).vertices
+
+        if (key & 0xFF == 13) or (key & 0xFF == 32):
+            default_filename_in = '1.jpg'
+            default_filename_in2 = '2.jpg'
+            cv2.imwrite(default_filename_in , image1)
+            cv2.imwrite(default_filename_in2, image2)
+            tools_landmark.transferface_first_to_second(D, default_filename_in, default_filename_in2, default_folder_out)
 
     cap.release()
     cv2.destroyAllWindows()
@@ -87,6 +111,8 @@ def demo_manual():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+
     demo_live(default_folder_out+'result.jpg')
-    #demo_manual()
     #demo_auto()
+    #process_folder(default_filename_in,'./images/ex_faceswap/02/',default_folder_out)
+
