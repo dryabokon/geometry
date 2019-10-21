@@ -12,8 +12,8 @@ import tools_calibrate
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-default_filename_in  = './images/ex_faceswap/01/personC-2.jpg'
-default_filename_in2 = './images/ex_faceswap/01/personC-1.jpg'
+default_filename_in  = './images/ex_faceswap/01/personN-3.jpg'
+default_filename_in2 = './images/ex_faceswap/01/personN-6.jpg'
 default_folder_in   = './images/ex_faceswap/02/'
 default_folder_out  = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
@@ -75,15 +75,18 @@ def demo_auto():
     res1 = tools_landmark.transferface_first_to_second(D, default_filename_in2, default_filename_in , default_folder_out)
     cv2.imwrite(default_folder_out + 'first.jpg' , res2)
     cv2.imwrite(default_folder_out + 'second.jpg', res1)
-    tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
+    #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_manual():
-    tools_landmark.transferface_first_to_second_manual(default_filename_in, default_filename_in2, './images/ex_faceswap/markup.txt')
-    tools_landmark.morph_first_to_second_manual(D,default_filename_in2, default_filename_in,'./images/ex_faceswap/markup.txt',default_folder_out,numpy.arange(0.1,0.9,0.1))
+    res2 = tools_landmark.transferface_first_to_second_manual(default_filename_in,  default_filename_in2, './images/ex_faceswap/markup_avid.txt')
+    res1 = tools_landmark.transferface_first_to_second_manual(default_filename_in2, default_filename_in , './images/ex_faceswap/markup_avid.txt')
+    cv2.imwrite(default_folder_out + 'first.jpg' , res2)
+    cv2.imwrite(default_folder_out + 'second.jpg', res1)
+    #tools_landmark.morph_first_to_second_manual     (D,default_filename_in2, default_filename_in, './images/ex_faceswap/markup_avid.txt',default_folder_out,numpy.arange(0.1,0.9,0.1))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    #demo_live(default_folder_out+'result.jpg')
-    demo_manual()
+    demo_live(default_folder_out+'result.jpg')
+    #demo_manual()
     #demo_auto()
