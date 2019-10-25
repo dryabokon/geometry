@@ -51,6 +51,7 @@ def demo_live(filename_out):
 
     result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
 
+
     cap = cv2.VideoCapture(0)
     cnt, start_time, fps = 0, time.time(), 0
     while (True):
@@ -58,6 +59,7 @@ def demo_live(filename_out):
             ret, image2 = cap.read()
             L2_original = D.get_landmarks(image2)
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
+
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result2 = result.copy()
@@ -85,7 +87,6 @@ def demo_live(filename_out):
             del_triangles = Delaunay(L1_original).vertices
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
 
-
         if key & 0xFF == ord('q'): filename2 = 'personA-2.jpg'
         if key & 0xFF == ord('w'): filename2 = 'personB-4.jpg'
         if key & 0xFF == ord('e'): filename2 = 'personC-1.jpg'
@@ -97,10 +98,10 @@ def demo_live(filename_out):
         if key & 0xFF == ord('o'): filename2 = 'personK-1.jpg'
         if key & 0xFF == ord('p'): filename2 = 'personL-1.jpg'
         if key & 0xFF == ord('-'): use_camera = True;filename2='cam'
-        if (key & 0xFF >= ord('a')) and (key & 0xFF <= ord('x')):
+        if (key & 0xFF >= ord('a')) and (key & 0xFF <= ord('z')):
+            use_camera = False
             image2 = cv2.imread(prefix + filename2)
             L2_original = D.get_landmarks(image2)
-            use_camera = False
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
 
         if (key & 0xFF == 13) or (key & 0xFF == 32):
