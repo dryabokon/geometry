@@ -49,20 +49,14 @@ def demo_live(filename_out):
     del_triangles = Delaunay(L1_original).vertices
     L2_original = D.get_landmarks(image2)
 
-
-    cap = cv2.VideoCapture(0)
-    i=0
     result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
     cap = cv2.VideoCapture(0)
     cnt, start_time, fps = 0, time.time(), 0
     while (True):
-        ret, image2 = cap.read()
-        i+=1
         if use_camera:
             ret, image2 = cap.read()
             L2_original = D.get_landmarks(image2)
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
-
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result2 = result.copy()
@@ -70,7 +64,6 @@ def demo_live(filename_out):
         result2 = cv2.putText(result2, '{0}'.format(filename1), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)
         result2 = cv2.putText(result2, '{0}'.format(filename2), (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1,cv2.LINE_AA)
         cv2.imshow('frame', result2)
-        cv2.imwrite('./images/output/image_%03d.jpg'%i,image2)
         cnt += 1
         key = cv2.waitKey(1)
 
