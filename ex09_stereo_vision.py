@@ -177,8 +177,8 @@ def demo_stereo_05_matchTemplate():
 if __name__ == '__main__':
 
 
-	#demo_stereo_01_SGBM()
+	demo_stereo_01_SGBM()
 	#demo_stereo_02_BM()
 	#demo_stereo_03_keypoints()
 	#demo_stereo_04_keypoints_limited()
-	demo_stereo_05_matchTemplate()
+	#demo_stereo_05_matchTemplate()
