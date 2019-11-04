@@ -45,15 +45,18 @@ def demo_live(filename_out):
     del_triangles = Delaunay(L1_original).vertices
 
     cap = cv2.VideoCapture(0)
+    i=0
 
     while (True):
-        #ret, image2 = cap.read()
+        ret, image2 = cap.read()
+        i+=1
 
         L2_original = D.get_landmarks(image2)
         result2 = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
         #result2 = D.draw_landmarks(image2)
 
         cv2.imshow('frame', result2)
+        cv2.imwrite('./images/output/image_%03d.jpg'%i,image2)
         key = cv2.waitKey(1)
         if key & 0xFF == 27:break
         if (key & 0xFF == 13) or (key & 0xFF == 32):cv2.imwrite(filename_out, result2)
@@ -99,7 +102,7 @@ def demo_manual():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    #demo_live(default_folder_out+'result.jpg')
-    demo_manual()
+    demo_live(default_folder_out+'result.jpg')
+    #demo_manual()
     #demo_auto()
     #process_folder(default_filename_in,'./images/ex_faceswap/02/',default_folder_out)
