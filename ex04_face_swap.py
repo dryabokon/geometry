@@ -38,10 +38,11 @@ def main():
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
 
-    use_camera = False
+    use_camera = True
     prefix = './images/ex_faceswap/01/'
-    filename1='personC-1.jpg'
-    filename2='personB-4.jpg'
+    filename1='personB-4.jpg'
+    filename2='personA-2.jpg'
+
 
     image1 = cv2.imread(prefix+filename1)
     image2 = cv2.imread(prefix+filename2)
@@ -57,6 +58,9 @@ def demo_live(filename_out):
             ret, image2 = cap.read()
             L2_original = D.get_landmarks(image2)
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
+
+            #cv2.imwrite('./images/output/res_%03d.png'%cnt, result)
+            #cv2.imwrite('./images/output/src_%03d.png'%cnt, image2)
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result2 = result.copy()
