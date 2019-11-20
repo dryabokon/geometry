@@ -11,7 +11,7 @@ import detector_landmarks
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
 default_filename_in  = './images/ex_faceswap/01/personD-1.jpg'
-default_filename_in2 = './images/ex_faceswap/01/personF-1.jpg'
+default_filename_in2 = './images/ex_faceswap/01/personC-1.jpg'
 default_folder_in   = './images/ex_faceswap/02/'
 default_folder_out  = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
