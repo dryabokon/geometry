@@ -1,83 +1,124 @@
 import numpy
-import matplotlib.pyplot as plt
+import tools_IO
 import cv2
 # ---------------------------------------------------------------------------------------------------------------------
-r = numpy.random.randint(5, 15, size=10)
-# ---------------------------------------------------------------------------------------------------------------------
-class Circle_pack():
-    def __init__(self,labels,weights):
+class Circle:
 
+    def __init__(self, cx, cy, r, label,font_size,icolour=None):
+        self.cx, self.cy, self.r,self.label,self.font_size= cx, cy, r,label,font_size
+        self.icolour = icolour
+
+    def overlap_with(self, cx, cy, r):
+        d = numpy.hypot(cx - self.cx, cy - self.cy)
+        return d < r + self.r
+
+    def draw_circle(self, fo):
+        print('<circle cx="{}" cy="{}" r="{}" class="c{}"/>'.format(self.cx, self.cy, self.r, self.icolour), file=fo)
+        return
+
+    def draw_label(self, fo):
+        print('<text x="{}" y="{}" font-size="{}" >{}</text>'.format(self.cx, self.cy,self.font_size,self.label), file=fo)
+        return
+
+# ---------------------------------------------------------------------------------------------------------------------
+class Circles:
+
+    def __init__(self, labels,weights):
         self.N = len(labels)
-        self.x = numpy.ones((self.N, 3))
-        self.x[:, 2] = weights
-        maxstep = 2 * weights.max()
-        length = numpy.ceil(numpy.sqrt(self.N))
-        grid = numpy.arange(0, length * maxstep, maxstep)
-        gx, gy = numpy.meshgrid(grid, grid)
-        self.x[:, 0] = gx.flatten()[:self.N]
-        self.x[:, 1] = gy.flatten()[:self.N]
-        self.x[:, :2] = self.x[:, :2] - numpy.mean(self.x[:, :2], axis=0)
-        self.label = labels
-        self.color = []
-        for i in range(self.N):
-            color = cv2.cvtColor(numpy.array([int(255 * numpy.random.rand()), 255, 225], dtype=numpy.uint8).reshape(1, 1, 3),cv2.COLOR_HSV2BGR)[0][0]
-            self.color.append([int(color[0]), int(color[1]), int(color[2])])
+        self.width, self.height = 1200, 680
+        self.CX, self.CY = self.width // 2, self.height // 2
 
-        self.step = self.x[:, 2].min()
-        self.p = lambda x, y: numpy.sum((x ** 2 + y ** 2) ** 2)
-        self.E = self.energy()
-        self.iter = 1.
-        return
-# ---------------------------------------------------------------------------------------------------------------------
-    def minimize(self):
-        while self.iter < 1000*self.N:
-            for i in range(self.N):
-                rand = numpy.random.randn(2) * self.step / self.iter
-                self.x[i,:2] += rand
-                e = self.energy()
-                if (e < self.E and self.isvalid(i)):
-                    self.E = e
-                    self.iter = 1.
-                else:
-                    self.x[i,:2] -= rand
-                    self.iter += 1.
-        return
-# ---------------------------------------------------------------------------------------------------------------------
-    def energy(self):
-        return self.p(self.x[:,0], self.x[:,1])
-# ---------------------------------------------------------------------------------------------------------------------
-    def distance(self,x1,x2):
-        return numpy.sqrt((x1[0] - x2[0]) ** 2 + (x1[1] - x2[1]) ** 2) - x1[2] - x2[2]
-# ---------------------------------------------------------------------------------------------------------------------
-    def isvalid(self, i):
-
-        for j in range(self.N):
-            if i!=j:
-                if self.distance(self.x[i,:], self.x[j,:]) < 0:
-                    return False
-        return True
-# ---------------------------------------------------------------------------------------------------------------------
-    def plot(self, ax):
+        self.colours = []
         for i in range(self.N):
-            cc = self.color[i]
-            circ = plt.Circle(self.x[i,:2],self.x[i,2],edgecolor=[0.25,0.25,0.25],color=[cc[0]/255,cc[1]/255,cc[2]/255])
-            plt.text(self.x[i,0],self.x[i,1], self.label[i],horizontalalignment="center", verticalalignment="center",fontsize=9)
-            ax.add_patch(circ)
+            color = cv2.cvtColor(numpy.array([int(255 * i // self.N), 255, 225], dtype=numpy.uint8).reshape(1, 1, 3),cv2.COLOR_HSV2BGR)[0][0]
+            self.colours.append('#%02x%02x%02x' % (color[0], color[1], color[2]))
+
+        self.circles = []
+
+        r = (weights - weights.min()) / weights.max()
+        r = 10 + r* 60
+
+        font_size = (weights - weights.min()) / weights.max()
+        font_size = 8 +font_size*12
+
+
+        idx = numpy.argsort(-r)
+        self.R = 4*r[idx[0]]
+
+        for i in range(self.N):
+            self._place_circle(r[idx[i]],labels[idx[i]],font_size[idx[i]])
         return
-# ---------------------------------------------------------------------------------------------------------------------
-def do_pack(labels,weights,filename_out):
-    pack = Circle_pack(labels, weights)
-    fig, ax = plt.subplots(subplot_kw=dict(aspect="equal"))
-    ax.axis("off")
-    pack.minimize()
-    pack.plot(ax)
-    ax.relim()
-    ax.autoscale_view()
-    plt.savefig(filename_out)
-    return
+    # ---------------------------------------------------------------------------------------------------------------------
+    def preamble(self):
+        print('<?xml version="1.0" encoding="utf-8"?>\n'
+        '<svg xmlns="http://www.w3.org/2000/svg"\n' + ' '*5 +'xmlns:xlink="http://www.w3.org/1999/xlink" width="{}" height="{}" >'.format(self.width, self.height), file=self.fo)
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    def defs_decorator(func):
+        def wrapper(self):
+            print("""
+            <defs>
+            <style type="text/css"><![CDATA[""", file=self.fo)
+
+            func(self)
+
+            print("""]]></style>
+            </defs>""", file=self.fo)
+        return wrapper
+    # ---------------------------------------------------------------------------------------------------------------------
+    @defs_decorator
+    def svg_styles(self):
+        """Set the SVG styles: circles are coloured with no border."""
+
+        print('circle {stroke: none;}', file=self.fo)
+        for i, c in enumerate(self.colours):
+            print('.c{} {{fill: {};}}'.format(i, c), file=self.fo)
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    def make_svg(self, filename, *args, **kwargs):
+        with open(filename, 'w') as self.fo:
+            self.preamble()
+            self.svg_styles()
+            for circle in self.circles:
+                circle.draw_circle(self.fo)
+
+            for circle in self.circles:
+                circle.draw_label(self.fo)
+
+            print('</svg>', file=self.fo)
+        return
+    # ---------------------------------------------------------------------------------------------------------------------
+    def _place_circle(self, radius, label,font_size):
+        # The guard number: if we don't place a circle within this number
+        # of trials, we give up.
+        guard = 500
+        while guard:
+            # Pick a random position, uniformly on the larger circle's interior
+            cr, cphi = (self.R * numpy.sqrt(numpy.random.random()),2 * numpy.pi * numpy.random.random())
+            cx, cy = cr * numpy.cos(cphi), cr * numpy.sin(cphi)
+            if cr+radius < self.R:
+                # The circle fits inside the larger circle.
+                if not any(circle.overlap_with(self.CX+cx, self.CY+cy, radius) for circle in self.circles):
+                    # The circle doesn't overlap any other circle: place it.
+                    circle = Circle(cx + self.CX, cy + self.CY, radius, label, font_size,icolour=numpy.random.randint(len(self.colours)))
+                    self.circles.append(circle)
+                    return
+            guard -= 1
+        # Warn that we reached the guard number of attempts and gave up for
+        # for this circle.
+        print('guard reached.')
+        return
+    # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    labels = ['aa','bb','dd']
-    weights = numpy.array([3,5,6])
-    do_pack(labels, weights, './images/output/res.png')
+    filename_in  = './images/ex_circles/data.txt'
+    filename_out = './images/output/res.png'
+    A = tools_IO.load_mat(filename_in,delim=',')
+    weights = numpy.array(A[:, 0], dtype=numpy.int)
+    labels = numpy.array(A[:, 1], dtype=numpy.str)
+
+
+
+    circles = Circles(labels,weights)
+    circles.make_svg('circles.svg')
