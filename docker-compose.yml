@@ -1,0 +1,24 @@
+version: '2.0'  
+services: 
+  test:
+    build: .
+<<<<<<< HEAD
+    privileged: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - $HOME/.Xauthority:/root/.Xauthority
+      - /tmp/.docker_1.xauth:/tmp/.docker_1.xauth
+      - /etc/localtime:/etc/localtime:ro
+      - /dev:/dev
+      - ./:/app
+    environment:
+      - DISPLAY=$DISPLAY
+      - QT_X11_NO_MITSHM=1
+    working_dir: /app/tools
+    command: /bin/bash -c "python3 ex04_face_swap.py"
+=======
+    volumes:
+      - ./:/app
+    working_dir: $
+    command: /bin/bash -c "python3 video_publisher.py"
+>>>>>>> e24a38589ae68b2b26b42f391ed11ec17d93f7ab
