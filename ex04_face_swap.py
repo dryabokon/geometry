@@ -10,9 +10,9 @@ import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-default_filename_in  = './images/ex_faceswap/01/personD-1.jpg'
-default_filename_in2 = './images/ex_faceswap/01/personC-1.jpg'
-default_folder_in   = './images/ex_faceswap/02/'
+default_filename_in  = './images/ex_faceswap/01/personC-1.jpg'
+default_filename_in2 = './images/ex_faceswap/01/personF-1.jpg'
+default_folder_in    = './images/ex_faceswap/02/'
 default_folder_out  = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
 def process_folder(filename_in,folder_in,folder_out):
@@ -38,7 +38,7 @@ def main():
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
 
-    use_camera = True
+    use_camera = False
     prefix = './images/ex_faceswap/01/'
     filename1='personB-4.jpg'
     filename2='personA-2.jpg'
@@ -114,12 +114,23 @@ def demo_live(filename_out):
     cv2.destroyAllWindows()
     return
 # ---------------------------------------------------------------------------------------------------------------------
-def demo_auto():
+def demo_auto_01():
     res2 = tools_landmark.transferface_first_to_second(D, default_filename_in , default_filename_in2, default_folder_out)
     res1 = tools_landmark.transferface_first_to_second(D, default_filename_in2, default_filename_in , default_folder_out)
     cv2.imwrite(default_folder_out + 'first.jpg' , res2)
     cv2.imwrite(default_folder_out + 'second.jpg', res1)
     #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+def demo_auto_02():
+
+    res2 = tools_landmark.transfer_emo(D, default_filename_in , default_filename_in2,default_folder_out)
+    #res1 = tools_landmark.transfer_emo(D, default_filename_in2, default_filename_in, default_folder_out)
+    #cv2.imwrite(default_folder_out + 'first_original.jpg', cv2.imread(default_filename_in))
+    #cv2.imwrite(default_folder_out + 'second_original.jpg', cv2.imread(default_filename_in2))
+    #cv2.imwrite(default_folder_out + 'first.jpg', res2)
+    #cv2.imwrite(default_folder_out + 'second.jpg', res1)
+
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_manual():
@@ -132,8 +143,8 @@ def demo_manual():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    demo_live(default_folder_out+'result.jpg')
-    #demo_manual()
-    #demo_auto()
+    #demo_auto_01()
+    #demo_auto_02()
     #process_folder(default_filename_in,'./images/ex_faceswap/02/',default_folder_out)
+    demo_live(default_folder_out+'res.jpg')
 
