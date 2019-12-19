@@ -39,7 +39,8 @@ def main():
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
 
-    use_camera = False
+    use_camera = True
+    do_transfer = True
     prefix = './images/ex_faceswap/01/'
     filename1='personB-4.jpg'
     filename2='personA-2.jpg'
@@ -47,9 +48,9 @@ def demo_live(filename_out):
 
     image1 = cv2.imread(prefix+filename1)
     image2 = cv2.imread(prefix+filename2)
-    L1_original = D.get_landmarks(image1)
+    L1_original = D.get_landmarks(image1)[D.idx_removed_lip_line]
     del_triangles = Delaunay(L1_original).vertices
-    L2_original = D.get_landmarks(image2)
+    L2_original = D.get_landmarks(image2)[D.idx_removed_lip_line]
 
     result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
     cap = cv2.VideoCapture(0)
@@ -57,11 +58,11 @@ def demo_live(filename_out):
     while (True):
         if use_camera:
             ret, image2 = cap.read()
-            L2_original = D.get_landmarks(image2)
-            result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
-
-            #cv2.imwrite('./images/output/res_%03d.png'%cnt, result)
-            #cv2.imwrite('./images/output/src_%03d.png'%cnt, image2)
+            L2_original = D.get_landmarks(image2)[D.idx_removed_lip_line]
+            if do_transfer:
+                result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
+            else:
+                result = image2
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result2 = result.copy()
@@ -82,10 +83,14 @@ def demo_live(filename_out):
         if key & 0xFF == ord('7'): filename1 = 'personF-1.jpg'
         if key & 0xFF == ord('8'): filename1 = 'personJ-1.jpg'
         if key & 0xFF == ord('9'): filename1 = 'personK-1.jpg'
+        if key & 0xFF == ord('0'):
+            if use_camera:
+                do_transfer = not do_transfer
 
         if (key & 0xFF >= ord('1')) and (key & 0xFF <= ord('9')):
+            do_transfer = True
             image1 = cv2.imread(prefix + filename1)
-            L1_original = D.get_landmarks(image1)
+            L1_original = D.get_landmarks(image1)[D.idx_removed_lip_line]
             del_triangles = Delaunay(L1_original).vertices
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
 
@@ -103,7 +108,7 @@ def demo_live(filename_out):
         if (key & 0xFF >= ord('a')) and (key & 0xFF <= ord('z')):
             use_camera = False
             image2 = cv2.imread(prefix + filename2)
-            L2_original = D.get_landmarks(image2)
+            L2_original = D.get_landmarks(image2)[D.idx_removed_lip_line]
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
 
         if (key & 0xFF == 13) or (key & 0xFF == 32):
