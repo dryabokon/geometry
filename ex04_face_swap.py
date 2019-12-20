@@ -37,33 +37,15 @@ def main():
         process_folder(args.filename_in,args.folder_in,full_folder_out)
     return
 # ---------------------------------------------------------------------------------------------------------------------
-def do_average(L2_original_hist):
-
-    th = 10
-    nose_x = L2_original_hist[:,30,0]
-    nose_y = L2_original_hist[:,30,1]
-    stdx = numpy.std(nose_x)
-    stdy = numpy.std(nose_y)
-    if stdx<th  and stdy < th:
-        avgx = numpy.average(L2_original_hist[:,:,0],0)
-        avgy = numpy.average(L2_original_hist[:,:,1],0)
-
-        res = numpy.vstack((avgx,avgy)).T
-    else:
-        res = L2_original_hist[0]
-
-
-    return res
-# ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
 
     use_camera = True
     do_transfer = True
     prefix = './images/ex_faceswap/01/'
-    filename1='personB-4.jpg'
-    filename2='personA-2.jpg'
-    hist = 30
-    L2_original_hist = numpy.zeros((hist,60,2))
+    filename1='person1.jpg'
+    filename2='person2.jpg'
+
+
 
     image1 = cv2.imread(prefix+filename1)
     image2 = cv2.imread(prefix+filename2)
@@ -73,44 +55,39 @@ def demo_live(filename_out):
 
     result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640//2)
-    cap.set(4, 480//2)
+    cap.set(3, 1280)
+    cap.set(4, 720)
     cnt, start_time, fps = 0, time.time(), 0
     while (True):
         if use_camera:
             ret, image2 = cap.read()
+            image2=image2[:,300:-300]
             L2_original = D.get_landmarks(image2)[D.idx_removed_lip_line]
-            L2_original_hist = numpy.roll(L2_original_hist,1,0)
-            L2_original_hist[0] = L2_original
 
             if do_transfer:
-                #L2_original = do_average(L2_original_hist)
                 result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
             else:
                 result = image2
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result2 = result.copy()
+        #result2 = cv2.resize(result2, (640, 480))
         result2 = cv2.putText(result2, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)
         result2 = cv2.putText(result2, '{0}'.format(filename1), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)
         result2 = cv2.putText(result2, '{0}'.format(filename2), (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1,cv2.LINE_AA)
-        cv2.resize
 
         cv2.imshow('frame', result2)
         cnt += 1
         key = cv2.waitKey(1)
 
         if key & 0xFF == 27:break
-        if key & 0xFF == ord('1'): filename1 = 'personA-2.jpg'
-        if key & 0xFF == ord('2'): filename1 = 'personB-4.jpg'
-        if key & 0xFF == ord('3'): filename1 = 'personC-1.jpg'
-        if key & 0xFF == ord('4'): filename1 = 'personC-2.jpg'
-        if key & 0xFF == ord('5'): filename1 = 'personD-1.jpg'
-        if key & 0xFF == ord('6'): filename1 = 'personE-1.jpg'
-        if key & 0xFF == ord('7'): filename1 = 'personF-1.jpg'
-        if key & 0xFF == ord('8'): filename1 = 'personJ-1.jpg'
-        if key & 0xFF == ord('9'): filename1 = 'personK-1.jpg'
-        if key & 0xFF == ord('0'):
+        if key & 0xFF == ord('1'): filename1 = 'person1.jpg'
+        if key & 0xFF == ord('2'): filename1 = 'person2.jpg'
+        if key & 0xFF == ord('3'): filename1 = 'person3.jpg'
+        if key & 0xFF == ord('4'): filename1 = 'person4.jpg'
+        if key & 0xFF == ord('5'): filename1 = 'person5.jpg'
+        if key & 0xFF == ord('6'): filename1 = 'person6.jpg'
+        if key & 0xFF == ord('0') or key & 0xFF == ord('`'):
             if use_camera:
                 do_transfer = not do_transfer
 
@@ -121,16 +98,12 @@ def demo_live(filename_out):
             del_triangles = Delaunay(L1_original).vertices
             result = tools_landmark.do_transfer(image1, image2, L1_original, L2_original, del_triangles)
 
-        if key & 0xFF == ord('q'): filename2 = 'personA-2.jpg'
-        if key & 0xFF == ord('w'): filename2 = 'personB-4.jpg'
-        if key & 0xFF == ord('e'): filename2 = 'personC-1.jpg'
-        if key & 0xFF == ord('r'): filename2 = 'personD-1.jpg'
-        if key & 0xFF == ord('t'): filename2 = 'personE-1.jpg'
-        if key & 0xFF == ord('y'): filename2 = 'personF-1.jpg'
-        if key & 0xFF == ord('u'): filename2 = 'personH-1.jpg'
-        if key & 0xFF == ord('i'): filename2 = 'personJ-1.jpg'
-        if key & 0xFF == ord('o'): filename2 = 'personK-1.jpg'
-        if key & 0xFF == ord('p'): filename2 = 'personL-1.jpg'
+        if key & 0xFF == ord('q'): filename2 = 'person1.jpg'
+        if key & 0xFF == ord('w'): filename2 = 'person2.jpg'
+        if key & 0xFF == ord('e'): filename2 = 'person3.jpg'
+        if key & 0xFF == ord('r'): filename2 = 'person4.jpg'
+        if key & 0xFF == ord('t'): filename2 = 'person5.jpg'
+        if key & 0xFF == ord('y'): filename2 = 'person6.jpg'
         if key & 0xFF == ord('-'): use_camera = True;filename2='cam'
         if (key & 0xFF >= ord('a')) and (key & 0xFF <= ord('z')):
             use_camera = False

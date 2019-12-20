@@ -11,39 +11,61 @@ import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-default_filename_in2  = './images/ex_faceswap/01/personC-1.jpg'
-#default_filename_in2 = './images/ex_faceswap/01/personD-1.jpg'
+default_filename_in2  = './images/ex_faceswap/01/person1.jpg'
 default_filename_in = './images/ex_faceswap/dm.jpg'
-default_folder_in    = './images/ex_faceswap/02/'
 default_folder_out  = './images/output/'
+# ---------------------------------------------------------------------------------------------------------------------
+def do_average(L2_original_hist):
+
+    th = 100
+    nose_x = L2_original_hist[:,30,0]
+    nose_y = L2_original_hist[:,30,1]
+    #stdx = numpy.std(nose_x)
+    #stdy = numpy.std(nose_y)
+    if True:# stdx<th  and stdy < th:
+        avgx = numpy.average(L2_original_hist[:,:,0],0)
+        avgy = numpy.average(L2_original_hist[:,:,1],0)
+
+        res = numpy.vstack((avgx,avgy)).T
+    else:
+        res = L2_original_hist[0]
+
+
+    return res
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_out):
 
-    image1 = cv2.imread('./images/ex_faceswap/01/personC-1.jpg')
-    L1_original = D.get_landmarks(image1)[D.idx_removed_lip_line]
-    idx_mouth = D.idx_head + D.idx_nose + D.idx_eyes
-    del_triangles = Delaunay(L1_original).vertices
-    del_triangles_mouth = Delaunay(L1_original[idx_mouth]).vertices
+    image1 = cv2.imread('./images/ex_faceswap/01/person5.jpg')
+    L1_original = D.get_landmarks(image1)
 
+    hist = 5
+    L2_original_hist = numpy.zeros((hist, L1_original.shape[0], 2))
 
     cap = cv2.VideoCapture(0)
+    #cap.set(3, 320)
+    #cap.set(4, 240)
     cnt, start_time, fps = 0, time.time(), 0
     while (True):
 
         ret, image2 = cap.read()
-        L2_original = D.get_landmarks(image2)[D.idx_removed_lip_line]
-        result = tools_landmark.do_reenackement(image1, image2, L1_original, L2_original,idx_mouth,del_triangles,del_triangles_mouth)
+        image2 = cv2.flip(image2, 1)
 
+        L2_original = D.get_landmarks(image2)
+        L2_original_hist = numpy.roll(L2_original_hist, 1, 0)
+        L2_original_hist[0] = L2_original
+        L2_original = do_average(L2_original_hist)
+
+        result = tools_landmark.do_reenackement(image1, image2, L1_original, L2_original)
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result2 = result.copy()
         result2 = cv2.putText(result2, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)
 
-        w,h = 2*128, int(2*128 * image2.shape[0] / image2.shape[1])
+        w,h = 128, int(128 * image2.shape[0] / image2.shape[1])
         small = D.draw_landmarks(image2)
         small = cv2.resize(small,(w,h))
         result2[:h,-w:,:] = small
-        result2 = cv2.flip(result2,1)
+
 
         cv2.imshow('frame', result2)
         cnt += 1
@@ -71,11 +93,8 @@ def demo_auto_03():
     image2 = cv2.imread(default_filename_in)
     L1_original = D.get_landmarks(image1)
     L2_original = D.get_landmarks(image2)
-    idx_mouth = D.idx_head + D.idx_nose + D.idx_eyes
-    del_triangles = Delaunay(L1_original).vertices
-    del_triangles_mouth = Delaunay(L1_original[idx_mouth]).vertices
 
-    res2 = tools_landmark.do_reenackement(image1, image2, L1_original, L2_original, idx_mouth, del_triangles,del_triangles_mouth)
+    res2 = tools_landmark.do_reenackement(image1, image2, L1_original, L2_original)
     cv2.imwrite(default_folder_out + 'result2_v2.jpg', res2)
 
     return
