@@ -101,6 +101,6 @@ def demo_auto_03():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #demo_auto_02()
-    demo_live(default_folder_out+'res.jpg')
+    demo_auto_02()
+    #demo_live(default_folder_out+'res.jpg')
 
