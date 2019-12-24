@@ -16,12 +16,15 @@ def demo_live():
     cnt, start_time, fps = 0, time.time(), 0
 
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640 // 2)
-    cap.set(4, 480 // 2)
+    cap.set(3, 640)
+    cap.set(4, 480)
     while (True):
         if use_camera:
             ret, image = cap.read()
-            result = D.draw_landmarks(image)
+            L = D.get_landmarks(image)
+            del_triangles = Delaunay(L).vertices
+            D.draw_landmarks_v2(image,L,del_triangles)
+            #result = D.draw_landmarks(image)
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result = cv2.putText(result, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)

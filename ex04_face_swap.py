@@ -1,3 +1,4 @@
+import time
 import numpy
 import cv2
 import os
@@ -13,12 +14,12 @@ import tools_GL
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-default_filename_C = './images/ex_faceswap/01/person2b.jpg'
-default_filename_A = './images/ex_faceswap/01/person1a.jpg'
+default_filename_C = './images/ex_faceswap/01/person1.jpg'
+default_filename_A = './images/ex_faceswap/01/person2.jpg'
 default_folder_out  = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
 default_folder_in = './images/ex_faceswap/01/'
-list_filenames   = ['person1a.jpg','person1b.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg','person2c.jpg','person2d.jpg']
+list_filenames   = ['person1.jpg','person2.jpg','person3.jpg','person4.jpg','person5.jpg','person6.jpg']
 #list_filenames    = ['frame001685.jpg','frame001694.jpg','frame001700.jpg','frame001720.jpg']
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(folder_in):
