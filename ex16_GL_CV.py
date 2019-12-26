@@ -13,18 +13,32 @@ import detector_landmarks
 import glfw
 from scipy.spatial import Delaunay
 import tools_calibrate
+import tools_IO
 # ----------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ----------------------------------------------------------------------------------------------------------------------
-use_camera = True
+use_camera = False
 do_transfer = True
 # ----------------------------------------------------------------------------------------------------------------------
 folder_in = './images/ex_faceswap/01/'
-list_filenames   = ['person1.jpg','person2.jpg','person3.jpg','person4.jpg','person5.jpg','person6.jpg']
-filename_out = 'images/output/ar.png'
-USE_CAMERA = False
+#list_filenames   = ['person1.jpg','person2.jpg','person3.jpg','person4.jpg','person5.jpg','person6.jpg']
+list_filenames   = ['person1a.jpg','person1b.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg']
+filename_clbrt,filename_actor = list_filenames[0],list_filenames[1]
+image_clbrt = cv2.imread(folder_in + filename_clbrt)
+image_actor = cv2.imread(folder_in + filename_actor)
+L_clbrt = D.get_landmarks_augm(image_clbrt)
+del_triangles_C = Delaunay(L_clbrt).vertices
+L_actor = D.get_landmarks_augm(image_actor)
 # ----------------------------------------------------------------------------------------------------------------------
 window = 0
+# ----------------------------------------------------------------------------------------------------------------------
+def draw_text(message,pos_x, pos_y):
+
+    glColor4f(1.0, 0.5, 0.1, 0)
+    glRasterPos2f(pos_x,pos_y)
+    for key in message:
+        glutBitmapCharacter(OpenGL.GLUT.fonts.GLUT_BITMAP_HELVETICA_10, ctypes.c_int(ord(key)))
+    return
 # ----------------------------------------------------------------------------------------------------------------------
 def refresh2d(width, height):
     glViewport(0, 0, width, height)
@@ -58,16 +72,23 @@ def initTexture(inputimage):
 # ----------------------------------------------------------------------------------------------------------------------
 def draw_image(window,window_H, window_W,image_texture):
 
+    glfw.make_context_current(window)
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+    refresh2d(window_W, window_H)
+    glEnable(GL_TEXTURE_2D)
+
     initTexture(image_texture[:, :, [2, 1, 0]])
 
     texture_height, texture_width, _ = image_texture.shape
 
     glBegin(GL_QUADS)
+    glColor4f(1, 1.0, 1.0, 0.2)
     glTexCoord2f(0, 0);glVertex2f(0, 0)
     glTexCoord2f(1, 0);glVertex2f(texture_width, 0)
     glTexCoord2f(1, 1);glVertex2f(texture_width, texture_height)
     glTexCoord2f(0, 1);glVertex2f(0, texture_height)
-
     glEnd()
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -76,7 +97,7 @@ def draw_morphed_mesh(window, window_H, window_W, points_coord,points_text_coord
 
     initTexture(image_texture[:, :, [2, 1, 0]])
     glBegin(GL_TRIANGLES)
-
+    glColor4f(1, 1.0, 1.0, 0.2)
     texture_height, texture_width, _ = image_texture.shape
     for triangle in triangles:
         x0 = points_coord[triangle[0], 0]
@@ -117,7 +138,7 @@ def draw_transfered_image(window, window_H, window_W, image_clbrt, image_actor, 
     glLoadIdentity()
     refresh2d(window_W, window_H)
     glEnable(GL_TEXTURE_2D)
-    glEnable(GL_BLEND)
+    #glEnable(GL_BLEND)
 
     LC_aligned, LA_aligned = tools_calibrate.translate_coordinates(image_clbrt, image_actor, H, L_clbrt, L_actor)
 
@@ -137,20 +158,53 @@ def draw_transfered_image(window, window_H, window_W, image_clbrt, image_actor, 
 # ----------------------------------------------------------------------------------------------------------------------
 def key_callback(window, key, scancode, action, mods):
 
+    global filename_clbrt, filename_actor
+    global image_clbrt,image_actor
+    global use_camera,do_transfer
+    global L_actor,L_clbrt
+    global del_triangles_C
+
+
+    if key >= ord('1') and  key <= ord('9'):
+        filename_clbrt = list_filenames[key-ord('1')]
+        do_transfer = True
+        image_clbrt = cv2.imread(folder_in + filename_clbrt)
+        L_clbrt = D.get_landmarks_augm(image_clbrt)
+        del_triangles_C = Delaunay(L_clbrt).vertices
+
+
+    lst = [ord('Q'), ord('W'), ord('E'), ord('R'), ord('T'), ord('Y')]
+    if key in lst:
+        idx = tools_IO.smart_index(lst, key)
+        filename_actor = list_filenames[idx[0]]
+        use_camera = False
+        image_actor = cv2.imread(folder_in + filename_actor)
+        L_actor = D.get_landmarks_augm(image_actor)
+
+    #if key =
+    #use_camera = not use_camera
+
+    if key == ord('0') or key == ord('`'):
+        if use_camera:do_transfer = not do_transfer
+
     if key == glfw.KEY_ESCAPE:
         glfw.set_window_should_close(window,1)
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def main():
+
+    global filename_clbrt, filename_actor
+    global image_clbrt,image_actor
+    global use_camera,do_transfer
+    global L_actor,L_clbrt
+    global del_triangles_C
+
     window_W, window_H = 640, 480
 
-    if use_camera:
-        cap = cv2.VideoCapture(0)
-        cap.set(3, window_H)
-        cap.set(4, window_W)
-
     glfw.init()
+    glutInit()
+
     window = glfw.create_window(window_W, window_H, "Face Swap", None, None)
     if not window:
         glfw.terminate()
@@ -159,23 +213,16 @@ def main():
     glfw.make_context_current(window)
     glfw.set_key_callback(window, key_callback)
 
-    filename_clbrt = list_filenames[0]
-    filename_actor = list_filenames[1]
-
-    image_clbrt = cv2.imread(folder_in + filename_clbrt)
-    image_actor = cv2.imread(folder_in + filename_actor)
-
-
-    L_clbrt = D.get_landmarks(image_clbrt)
-    del_triangles_C = Delaunay(L_clbrt).vertices
-    L_actor = D.get_landmarks(image_actor)
+    if use_camera:
+        cap = cv2.VideoCapture(0)
+        cap.set(3, window_H)
+        cap.set(4, window_W)
 
     cnt, start_time, fps = 0, time.time(), 0
     while not glfw.window_should_close(window):
         if use_camera:
             ret, image_actor = cap.read()
-            L_actor = D.get_landmarks(image_actor)
-
+            L_actor = D.get_landmarks_augm(image_actor)
 
         window_W, window_H = image_actor.shape[1], image_actor.shape[0]
         glfw.set_window_size(window, window_W, window_H)
@@ -185,8 +232,13 @@ def main():
         else:
             draw_image(window, window_H, window_W,image_actor)
 
+        draw_text(' %1.1f fps'%fps, 10, window_H-12)
+        draw_text(' celeb %s' % filename_clbrt, 10, window_H - 22)
+        draw_text(' actor %s' % filename_actor, 10, window_H - 32)
+
         glfw.swap_buffers(window)
         glfw.poll_events()
+
         cnt += 1
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
 

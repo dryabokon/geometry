@@ -36,7 +36,7 @@ def do_average(L2_original_hist):
 def demo_live(filename_out):
 
     image1 = cv2.imread('./images/ex_faceswap/01/person5.jpg')
-    L1_original = D.get_landmarks(image1)
+    L1_original = D.get_landmarks_augm(image1)
 
     hist = 5
     L2_original_hist = numpy.zeros((hist, L1_original.shape[0], 2))
@@ -50,7 +50,7 @@ def demo_live(filename_out):
         ret, image2 = cap.read()
         image2 = cv2.flip(image2, 1)
 
-        L2_original = D.get_landmarks(image2)
+        L2_original = D.get_landmarks_augm(image2)
         L2_original_hist = numpy.roll(L2_original_hist, 1, 0)
         L2_original_hist[0] = L2_original
         L2_original = do_average(L2_original_hist)
@@ -91,8 +91,8 @@ def demo_auto_03():
 
     image1 = cv2.imread(default_filename_in2)
     image2 = cv2.imread(default_filename_in)
-    L1_original = D.get_landmarks(image1)
-    L2_original = D.get_landmarks(image2)
+    L1_original = D.get_landmarks_augm(image1)
+    L2_original = D.get_landmarks_augm(image2)
 
     res2 = tools_landmark.do_reenackement(image1, image2, L1_original, L2_original)
     cv2.imwrite(default_folder_out + 'result2_v2.jpg', res2)

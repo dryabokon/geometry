@@ -21,7 +21,7 @@ def demo_live():
     while (True):
         if use_camera:
             ret, image = cap.read()
-            L = D.get_landmarks(image)
+            L = D.get_landmarks_augm(image)
             del_triangles = Delaunay(L).vertices
             D.draw_landmarks_v2(image,L,del_triangles)
             #result = D.draw_landmarks(image)
@@ -42,5 +42,6 @@ def demo_live():
 if __name__ == '__main__':
 
     demo_live()
+
 
 
