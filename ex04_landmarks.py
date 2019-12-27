@@ -1,6 +1,5 @@
 import cv2
 import os
-import argparse
 from scipy.spatial import Delaunay
 # ---------------------------------------------------------------------------------------------------------------------
 import time
@@ -9,6 +8,8 @@ import tools_landmark
 import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
+folder_in = 'D:/2/'
+folder_out = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live():
 
@@ -41,7 +42,10 @@ def demo_live():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    demo_live()
+    #demo_live()
+    #tools_landmark.process_folder(D, folder_in, folder_out, write_images=False, write_annotation=True)
+    tools_landmark.draw_landmarks(D,folder_in, folder_out+'landmarks.txt',folder_out)
+
 
 
 

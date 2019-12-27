@@ -2,6 +2,7 @@ import time
 import numpy
 import cv2
 import os
+import tools_animation
 from scipy.spatial import Delaunay
 # ---------------------------------------------------------------------------------------------------------------------
 import tools_image
@@ -19,7 +20,7 @@ do_transfer = True
 folder_out = './images/output/'
 folder_in = './images/ex_faceswap/01/'
 #list_filenames   = ['person1.jpg','person2.jpg','person3.jpg','person4.jpg','person5.jpg','person6.jpg']
-list_filenames   = ['person1a.jpg','person1c.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg']
+list_filenames   = ['person2a.jpg','person1b.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg']
 filename_clbrt,filename_actor = list_filenames[0],list_filenames[1]
 image_clbrt = cv2.imread(folder_in + filename_clbrt)
 image_actor = cv2.imread(folder_in + filename_actor)
@@ -84,10 +85,17 @@ def demo_live():
         cap = cv2.VideoCapture(0)
         cap.set(3, camera_W)
         cap.set(4, camera_H)
+    else:
+        cap = None
 
     cnt, start_time, fps = 0, time.time(), 0
     while (True):
         if use_camera:
+            if cap is None:
+                cap = cv2.VideoCapture(0)
+                cap.set(3, camera_W)
+                cap.set(4, camera_H)
+
             ret, image_actor = cap.read()
             L_actor = D.get_landmarks_augm(image_actor)
             L_actor[:,0]*= window_W/camera_W
@@ -97,7 +105,7 @@ def demo_live():
             R_a.update_texture(image_actor)
 
         if do_transfer:
-            result = tools_landmark.do_transfer(R_c,R_a,image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C)
+            result = tools_landmark.transferface_first_to_second(R_c,R_a,image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C)
         else:
             result = image_actor
 
@@ -122,8 +130,15 @@ def demo_live():
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_auto_01():
 
-    res2 = tools_landmark.transferface_first_to_second(D, folder_in+filename_clbrt,folder_in+filename_actor, folder_out)
-    cv2.imwrite(folder_in + 'first.jpg' , res2)
+    global filename_clbrt, filename_actor
+    global image_clbrt, image_actor
+    global use_camera, do_transfer
+    global L_actor, L_clbrt
+    global del_triangles_C
+    global R_c, R_a
+
+    result = tools_landmark.transferface_first_to_second(R_c,R_a,image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C,folder_out='./images/output/',do_debug=True)
+    cv2.imwrite(folder_in + 'first.jpg' , result)
     #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -132,5 +147,5 @@ if __name__ == '__main__':
     demo_auto_01()
     #demo_live()
     #tools_landmark.transferface_folder(D, folder_in+'person3a.jpg', 'D:/2/', folder_out)
-    #tools_landmark.landmarks_folder(D, 'D:/2/', folder_out)
+    #tools_animation.folder_to_video(folder_out,'D:/ani.mp4',mask='*.jpg',resize_W=1280//2,resize_H=720//2)
 
