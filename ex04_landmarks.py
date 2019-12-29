@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     #demo_live()
     #tools_landmark.process_folder(D, folder_in, folder_out, write_images=False, write_annotation=True)
-    tools_landmark.draw_landmarks(D,folder_in, folder_out+'landmarks.txt',folder_out)
+    tools_landmark.process_folder_draw_landmarks(D, folder_in, folder_out + 'landmarks.txt', folder_out)
 
 
 
