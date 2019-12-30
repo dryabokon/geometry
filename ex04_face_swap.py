@@ -24,7 +24,16 @@ list_filenames   = ['person1a.jpg','person1b.jpg','person1c.jpg','person1d.jpg',
 filename_clbrt,filename_actor = list_filenames[0],list_filenames[1]
 image_clbrt = cv2.imread(folder_in + filename_clbrt)
 image_actor = cv2.imread(folder_in + filename_actor)
+if image_clbrt is None:
+    print('%s not found'%(folder_in + filename_clbrt))
+    exit()
+if image_actor is None:
+    print('%s not found'%(folder_in + filename_actor))
+    exit()
 L_clbrt = D.get_landmarks_augm(image_clbrt)
+if L_clbrt.min()==L_clbrt.max()==0:
+    print('Landmarks for clbrt image not found')
+    exit()
 del_triangles_C = Delaunay(L_clbrt).vertices
 L_actor = D.get_landmarks_augm(image_actor)
 R_c = tools_GL.render_GL(image_clbrt)
@@ -136,6 +145,7 @@ def demo_auto_01():
     global L_actor, L_clbrt
     global del_triangles_C
     global R_c, R_a
+
 
     result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out='./images/output/', do_debug=True)
     cv2.imwrite(folder_in + 'first.jpg' , result)
