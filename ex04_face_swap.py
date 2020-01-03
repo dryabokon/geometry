@@ -20,7 +20,7 @@ do_transfer = True
 folder_out = './images/output/'
 folder_in = './images/ex_faceswap/01/'
 #list_filenames   = ['person1.jpg','person2.jpg','person3.jpg','person4.jpg','person5.jpg','person6.jpg']
-list_filenames   = ['person1a.jpg','person1b.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg']
+list_filenames   = ['person5b.jpg','person2e.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg']
 filename_clbrt,filename_actor = list_filenames[0],list_filenames[1]
 image_clbrt = cv2.imread(folder_in + filename_clbrt)
 image_actor = cv2.imread(folder_in + filename_actor)
@@ -148,20 +148,21 @@ def demo_auto_01():
 
 
     result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out='./images/output/', do_debug=True)
-    cv2.imwrite(folder_in + 'first.jpg' , result)
+    cv2.imwrite(folder_out + 'first.jpg' , result)
     #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #tools_landmark.process_folder_extract_landmarks(D, 'D:/2/', folder_out, write_images=False, write_annotation=True)
+    #tools_landmark.process_folder_extract_landmarks(D, 'D:/3/', folder_out, write_images=False, write_annotation=True)
+    #tools_landmark.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
     #tools_landmark.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
-    #tools_landmark.process_folder_draw_landmarks(D, 'D:/2/',[folder_out+'Landmarks_filtered.txt'], folder_out, delim='\t')
-    #tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/2/', folder_out+'Landmarks.txt', folder_out)
+    #tools_landmark.process_folder_draw_landmarks(D, 'D:/4/',[folder_out+'Landmarks.txt'], folder_out, delim='\t')
+    #tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/3/', folder_out+'Landmarks.txt', folder_out)
 
 
-    demo_auto_01()
+    #demo_auto_01()
     #demo_live()
-    #tools_animation.folder_to_video(folder_out,'D:/ani.mp4',mask='*.jpg',resize_W=1280//2,resize_H=720//2)
+    #tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1920//2,resize_H=960//2)
 
 
