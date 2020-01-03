@@ -1,11 +1,7 @@
-import time
-import numpy
 import cv2
-import os
-import tools_animation
 from scipy.spatial import Delaunay
+import argparse
 # ---------------------------------------------------------------------------------------------------------------------
-import tools_image
 import time
 import tools_IO
 import tools_landmark
@@ -16,28 +12,6 @@ D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face
 # ----------------------------------------------------------------------------------------------------------------------
 use_camera = False
 do_transfer = True
-# ----------------------------------------------------------------------------------------------------------------------
-folder_out = './images/output/'
-folder_in = './images/ex_faceswap/01/'
-#list_filenames   = ['person1.jpg','person2.jpg','person3.jpg','person4.jpg','person5.jpg','person6.jpg']
-list_filenames   = ['person5b.jpg','person2e.jpg','person1c.jpg','person1d.jpg','person2a.jpg','person2b.jpg']
-filename_clbrt,filename_actor = list_filenames[0],list_filenames[1]
-image_clbrt = cv2.imread(folder_in + filename_clbrt)
-image_actor = cv2.imread(folder_in + filename_actor)
-if image_clbrt is None:
-    print('%s not found'%(folder_in + filename_clbrt))
-    exit()
-if image_actor is None:
-    print('%s not found'%(folder_in + filename_actor))
-    exit()
-L_clbrt = D.get_landmarks_augm(image_clbrt)
-if L_clbrt.min()==L_clbrt.max()==0:
-    print('Landmarks for clbrt image not found')
-    exit()
-del_triangles_C = Delaunay(L_clbrt).vertices
-L_actor = D.get_landmarks_augm(image_actor)
-R_c = tools_GL.render_GL(image_clbrt)
-R_a = tools_GL.render_GL(image_actor)
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
 
@@ -47,6 +21,7 @@ def process_key(key):
     global L_actor,L_clbrt
     global del_triangles_C
     global R_c,R_a
+    global folder_in
 
     if key >= ord('1') and key <= ord('9') and key - ord('1')<len(list_filenames):
         filename_clbrt = list_filenames[key - ord('1')]
@@ -137,7 +112,7 @@ def demo_live():
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
-def demo_auto_01():
+def demo_auto_01(folder_out):
 
     global filename_clbrt, filename_actor
     global image_clbrt, image_actor
@@ -146,23 +121,64 @@ def demo_auto_01():
     global del_triangles_C
     global R_c, R_a
 
+    result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out=folder_out, do_debug=False)
+    cv2.imwrite(folder_out + 'result.jpg' , result)
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+#tools_landmark.process_folder_extract_landmarks(D, 'D:/3/', folder_out, write_images=False, write_annotation=True)
+#tools_landmark.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
+#tools_landmark.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
+#tools_landmark.process_folder_draw_landmarks(D, 'D:/4/',[folder_out+'Landmarks.txt'], folder_out, delim='\t')
+#tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/3/', folder_out+'Landmarks.txt', folder_out)
+#demo_live()
+#tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1920//2,resize_H=960//2)
+# ---------------------------------------------------------------------------------------------------------------------
+def init(folder_in):
 
-    result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out='./images/output/', do_debug=True)
-    cv2.imwrite(folder_out + 'first.jpg' , result)
-    #tools_landmark.morph_first_to_second(D,default_filename_in2, default_filename_in,default_folder_out,numpy.arange(0.1,0.9,0.1))
+    global filename_clbrt, filename_actor
+    global image_clbrt,image_actor
+    global use_camera,do_transfer
+    global L_actor,L_clbrt
+    global del_triangles_C
+    global R_c,R_a
+
+    filename_clbrt, filename_actor = list_filenames[0], list_filenames[-1]
+    image_clbrt = cv2.imread(folder_in + filename_clbrt)
+    image_actor = cv2.imread(folder_in + filename_actor)
+    if image_clbrt is None:
+        print('%s not found' % (folder_in + filename_clbrt))
+        exit()
+    if image_actor is None:
+        print('%s not found' % (folder_in + filename_actor))
+        exit()
+    L_clbrt = D.get_landmarks_augm(image_clbrt)
+    if L_clbrt.min() == L_clbrt.max() == 0:
+        print('Landmarks for clbrt image not found')
+        exit()
+    del_triangles_C = Delaunay(L_clbrt).vertices
+    L_actor = D.get_landmarks_augm(image_actor)
+    R_c = tools_GL.render_GL(image_clbrt)
+    R_a = tools_GL.render_GL(image_actor)
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+def main(folder_in,folder_out):
+
+    init(folder_in)
+    #demo_auto_01(folder_out)
+    demo_live()
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #tools_landmark.process_folder_extract_landmarks(D, 'D:/3/', folder_out, write_images=False, write_annotation=True)
-    #tools_landmark.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
-    #tools_landmark.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
-    #tools_landmark.process_folder_draw_landmarks(D, 'D:/4/',[folder_out+'Landmarks.txt'], folder_out, delim='\t')
-    #tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/3/', folder_out+'Landmarks.txt', folder_out)
+    #list_filenames = ['person5b.jpg', 'person2e.jpg', 'person1c.jpg', 'person1d.jpg', 'person2a.jpg', 'person2b.jpg']
 
+    folder_in = './images/ex_faceswap/01/'
+    folder_out = './images/output/'
+    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
 
-    #demo_auto_01()
-    #demo_live()
-    #tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1920//2,resize_H=960//2)
-
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--command', default='')
+    parser.add_argument('--folder_in', default=folder_in)
+    parser.add_argument('--folder_out', default=folder_out)
+    args = parser.parse_args()
+    main(args.folder_in,args.folder_out)
