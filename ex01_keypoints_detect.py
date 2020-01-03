@@ -75,19 +75,6 @@ def example_Fast_Corner_Detector(filename_in, filename_out, R=2):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def example_STAR_Detector(filename_in, filename_out, R=2):
-	img = cv2.imread(filename_in)
-	gray_rgb = tools_image.desaturate(img)
-
-	points = tools_alg_match.get_keypoints_STAR(img)
-
-	for each in points:
-		gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-	cv2.imwrite(filename_out, gray_rgb)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 def example_ORB(filename_in, filename_out, R=2):
 	img = cv2.imread(filename_in)
 	gray_rgb = tools_image.desaturate(img)
