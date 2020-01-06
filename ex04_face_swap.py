@@ -9,7 +9,7 @@ import detector_landmarks
 import tools_GL
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
-# ----------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 use_camera = False
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
@@ -164,13 +164,12 @@ def init(folder_in):
 def main(folder_in,folder_out):
 
     init(folder_in)
-    #demo_auto_01(folder_out)
-    demo_live()
+    demo_auto_01(folder_out)
+    #demo_live()
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #list_filenames = ['person5b.jpg', 'person2e.jpg', 'person1c.jpg', 'person1d.jpg', 'person2a.jpg', 'person2b.jpg']
 
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
@@ -182,3 +181,4 @@ if __name__ == '__main__':
     parser.add_argument('--folder_out', default=folder_out)
     args = parser.parse_args()
     main(args.folder_in,args.folder_out)
+
