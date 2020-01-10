@@ -75,7 +75,7 @@ class Circles:
             print('.c{} {{fill: {};}}'.format(i, c), file=self.fo)
 
     # ---------------------------------------------------------------------------------------------------------------------
-    def make_svg(self, filename, *args, **kwargs):
+    def make_svg(self, filename):
         with open(filename, 'w') as self.fo:
             self.preamble()
             self.svg_styles()
@@ -108,12 +108,11 @@ class Circles:
         # for this circle.
         print('guard reached.')
         return
-    # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     filename_in  = './images/ex_circles/data.txt'
-    filename_out = './images/output/res.png'
+    filename_out = './images/output/circles.svg'
     A = tools_IO.load_mat(filename_in,delim=',')
     weights = numpy.array(A[:, 0], dtype=numpy.int)
     labels = numpy.array(A[:, 1], dtype=numpy.str)
@@ -121,4 +120,4 @@ if __name__ == '__main__':
 
 
     circles = Circles(labels,weights)
-    circles.make_svg('circles.svg')
+    circles.make_svg(filename_out)
