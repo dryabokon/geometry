@@ -121,7 +121,7 @@ def demo_auto_01(folder_out):
     global del_triangles_C
     global R_c, R_a
 
-    result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out=folder_out, do_debug=False)
+    result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out=folder_out, do_debug=True)
     cv2.imwrite(folder_out + 'result.jpg' , result)
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -164,8 +164,8 @@ def init(folder_in):
 def main(folder_in,folder_out):
 
     init(folder_in)
-    demo_auto_01(folder_out)
-    #demo_live()
+    #demo_auto_01(folder_out)
+    demo_live()
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -174,6 +174,7 @@ if __name__ == '__main__':
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
+    #list_filenames = ['Person3a.jpg','Person4c.jpg']
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--command', default='')

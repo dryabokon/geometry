@@ -45,8 +45,11 @@ class Circles:
         idx = numpy.argsort(-r)
         self.R = 4*r[idx[0]]
 
+        self.colours = numpy.array(self.colours)
+        self.colours = self.colours[idx]
+
         for i in range(self.N):
-            self._place_circle(r[idx[i]],labels[idx[i]],font_size[idx[i]])
+            self._place_circle(r[idx[i]],labels[idx[i]],font_size[idx[i]],numpy.random.randint(len(self.colours)))
         return
     # ---------------------------------------------------------------------------------------------------------------------
     def preamble(self):
@@ -88,32 +91,32 @@ class Circles:
             print('</svg>', file=self.fo)
         return
     # ---------------------------------------------------------------------------------------------------------------------
-    def _place_circle(self, radius, label,font_size):
-        # The guard number: if we don't place a circle within this number
-        # of trials, we give up.
+    def _place_circle(self, radius, label,font_size,icolor):
+
         guard = 500
         while guard:
-            # Pick a random position, uniformly on the larger circle's interior
+
             cr, cphi = (self.R * numpy.sqrt(numpy.random.random()),2 * numpy.pi * numpy.random.random())
             cx, cy = cr * numpy.cos(cphi), cr * numpy.sin(cphi)
             if cr+radius < self.R:
-                # The circle fits inside the larger circle.
+
                 if not any(circle.overlap_with(self.CX+cx, self.CY+cy, radius) for circle in self.circles):
-                    # The circle doesn't overlap any other circle: place it.
-                    circle = Circle(cx + self.CX, cy + self.CY, radius, label, font_size,icolour=numpy.random.randint(len(self.colours)))
+
+                    #circle = Circle(cx + self.CX, cy + self.CY, radius, label, font_size,icolour=numpy.random.randint(len(self.colours)))
+                    #xxx = numpy.random.randint(len(self.colours))
+                    circle = Circle(cx + self.CX, cy + self.CY, radius, label, font_size,icolour=icolor)
                     self.circles.append(circle)
                     return
             guard -= 1
-        # Warn that we reached the guard number of attempts and gave up for
-        # for this circle.
+
         print('guard reached.')
         return
-    # ---------------------------------------------------------------------------------------------------------------------
+
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     filename_in  = './images/ex_circles/data.txt'
-    filename_out = './images/output/res.png'
+    filename_out = './images/output/circles.svg'
     A = tools_IO.load_mat(filename_in,delim=',')
     weights = numpy.array(A[:, 0], dtype=numpy.int)
     labels = numpy.array(A[:, 1], dtype=numpy.str)
@@ -121,4 +124,4 @@ if __name__ == '__main__':
 
 
     circles = Circles(labels,weights)
-    circles.make_svg('circles.svg')
+    circles.make_svg(filename_out)
