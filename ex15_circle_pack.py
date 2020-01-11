@@ -78,7 +78,7 @@ class Circles:
             print('.c{} {{fill: {};}}'.format(i, c), file=self.fo)
 
     # ---------------------------------------------------------------------------------------------------------------------
-    def make_svg(self, filename, *args, **kwargs):
+    def make_svg(self, filename):
         with open(filename, 'w') as self.fo:
             self.preamble()
             self.svg_styles()
@@ -111,7 +111,6 @@ class Circles:
 
         print('guard reached.')
         return
-
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 

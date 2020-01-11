@@ -10,7 +10,7 @@ import tools_GL
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-use_camera = False
+use_camera = True
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
@@ -19,6 +19,7 @@ def process_key(key):
     global image_clbrt,image_actor
     global use_camera,do_transfer
     global L_actor,L_clbrt
+    global result
     global del_triangles_C
     global R_c,R_a
     global folder_in
@@ -48,8 +49,10 @@ def process_key(key):
             do_transfer = not do_transfer
 
     if (key & 0xFF == 13) or (key & 0xFF == 32):
-        cv2.imwrite('C.jpg', image_clbrt)
-        cv2.imwrite('A.jpg', image_actor)
+        cv2.imwrite(folder_out+'C.jpg', image_clbrt)
+        cv2.imwrite(folder_out+'A.jpg', image_actor)
+        cv2.imwrite(folder_out + 'R.jpg', result)
+
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -59,6 +62,7 @@ def demo_live():
     global image_clbrt,image_actor
     global use_camera,do_transfer
     global L_actor,L_clbrt
+    global result
     global del_triangles_C
     global R_c, R_a
 
