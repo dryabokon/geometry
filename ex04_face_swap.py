@@ -168,8 +168,8 @@ def init(folder_in):
 def main(folder_in,folder_out):
 
     init(folder_in)
-    #demo_auto_01(folder_out)
-    demo_live()
+    demo_auto_01(folder_out)
+    #demo_live()
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    #list_filenames = ['Person3a.jpg','Person4c.jpg']
+    list_filenames = ['Person5b.jpg','Person2e.jpg']
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--command', default='')
