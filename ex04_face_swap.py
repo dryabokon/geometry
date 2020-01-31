@@ -1,3 +1,7 @@
+from scipy import signal
+from scipy import ndimage
+import sys
+import numpy
 import cv2
 from scipy.spatial import Delaunay
 import argparse
@@ -6,6 +10,7 @@ import time
 import tools_IO
 import tools_landmark
 import detector_landmarks
+import tools_animation
 import tools_GL
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
@@ -129,14 +134,6 @@ def demo_auto_01(folder_out):
     cv2.imwrite(folder_out + 'result.jpg' , result)
     return
 # ---------------------------------------------------------------------------------------------------------------------
-#tools_landmark.process_folder_extract_landmarks(D, 'D:/3/', folder_out, write_images=False, write_annotation=True)
-#tools_landmark.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
-#tools_landmark.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
-#tools_landmark.process_folder_draw_landmarks(D, 'D:/4/',[folder_out+'Landmarks.txt'], folder_out, delim='\t')
-#tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/3/', folder_out+'Landmarks.txt', folder_out)
-#demo_live()
-#tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1920//2,resize_H=960//2)
-# ---------------------------------------------------------------------------------------------------------------------
 def init(folder_in):
 
     global filename_clbrt, filename_actor
@@ -172,13 +169,29 @@ def main(folder_in,folder_out):
     #demo_live()
     return
 # ---------------------------------------------------------------------------------------------------------------------
+#tools_landmark.process_folder_extract_landmarks(D, 'D:/3/', folder_out, write_images=False, write_annotation=True)
+#tools_landmark.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
+#tools_landmark.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
+#tools_landmark.process_folder_draw_landmarks(D, 'D:/4/',[folder_out+'Landmarks.txt'], folder_out, delim='\t')
+#tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/3/', folder_out+'Landmarks.txt', folder_out)
+#demo_live()
+#tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1920//2,resize_H=960//2)
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+
+
+
+
+
+
+
+
 
 
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    list_filenames = ['Person5b.jpg','Person2e.jpg']
+    list_filenames = ['Person1a.jpg','Person2g.jpg']
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--command', default='')
@@ -187,3 +200,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     main(args.folder_in,args.folder_out)
 
+    #filename_clbrt = 'Person1a.jpg'
+    #tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/4/', folder_out+'Landmarks1.txt', folder_out)
+    #tools_animation.folder_to_video(folder_out, 'D:/ani_v07.mp4', mask='*.jpg', resize_W=1920 // 2, resize_H=960 // 2)

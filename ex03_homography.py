@@ -218,7 +218,7 @@ def example_03_find_homography_live():
             else:
                 aligned1, aligned2 = tools_calibrate.get_stitched_images_using_homography(image_sbst, image_deck, H,background_color=(0, 0, 0))
             #im_result = tools_image.put_layer_on_image(aligned2,aligned1,background_color=(0,0,0))
-            im_result = tools_image.blend_multi_band_large_small(aligned2,aligned1, background_color=(0, 0, 0), do_color_balance=False,filter_size=10,leveln_default=1)
+            im_result = tools_image.blend_multi_band_large_small(aligned2,aligned1, background_color=(0, 0, 0), filter_size=10,leveln_default=1)
             cv2.imshow('frame', im_result)
         else:
             cv2.imshow('frame', image_deck)
