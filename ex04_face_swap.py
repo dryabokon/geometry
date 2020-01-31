@@ -11,7 +11,7 @@ import tools_animation
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
-use_camera = True
+use_camera = False
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
@@ -130,6 +130,30 @@ def demo_auto_01(folder_out):
     cv2.imwrite(folder_out + 'result.jpg' , result)
     return
 # ---------------------------------------------------------------------------------------------------------------------
+def demo_auto_02(folder_out):
+
+    global filename_clbrt, filename_actor
+    global image_clbrt, image_actor
+    global use_camera, do_transfer
+    global L_actor, L_clbrt
+    global del_triangles_C
+    global R_c, R_a
+
+
+    for i,filename_clbrt in enumerate(list_filenames):
+        for j,filename_actor in enumerate(list_filenames):
+            image_clbrt = cv2.imread(folder_in + filename_clbrt)
+            image_actor = cv2.imread(folder_in + filename_actor)
+            L_clbrt = D.get_landmarks_augm(image_clbrt)
+            del_triangles_C = Delaunay(L_clbrt).vertices
+            L_actor = D.get_landmarks_augm(image_actor)
+            R_c.update_texture(image_clbrt)
+            R_a.update_texture(image_actor)
+
+            result = tools_landmark.do_faceswap(R_c, R_a, image_clbrt, image_actor, L_clbrt, L_actor, del_triangles_C, folder_out=folder_out, do_debug=False)
+            cv2.imwrite(folder_out + 'result%02d_%02d.jpg'%(j,i), result)
+    return
+# ---------------------------------------------------------------------------------------------------------------------
 #tools_landmark.process_folder_extract_landmarks(D, 'D:/3/', folder_out, write_images=False, write_annotation=True)
 #tools_landmark.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
 #tools_landmark.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
@@ -171,6 +195,7 @@ def main(folder_in,folder_out):
     init(folder_in)
     demo_auto_01(folder_out)
     #demo_live()
+
     return
 # ---------------------------------------------------------------------------------------------------------------------
     #tools_landmark.process_folder_extract_landmarks(D, 'D:/2/', folder_out, write_images=False, write_annotation=True)
@@ -188,7 +213,7 @@ if __name__ == '__main__':
     filename_clbrt = 'Person5b.jpg'
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
-    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
+    #list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
     list_filenames = ['Person5b.jpg','Person2e.jpg']
 
     parser = argparse.ArgumentParser()
@@ -197,4 +222,7 @@ if __name__ == '__main__':
     parser.add_argument('--folder_out', default=folder_out)
     args = parser.parse_args()
     main(args.folder_in,args.folder_out)
+
+
+
 
