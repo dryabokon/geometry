@@ -27,7 +27,7 @@ filename_clbrt,filename_actor = list_filenames[0],list_filenames[1]
 image_clbrt = cv2.imread(folder_in + filename_clbrt)
 image_actor = cv2.imread(folder_in + filename_actor)
 L_clbrt = D.get_landmarks_augm(image_clbrt)
-del_triangles_C = Delaunay(L_clbrt).vertices
+del_triangles_C = Delaunay(L_clbrt[D.idx_removed_eyes]).vertices
 L_actor = D.get_landmarks_augm(image_actor)
 # ----------------------------------------------------------------------------------------------------------------------
 window = 0
