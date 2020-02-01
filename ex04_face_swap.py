@@ -198,8 +198,8 @@ def init(folder_in):
 def main(folder_in,folder_out):
 
     init(folder_in)
-    demo_auto_01(folder_out)
-    #demo_live()
+    #demo_auto_01(folder_out)
+    demo_live()
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -213,20 +213,14 @@ def main(folder_in,folder_out):
 #tools_animation.merge_images_in_folders('D:/2/','D:/2_res/','D:/2_merged/',mask='*.jpg')
 #tools_animation.folder_to_video('D:/2_merged/','D:/res_merged.mp4',mask='*.jpg',resize_W=2240//2,resize_H=1080//2)
 # ---------------------------------------------------------------------------------------------------------------------
-if __name__ == '__main__':
 
-    filename_clbrt = 'Person5b.jpg'
-    folder_in = './images/ex_faceswap/01/'
-    folder_out = './images/output/'
-    #list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    list_filenames = ['Person5b.jpg','Person2e.jpg']
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    list_filenames = ['Person1a.jpg','Person2g.jpg']
+    #list_filenames = ['Person1a.jpg','Person1b.jpg']
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--command', default='')
@@ -235,3 +229,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     main(args.folder_in,args.folder_out)
 
+    #init(folder_in)
+    #filename_clbrt = 'Person5b.jpg'
+    #tools_landmark.process_folder_faceswap_by_landmarks(D, folder_in+filename_clbrt,'D:/4/', folder_out+'Landmarks1.txt', folder_out)
