@@ -18,7 +18,7 @@ import tools_animation
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
 camera_W, camera_H = 640, 480
-use_camera = True
+use_camera = False
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
@@ -85,7 +85,7 @@ def demo_live(FS):
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
 
-        result = cv2.putText(result, '{0: 1.1f} {1} {2}'.format(fps, ' fps @ ', FS.device), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1, cv2.LINE_AA)
+        result = cv2.putText(result, '{0: 1.1f} {1}{2}'.format(fps, ' fps@', FS.device), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1, cv2.LINE_AA)
         result = cv2.putText(result, 'Clbrt: {0}'.format(filename_clbrt.split('/')[-1]), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1,cv2.LINE_AA)
         result = cv2.putText(result, 'Actor: {0}'.format(filename_actor.split('/')[-1]), (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1,cv2.LINE_AA)
 
@@ -115,6 +115,6 @@ if __name__ == '__main__':
     image_clbrt = cv2.imread(filename_clbrt)
     image_actor = cv2.imread(filename_actor)
 
-    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='gpu')
+    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='gpu',adjust_every_frame=True)
     demo_live(FS)
 
