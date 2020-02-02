@@ -51,11 +51,14 @@ def demo_03(folder_in,folder_out):
     #FS.interpolate(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
     #FS.filter_landmarks(folder_out+'Landmarks.txt',folder_out+'Landmarks_filtered.txt')
     #FS.process_folder_draw_landmarks('D:/4/',[folder_out+'Landmarks.txt'], folder_out, delim='\t')
-    FS.process_folder_faceswap_by_landmarks('D:/4/', folder_out+'Landmarks1.txt', folder_out)
+    #FS.process_folder_faceswap_by_landmarks('D:/4/', folder_out+'Landmarks1.txt', folder_out)
+
+
+    #tools_animation.crop_images_in_folder('D:/4_swap/','D:/4_swap_croped/',0, 800, 1080, 1920)
 
     #tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1120//2,resize_H=1080//2)
-    #tools_animation.merge_images_in_folders('D:/2/','D:/2_res/','D:/2_merged/',mask='*.jpg')
-    #tools_animation.folder_to_video('D:/2_merged/','D:/res_merged.mp4',mask='*.jpg',resize_W=2240//2,resize_H=1080//2)
+    #tools_animation.merge_images_in_folders('D:/4_croped/','D:/4_swap_croped/','D:/res/',mask='*.jpg')
+    #tools_animation.folder_to_video('D:/res/','D:/res_merged_v01.mp4',mask='*.jpg',resize_W=2240//2,resize_H=1080//2)
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
