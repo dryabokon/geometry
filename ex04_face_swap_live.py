@@ -3,6 +3,7 @@ from scipy import ndimage
 import sys
 import numpy
 import cv2
+import tensorflow  as tf
 from scipy.spatial import Delaunay
 import argparse
 # ---------------------------------------------------------------------------------------------------------------------
@@ -17,7 +18,7 @@ import tools_animation
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
 camera_W, camera_H = 640, 480
-use_camera = False
+use_camera = True
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
@@ -84,9 +85,11 @@ def demo_live(FS):
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
 
-        result = cv2.putText(result, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(1, 1, 0), 1, cv2.LINE_AA)
-        result = cv2.putText(result, 'Clbrt: {0}'.format(filename_clbrt.split('/')[-1]), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(1, 0, 0), 1, cv2.LINE_AA)
-        result = cv2.putText(result, 'Actor: {0}'.format(filename_actor.split('/')[-1]), (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(1, 0, 0), 1,cv2.LINE_AA)
+        result = cv2.putText(result, '{0: 1.1f} {1} {2}'.format(fps, ' fps @ ', FS.device), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1, cv2.LINE_AA)
+        result = cv2.putText(result, 'Clbrt: {0}'.format(filename_clbrt.split('/')[-1]), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1,cv2.LINE_AA)
+        result = cv2.putText(result, 'Actor: {0}'.format(filename_actor.split('/')[-1]), (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1,cv2.LINE_AA)
+
+
 
         cv2.imshow('frame', result)
         cnt += 1
@@ -107,9 +110,11 @@ if __name__ == '__main__':
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
 
     filename_clbrt, filename_actor = folder_in + list_filenames[ 0], folder_in + list_filenames[ 1]
+    #filename_clbrt = folder_in+'Person5c.jpg'
+    #filename_actor = folder_in+'Person2a.jpg'
     image_clbrt = cv2.imread(filename_clbrt)
     image_actor = cv2.imread(filename_actor)
 
-    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor)
+    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='gpu')
     demo_live(FS)
 
