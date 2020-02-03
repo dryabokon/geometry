@@ -18,7 +18,7 @@ import tools_animation
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
 camera_W, camera_H = 640, 480
-use_camera = False
+use_camera = True
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
@@ -76,6 +76,7 @@ def demo_live(FS):
                 cap.set(4, camera_H)
 
             ret, image_actor = cap.read()
+            image_actor = cv2.flip(image_actor,1)
             FS.update_actor(image_actor)
 
         if do_transfer:
@@ -115,6 +116,6 @@ if __name__ == '__main__':
     image_clbrt = cv2.imread(filename_clbrt)
     image_actor = cv2.imread(filename_actor)
 
-    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='gpu',adjust_every_frame=True)
+    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='gpu',adjust_every_frame=False,do_narrow_face=True)
     demo_live(FS)
 
