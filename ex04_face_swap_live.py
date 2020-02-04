@@ -18,7 +18,7 @@ import tools_animation
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
 camera_W, camera_H = 640, 480
-use_camera = False
+use_camera = True
 do_transfer = True
 # ---------------------------------------------------------------------------------------------------------------------
 def click_handler(event, x, y, flags, param):

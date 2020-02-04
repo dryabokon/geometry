@@ -24,7 +24,7 @@ def demo_01(folder_out,filename_clbrt,filename_actor):
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_02(folder_out,folder_in,list_filenames):
 
-    FS = tools_faceswap.Face_Swaper(D, numpy.zeros((10,10,3),dtype=numpy.uint8), numpy.zeros((10,10,3),dtype=numpy.uint8),device='gpu')
+    FS = tools_faceswap.Face_Swaper(D, numpy.zeros((10,10,3),dtype=numpy.uint8), numpy.zeros((10,10,3),dtype=numpy.uint8),device='cpu')
 
     for j, filename_actor in enumerate(list_filenames):
         image_actor = cv2.imread(folder_in + filename_actor)
@@ -41,7 +41,7 @@ def demo_03(folder_in,folder_out):
 
     filename_clbrt = folder_in + 'Person5a.jpg'
     image_clbrt = cv2.imread(filename_clbrt)
-    FS = tools_faceswap.Face_Swaper(D, image_clbrt,numpy.zeros((10, 10, 3), dtype=numpy.uint8),device='gpu')
+    FS = tools_faceswap.Face_Swaper(D, image_clbrt,numpy.zeros((10, 10, 3), dtype=numpy.uint8),device='cpu')
 
     #tools_video.grab_youtube_video('https://www.youtube.com/watch?v=cVz12M2awA8','D:/', 'BP')
 
@@ -61,12 +61,20 @@ def demo_03(folder_in,folder_out):
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
+
+
+
+
+
+
+
+
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
     #list_filenames = ['Person5a.jpg','Person2e.jpg']
     #demo_01(folder_out,folder_in + list_filenames[ 0],folder_in + list_filenames[2])
-    #demo_02(folder_out,folder_in,list_filenames)
-    demo_03(folder_in,folder_out)
+    demo_02(folder_out,folder_in,list_filenames)
+    #demo_03(folder_in,folder_out)
 
 
