@@ -73,8 +73,8 @@ if __name__ == '__main__':
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
     #list_filenames = ['Person5a.jpg','Person2e.jpg']
-    #demo_01(folder_out,folder_in + list_filenames[ 0],folder_in + list_filenames[2])
-    demo_02(folder_out,folder_in,list_filenames)
+    demo_01(folder_out,folder_in + list_filenames[ 0],folder_in + list_filenames[2])
+    #demo_02(folder_out,folder_in,list_filenames)
     #demo_03(folder_in,folder_out)
 
 
