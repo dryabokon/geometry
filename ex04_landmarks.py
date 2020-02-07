@@ -1,31 +1,41 @@
+import numpy
 import cv2
-import os
 from scipy.spatial import Delaunay
+import tools_GL
 # ---------------------------------------------------------------------------------------------------------------------
 import time
-import tools_IO
-import tools_landmark
 import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
+camera_W, camera_H = 640, 480
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 folder_in = 'D:/2/'
 folder_out = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live():
+    R = tools_GL.render_GL(numpy.zeros((camera_H,camera_W,3),dtype=numpy.uint8))
 
     use_camera = True
     cnt, start_time, fps = 0, time.time(), 0
 
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+    cap.set(3, camera_W)
+    cap.set(4, camera_H)
     while (True):
         if use_camera:
             ret, image = cap.read()
-            L = D.get_landmarks_augm(image)
-            del_triangles = Delaunay(L).vertices
-            D.draw_landmarks_v2(image,L,del_triangles)
-            #result = D.draw_landmarks(image)
+            L = D.get_landmarks(image)
+            if D.are_landmarks_valid(L):
+                del_triangles = Delaunay(L).vertices
+                D.draw_landmarks_v2(image,L,del_triangles)
+                result = D.draw_landmarks(image)
+                r_vec, t_vec = D.get_pose(L)
+                result = D.draw_annotation_box(result,r_vec, t_vec)
+                #result = R.get_image(result)
+                #result = R.morph_3D_mesh(camera_H,camera_W,result,r_vec, t_vec)
+
+            else:
+                result = image.copy()
+
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result = cv2.putText(result, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)
@@ -42,9 +52,9 @@ def demo_live():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #demo_live()
-    #tools_landmark.process_folder(D, folder_in, folder_out, write_images=False, write_annotation=True)
-    tools_landmark.process_folder_draw_landmarks(D, folder_in, folder_out + 'landmarks.txt', folder_out)
+    demo_live()
+
+
 
 
 

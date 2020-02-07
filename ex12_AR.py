@@ -77,7 +77,8 @@ def draw():
 
         glPushMatrix()
         glRotatef(90, +1, 0, 0)
-        glutSolidTeapot(marker_length/4)#tools_aruco.draw_cube(size=marker_length/4)
+        #glutSolidTeapot(marker_length/4)
+        tools_aruco.draw_cube(size=marker_length/4)
         glPopMatrix()
 
 

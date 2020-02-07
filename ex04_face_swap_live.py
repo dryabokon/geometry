@@ -109,6 +109,8 @@ def demo_live(FS):
             ret, image_actor = cap.read()
             image_actor = cv2.flip(image_actor,1)
             FS.update_actor(image_actor)
+            if cnt==0:
+                FS.update_clbrt(image_clbrt)
 
         if do_transfer:
             result = FS.do_faceswap()
@@ -141,7 +143,7 @@ if __name__ == '__main__':
     folder_out = './images/output1/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
 
-    filename_clbrt, filename_actor = list_filenames[ 0], list_filenames[ 1]
+    filename_clbrt, filename_actor = list_filenames[15], list_filenames[ 1]
     #filename_clbrt = folder_in+'Person5c.jpg'
     #filename_actor = folder_in+'Person2a.jpg'
     image_clbrt = cv2.imread(folder_in+filename_clbrt)
