@@ -56,16 +56,10 @@ def demo_03(folder_in,folder_out):
     #tools_animation.folder_to_video(folder_out,'D:/ani_full.mp4',mask='*.jpg',resize_W=1120//2,resize_H=1080//2)
 
     #tools_animation.merge_images_in_folders('D:/BP_in/','D:/BP_out/','D:/res/',mask='*.jpg')
-    tools_animation.folder_to_video('D:/res/','D:/BP_merged_v02.mp4',mask='*.jpg',resize_W=3840//2,resize_H=1080//2)
+    #tools_animation.folder_to_video('D:/res/','D:/BP_merged_v02.mp4',mask='*.jpg',resize_W=3840//2,resize_H=1080//2)
     return
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-
-
-
-
-
-
 
 
 
