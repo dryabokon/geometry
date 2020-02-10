@@ -83,8 +83,8 @@ def draw():
 
 
     glutSwapBuffers()
-    glFlush()
-    glutPostRedisplay()
+    #glFlush()
+    #glutPostRedisplay()
     return True
 # ----------------------------------------------------------------------------------------------------------------------
 def reshape(w, h):

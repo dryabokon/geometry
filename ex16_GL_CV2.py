@@ -1,116 +1,59 @@
-import glfw
+import cv2
+import numpy
 from OpenGL.GL import *
-import OpenGL.GL.shaders
-import numpy as np
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+import sys
+import glfw
+import tools_aruco
 # ---------------------------------------------------------------------------------------------------------------------
-def main():
-    if not glfw.init():
-        return
-
-    window = glfw.create_window(720, 600, "Pyopengl Drawing Rectangle", None, None)
-
-    if not window:
-        glfw.terminate()
-        return
-
+image_shape = 400,600
+fx,fy = 1090, 1090
+principalX, principalY = fx/2, fy/2
+cameraMatrix = numpy.array([[fx,0,principalX],[0,fy,principalY],[0,0,1]])
+dist = numpy.zeros((1,5))
+near = 1
+far = 1050
+marker_length = 0.1
+# ---------------------------------------------------------------------------------------------------------------------
+def draw(window):
     glfw.make_context_current(window)
 
-                   # Positions           #Colors
-    rectangle = [ -0.5, -0.5, 0.0,    1.0, 0.0, 0.0,
-                  0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
-                  0.5, 0.5, 0.0,      0.0, 0.0, 1.0,
-                 -0.5, 0.5, 0.0,      1.0,1.0, 1.0 ]
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glDisable(GL_DEPTH_TEST)
+    glEnable(GL_DEPTH_TEST)
+
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+
+    left = -principalX / fx
+    right = (image_shape[1] - principalX) / fx
+    bottom = (principalY - image_shape[0]) / fy
+    top = principalY / fy
+    glFrustum(left, right, bottom, top, near, far)
+
+    rvec = numpy.array([-2.8054866, -1.071149,    0.45893607])
+    tvec = numpy.array([-0.31804663, -0.56528067,  1.40848886])
 
 
-    rectangle = np.array(rectangle, dtype=np.float32)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadMatrixf(tools_aruco.compose_GL_MAT(rvec, tvec))
+    tools_aruco.draw_native_axis(marker_length / 2)
 
-    # Creating Indices
+    glPushMatrix()
+    glRotatef(90, +1, 0, 0)
+    tools_aruco.draw_cube(size=marker_length / 4)
+    glPopMatrix()
 
-    indices = [0,1,2,
-              2,3,0]
-
-    indices = np.array(indices, dtype = np.uint32)
-
-
-
-    VERTEX_SHADER = """
-
-        #version 330
-
-        in vec3 position;
-        in vec3 color;
-        out vec3 newColor;
-
-        void main() {
-
-         gl_Position = vec4(position, 1.0);
-         newColor = color;
-
-          }
-
-
-    """
-
-    FRAGMENT_SHADER = """
-        #version 330
-
-        in vec3 newColor;
-        out vec4 outColor;
-
-        void main() {
-
-          outColor = vec4(newColor, 1.0f);
-
-        }
-
-    """
-
-    # Compile The Program and shaders
-
-    shader = OpenGL.GL.shaders.compileProgram(OpenGL.GL.shaders.compileShader(VERTEX_SHADER, GL_VERTEX_SHADER),
-                                              OpenGL.GL.shaders.compileShader(FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
-
-    # Create Buffer object in gpu
-    VBO = glGenBuffers(1)
-
-
-    #Create EBO
-    EBO = glGenBuffers(1)
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
-
-
-
-    # Bind the buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO)
-    glBufferData(GL_ARRAY_BUFFER, 96, rectangle, GL_STATIC_DRAW)
-
-    # get the position from  shader
-    position = glGetAttribLocation(shader, 'position')
-    glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(0))
-    glEnableVertexAttribArray(position)
-
-    # get the color from  shader
-    color = glGetAttribLocation(shader, 'color')
-    glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(12))
-    glEnableVertexAttribArray(color)
-
-    glUseProgram(shader)
-
-    glClearColor(0.0, 1.0, 0.0, 1.0)
-
-    while not glfw.window_should_close(window):
-        glfw.poll_events()
-
-        glClear(GL_COLOR_BUFFER_BIT)
-
-        # Draw Triangle
-
-        glDrawElements(GL_TRIANGLES,6, GL_UNSIGNED_INT,  None)
-
-        glfw.swap_buffers(window)
-
-    glfw.terminate()
+    W,H = 640,480
+    image_buffer = glReadPixels(0, 0, W, H, OpenGL.GL.GL_RGB, OpenGL.GL.GL_UNSIGNED_BYTE)
+    image = numpy.frombuffer(image_buffer, dtype=numpy.uint8).reshape(H, W, 3)
+    return image
 # ---------------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+
+    glfw.init()
+    glfw.window_hint(glfw.VISIBLE, False)
+    window = glfw.create_window(640, 480, "hidden window", None, None)
+    image = draw(window)
+    cv2.imwrite('./images/output/res.png', image)

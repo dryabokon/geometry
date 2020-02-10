@@ -1,19 +1,9 @@
-from scipy import signal
-from scipy import ndimage
-import sys
-import numpy
 import cv2
-import tensorflow  as tf
-from scipy.spatial import Delaunay
-import argparse
 # ---------------------------------------------------------------------------------------------------------------------
 import time
 import tools_IO
 import tools_faceswap
 import detector_landmarks
-import tools_animation
-import tools_GL
-import tools_animation
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
@@ -122,10 +112,8 @@ def demo_live(FS):
         result = cv2.putText(result, '{0: 1.1f} {1}{2}'.format(fps, ' fps@', FS.device), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1, cv2.LINE_AA)
         result = cv2.putText(result, 'Clbrt: {0}'.format(filename_clbrt.split('/')[-1]), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1,cv2.LINE_AA)
         result = cv2.putText(result, 'Actor: {0}'.format(filename_actor.split('/')[-1]), (0, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1,cv2.LINE_AA)
-
-
-
         cv2.imshow('frame', result)
+
         cnt += 1
         key = cv2.waitKey(1)
         process_key(key)
