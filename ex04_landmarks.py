@@ -86,7 +86,7 @@ if __name__ == '__main__':
     filename_actor = list_filenames[0]
     image_actor = cv2.imread(folder_in + filename_actor)
     image_actor = tools_image.smart_resize(image_actor, camera_H, camera_W)
-    demo_live()
+    #demo_live()
 
     fx, fy = 1090, 1090
     principalX, principalY = fx / 2, fy / 2

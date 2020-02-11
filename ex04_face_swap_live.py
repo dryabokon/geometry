@@ -137,6 +137,6 @@ if __name__ == '__main__':
     image_clbrt = cv2.imread(folder_in+filename_clbrt)
     image_actor = cv2.imread(folder_in+filename_actor)
 
-    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='cpu',adjust_every_frame=False,do_narrow_face=True)
+    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='cpu',adjust_every_frame=True,do_narrow_face=True)
     demo_live(FS)
 
