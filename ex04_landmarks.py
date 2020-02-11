@@ -5,6 +5,7 @@ import tools_IO
 import tools_image
 import tools_GL3D
 import tools_aruco
+import pyrr
 # ---------------------------------------------------------------------------------------------------------------------
 import time
 import detector_landmarks
@@ -86,19 +87,24 @@ if __name__ == '__main__':
     filename_actor = list_filenames[0]
     image_actor = cv2.imread(folder_in + filename_actor)
     image_actor = tools_image.smart_resize(image_actor, camera_H, camera_W)
-    demo_live()
+    #demo_live()
 
-    fx, fy = 1090, 1090
-    principalX, principalY = fx / 2, fy / 2
-    dist = numpy.zeros((1, 5))
-    cameraMatrix = numpy.array([[fx, 0, principalX], [0, fy, principalY], [0, 0, 1]])
-    marker_length = 0.1
-    frame = cv2.imread('images/ex_aruco/01.jpg')
-    frame, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, cameraMatrix, dist)
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box.obj',W=camera_W,H=camera_H,)
-    image = R.get_image(rvec=rvec,tvec=tvec)
-    cv2.imwrite('./images/output/res.png',image)
 
+
+    frame = cv2.imread('images/ex_aruco/02.jpg')
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box.obj',W=camera_W,H=camera_H)
+    #frame, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length=0.1, camera_matrix=R.cameraMatrix, dist=numpy.zeros(4))
+
+
+    rvec, tvec = (0,0.8,0),(0,0,+3)
+
+    R.init_mat_projection0()
+    image = R.get_image((0,0,0), tvec)
+    cv2.imwrite('./images/output/res0.png',image)
+
+    R.init_mat_projection()
+    image = R.get_image((0, 0, 0), tvec)
+    cv2.imwrite('./images/output/res.png', image)
 
 
 

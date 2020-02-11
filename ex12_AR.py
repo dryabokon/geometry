@@ -7,13 +7,12 @@ from OpenGL.GL import *
 import tools_aruco
 import tools_image
 # ----------------------------------------------------------------------------------------------------------------------
-image_shape = 400,600
-fx,fy = 1090, 1090
-principalX, principalY = fx/2, fy/2
-cameraMatrix = numpy.array([[fx,0,principalX],[0,fy,principalY],[0,0,1]])
-dist = numpy.zeros((1,5))
+image_shape = 480,640
+fx,fy = 2*640, 2*480
+cameraMatrix = numpy.array([[fx,0,fx/2],[0,fy,fy/2],[0,0,1]])
+dist = numpy.zeros(4)
 near = 1
-far = 1050
+far = 1000
 marker_length = 0.1
 # ----------------------------------------------------------------------------------------------------------------------
 frame = []
@@ -21,7 +20,7 @@ frame = []
 lightZeroPosition = [10.0, 10.0, 10.0, 1.0]
 lightZeroColor = [2.5, 2.5, 2.5, 1]
 # ----------------------------------------------------------------------------------------------------------------------
-filename_in = 'images/ex_aruco/01.jpg'
+filename_in = 'images/ex_aruco/02.jpg'
 filename_out = 'images/output/ar.png'
 USE_CAMERA = False
 # ----------------------------------------------------------------------------------------------------------------------
@@ -60,10 +59,10 @@ def draw():
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
-    left = -principalX / fx
-    right = (image_shape[1] - principalX) / fx
-    bottom = (principalY - image_shape[0]) / fy
-    top = principalY / fy
+    left = -0.5
+    right = (image_shape[1] - fx/2) / fx
+    bottom = (fy/2 - image_shape[0]) / fy
+    top = 0.5
     glFrustum(left, right, bottom, top,near, far)
 
     #a = (GLfloat * 16)()
@@ -72,7 +71,7 @@ def draw():
 
     if numpy.count_nonzero(rvec)>0:
         glMatrixMode(GL_MODELVIEW)
-        glLoadMatrixf(tools_aruco.compose_GL_MAT(rvec, tvec))
+        glLoadMatrixf(tools_aruco.compose_GL_MAT(rvec, tvec,flip=True))
         tools_aruco.draw_native_axis(marker_length/2)
 
         glPushMatrix()
