@@ -5,6 +5,7 @@ import tools_IO
 import tools_image
 import tools_GL3D
 import tools_aruco
+import pyrr
 # ---------------------------------------------------------------------------------------------------------------------
 import time
 import detector_landmarks
@@ -88,19 +89,16 @@ if __name__ == '__main__':
     image_actor = tools_image.smart_resize(image_actor, camera_H, camera_W)
     #demo_live()
 
-    fx, fy = 1090, 1090
-    principalX, principalY = fx / 2, fy / 2
-    dist = numpy.zeros((1, 5))
-    cameraMatrix = numpy.array([[fx, 0, principalX], [0, fy, principalY], [0, 0, 1]])
+
     marker_length = 0.1
-    frame = cv2.imread('images/ex_aruco/01.jpg')
-    frame, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, cameraMatrix, dist)
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box.obj',W=camera_W,H=camera_H,)
-    image = R.get_image(rvec=rvec,tvec=tvec)
-    cv2.imwrite('./images/output/res.png',image)
+    frame = cv2.imread('./images/ex_aruco/01.jpg')
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box.obj',W=camera_W,H=camera_H,scale=marker_length/2)
+    axes_image, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, R.mat_camera, numpy.zeros(4))
 
+    result = tools_aruco.draw_cube_numpy(frame, R.mat_camera, numpy.zeros(4), rvec, tvec, marker_length)
+    cv2.imwrite('./images/output/cube.png', result)
 
-
-
-
-
+    image_3d = R.get_image(rvec, tvec,flip=True)
+    clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
+    result = tools_image.put_layer_on_image(frame,image_3d,clr)
+    cv2.imwrite('./images/output/res0.png',result)
