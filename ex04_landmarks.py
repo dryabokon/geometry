@@ -4,8 +4,6 @@ from scipy.spatial import Delaunay
 import tools_IO
 import tools_image
 import tools_GL3D
-import tools_aruco
-import pyrr
 # ---------------------------------------------------------------------------------------------------------------------
 import time
 import detector_landmarks
@@ -20,9 +18,9 @@ def process_key(key):
     global list_filenames,filename_actor
     global image_actor
 
-    if key==ord('a') or key==ord('d'):
+    if key in [ord('a'),ord('d'),ord('w'),ord('s')]:
         idx = tools_IO.smart_index(list_filenames, filename_actor)[0]
-        if key==ord('d'):
+        if key in [ord('d'),ord('w')]:
             idx  =(idx+1)%len(list_filenames)
         else:
             idx = (idx-1+len(list_filenames)) % len(list_filenames)
@@ -36,8 +34,7 @@ def process_key(key):
 def demo_live():
 
     global image_actor
-    #R = tools_GL3D.render_GL()
-    #R.load_obj('./images/ex_GL/box.obj')
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=image_actor.shape[1], H=image_actor.shape[0])
 
     if use_camera:
         cap = cv2.VideoCapture(0)
@@ -58,11 +55,13 @@ def demo_live():
             del_triangles = Delaunay(L).vertices
             D.draw_landmarks_v2(image_actor,L,del_triangles)
             result = D.draw_landmarks(image_actor)
-            r_vec, t_vec = D.get_pose(L)
-            result = D.draw_annotation_box(result,r_vec, t_vec)
-            #result = R.get_image(result)
-            #result = R.render_obj()
-            #result = R.morph_3D_mesh(camera_H,camera_W,result,r_vec, t_vec)
+            r_vec, t_vec = D.get_pose(image_actor,L)
+            #result = D.draw_annotation_box(result,r_vec, t_vec)
+
+            image_3d = R.get_image(r_vec,t_vec)
+            clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
+            result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
+
         else:
             result = image_actor.copy()
 
@@ -80,6 +79,16 @@ def demo_live():
     cv2.destroyAllWindows()
     return
 # ---------------------------------------------------------------------------------------------------------------------
+def export_model():
+    X = D.model_68_points
+    Ob = tools_GL3D.ObjLoader()
+    Ob.export_model(X,'./images/ex_GL/face/face.obj')
+
+    R = tools_GL3D.render_GL3D('./images/ex_GL/face/face.obj')
+    result = R.get_image(rvec=(0,0,0),tvec=(0,0,+320),do_debug=True)
+    cv2.imwrite('./images/output/box.png', result)
+    return
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     folder_in = './images/ex_faceswap/01/'
@@ -87,18 +96,6 @@ if __name__ == '__main__':
     filename_actor = list_filenames[0]
     image_actor = cv2.imread(folder_in + filename_actor)
     image_actor = tools_image.smart_resize(image_actor, camera_H, camera_W)
-    #demo_live()
+    demo_live()
 
 
-    marker_length = 0.1
-    frame = cv2.imread('./images/ex_aruco/01.jpg')
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box.obj',W=camera_W,H=camera_H,scale=marker_length/2)
-    axes_image, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, R.mat_camera, numpy.zeros(4))
-
-    result = tools_aruco.draw_cube_numpy(frame, R.mat_camera, numpy.zeros(4), rvec, tvec, marker_length)
-    cv2.imwrite('./images/output/cube.png', result)
-
-    image_3d = R.get_image(rvec, tvec,flip=True)
-    clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
-    result = tools_image.put_layer_on_image(frame,image_3d,clr)
-    cv2.imwrite('./images/output/res0.png',result)

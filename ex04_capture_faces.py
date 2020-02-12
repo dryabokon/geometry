@@ -41,7 +41,7 @@ def stage_faces_from_cam(folder_out):
                 result = D.cut_face(image, L, target_W=camera_W, target_H=camera_H)
                 L = D.get_landmarks(result)
                 if D.are_landmarks_valid(L):
-                    rotv, tvecs = D.get_pose(L)
+                    rotv, tvecs = D.get_pose(image,L)
                     rotv = rotv.reshape(3, 1)
                     tvecs = tvecs.reshape(3, 1)
 
