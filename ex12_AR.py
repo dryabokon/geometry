@@ -95,7 +95,7 @@ class render_GL(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
     def __init_mat_modelvew(self):
-        self.mat_view = tools_aruco.compose_GL_MAT(self.rvec, self.tvec, flip=True)
+        self.mat_view = tools_aruco.compose_GL_MAT(self.rvec, self.tvec,do_flip=True)
         return
 # ----------------------------------------------------------------------------------------------------------------------
     def draw(self):

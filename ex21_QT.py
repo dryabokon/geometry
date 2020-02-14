@@ -17,7 +17,6 @@ import tools_video
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
 capturing_devices = ['cam','mp4','image']
-capturing_device = capturing_devices[2]
 camera_W, camera_H = 640, 480
 # ---------------------------------------------------------------------------------------------------------------------
 class Thread(QThread):
@@ -48,8 +47,8 @@ class Thread(QThread):
 
         if capturing_device == 'cam':
             cap = cv2.VideoCapture(0)
-            self.cap.set(3, camera_W)
-            self.cap.set(4, camera_H)
+            cap.set(3, camera_W)
+            cap.set(4, camera_H)
         elif capturing_device == 'mp4':
             cap = cv2.VideoCapture(filename_driver)
 
@@ -63,6 +62,11 @@ class Thread(QThread):
                 image_driver = image_driver_default.copy()
             else:
                 ret, image_driver = cap.read()
+                if capturing_device == 'mp4':
+                    image_driver = tools_image.smart_resize(image_driver, camera_H, camera_W)
+                if capturing_device == 'cam':
+                    cv2.flip(image_driver, 1)
+
 
             image_driver_display = image_driver.copy()
 
@@ -120,6 +124,7 @@ class App(QWidget):
 
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    capturing_device = 'image'
     folder_in = './images/ex_faceswap/01/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
     filename_driver = folder_in+list_filenames[0]
@@ -127,7 +132,8 @@ if __name__ == '__main__':
     image_driver_default = cv2.imread(filename_driver)
     image_driver_default = tools_image.smart_resize(image_driver_default, camera_H, camera_W)
 
-    #filename_driver = './images/ex_DMS/JB_original.mp4'
+    capturing_device = 'mp4'
+    filename_driver = './images/ex_DMS/JB_original.mp4'
 
     app = QApplication(sys.argv)
     ex = App()
