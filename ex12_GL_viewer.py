@@ -49,8 +49,8 @@ def event_button(window, button, action, mods):
     if (button == glfw.MOUSE_BUTTON_LEFT and action == glfw.RELEASE):
         R.stop_rotation()
 
-    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS):
-        R.append_object(filename_sphere,(0.5,0,0))
+    #if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS):
+    #    R.append_object(filename_sphere,(0.5,0,0))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -78,7 +78,7 @@ def example_convert(filename_in,filename_out):
     Obj.convert(filename_in,filename_out)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-#filename_out = './images/ex_GL/face/male_head_exp.obj'
+filename_out = './images/ex_GL/face/male_head_exp.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 #filename_in = './images/ex_GL/rock/TheRock2.obj'
 filename_out = './images/ex_GL/rock/TheRock2_exp.obj'
@@ -88,13 +88,14 @@ filename_out = './images/ex_GL/rock/TheRock2_exp.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 filename_sphere = './images/ex_GL/sphere/sphere.obj'
 filename_box = './images/ex_GL/box/box.obj'
+filename_face = './images/ex_GL/face/face.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     #example_convert(filename_in,filename_out)
     #sys.exit(1)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_out, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_face, W=W, H=H)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
