@@ -33,7 +33,9 @@ def process_key(key):
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live():
 
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=camera_W, H=camera_H,is_visible=False,do_normalize=False)
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/male_head_exp.obj', W=camera_W, H=camera_H,is_visible=False,do_normalize=True)
+    rvec, tvec = (0, 0, 0), (0, 0, 5)
+    cv2.imwrite('./images/output/image_GL.png', R.get_image(rvec, tvec))
 
     if capturing_device == 'cam':
         cap = cv2.VideoCapture(0)
@@ -65,7 +67,7 @@ def demo_live():
             r_vec, t_vec = D.get_pose(image_actor,L)
             result = D.draw_annotation_box(result,r_vec, t_vec)
 
-            image_3d = R.get_image(r_vec.flatten(),t_vec.flatten(),flip=True)
+            image_3d = R.get_image(r_vec.flatten(),t_vec.flatten(),flip=False)
             clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
             result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
 

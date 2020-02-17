@@ -109,7 +109,7 @@ def example_ray_interception(filename_in):
     ray_begin, ray_end= tools_render_CV.get_ray(point_2d, numpy.full((H, W, 3), 76, dtype=numpy.uint8), R.mat_projection,R.mat_view, R.mat_model, R.mat_trns)
 
     triangle = numpy.array([[+1, -2, -2], [+1, -2, 2], [+1, +2, 2]])
-    collision = tools_render_CV.get_ray_interception(ray_begin, ray_end-ray_begin,triangle)
+    collision = tools_render_CV.get_interception_ray_triangle(ray_begin, ray_end - ray_begin, triangle)
     print(collision)
     return
 # ----------------------------------------------------------------------------------------------------------------------
