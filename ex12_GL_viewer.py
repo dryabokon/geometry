@@ -2,8 +2,9 @@ import sys
 import math
 import numpy
 import tools_GL3D
-#import tools_render_CV
+import tools_render_CV
 import glfw
+# ----------------------------------------------------------------------------------------------------------------------
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_rotate_start, pos_rotate_current = None, None
@@ -35,11 +36,17 @@ def event_key(window, key, scancode, action, mods):
         if key == 323: R.transform_model('yz')
         if key == 325: R.transform_model(None)
 
-        if key == 32: R.stage_data(folder_out)
+        if key == 291: R.save_markers(folder_out+'marker.txt')
+        if key == 292: R.load_markers(folder_out + 'marker.txt',filename_sphere)
 
+        if key in [32,335]: R.stage_data(folder_out)
 
-    if action == glfw.PRESS and key == glfw.KEY_ESCAPE:
-        glfw.set_window_should_close(R.window,True)
+        if key == glfw.KEY_ESCAPE:
+            glfw.set_window_should_close(R.window,True)
+
+        if key == ord('Z') and mods == glfw.MOD_CONTROL:
+            R.my_VBO.remove_last_object()
+            R.bind_VBO()
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -53,8 +60,13 @@ def event_button(window, button, action, mods):
     if (button == glfw.MOUSE_BUTTON_LEFT and action == glfw.RELEASE):
         R.stop_rotation()
 
-    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS):
+    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS and (mods not in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):
         R.start_append()
+
+    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS and (mods in [glfw.MOD_CONTROL,glfw.MOD_SHIFT]) ):
+        R.start_remove()
+
+
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -64,9 +76,19 @@ def event_position(window, xpos, ypos):
         delta_angle = (pos_rotate_start-numpy.array((xpos,ypos)))*1.0*math.pi/W
         R.rotate_model((delta_angle[1], -delta_angle[0], 0))
 
-    if R.on_append:
+    if R.on_append == True:
         R.stop_append()
-        R.my_VBO.append_object(filename_sphere, (0.7, 0.2, 0), do_normalize=True, svec=(0.1, 0.1, 0.1), tvec=(1, 1, 1))
+        point_2d = (W - xpos, ypos)
+        ray_begin, ray_end = tools_render_CV.get_ray(point_2d, numpy.full((H, W, 3), 76, dtype=numpy.uint8),R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
+        tvec = tools_render_CV.get_interception_ray_triangles(ray_begin, ray_end - ray_begin, R.object.coord_vert,R.object.coord_norm,R.object.idx_vertex,R.object.idx_normal)
+        if tvec is not None:
+            R.my_VBO.append_object(filename_sphere, (0.7, 0.2, 0), do_normalize_model_file=True, svec=(0.025, 0.025, 0.025), tvec=tvec)
+            R.bind_VBO()
+
+    if R.on_remove == True:
+        R.stop_remove()
+        R.my_VBO.remove_last_object()
+
         R.bind_VBO()
 
     return
@@ -87,23 +109,17 @@ def example_convert(filename_in,filename_out):
     Obj.convert(filename_in,filename_out)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-#filename_out = './images/ex_GL/face/male_head_exp.obj'
-# ----------------------------------------------------------------------------------------------------------------------
-#filename_in = './images/ex_GL/rock/TheRock2.obj'
-filename_out = './images/ex_GL/rock/TheRock2_exp.obj'
-# ----------------------------------------------------------------------------------------------------------------------
-#filename_in = './images/ex_GL/sphere/sphere.obj'
-#filename_out = './images/ex_GL/sphere/sphere_exp.obj'
-# ----------------------------------------------------------------------------------------------------------------------
+filename_face = './images/ex_GL/face/face.obj'
+filename_head = './images/ex_GL/face/male_head_exp.obj'
+filename_rockman = './images/ex_GL/rock/TheRock2_exp.obj'
 filename_sphere = './images/ex_GL/sphere/sphere.obj'
 filename_box = './images/ex_GL/box/box.obj'
-filename_face = './images/ex_GL/face/face.obj'
 
 if __name__ == '__main__':
 
     #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=W, H=H,is_visible=True)
     #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=W, H=H,is_visible=True)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_out, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_face, W=W, H=H)
 
 
     glfw.set_key_callback(R.window, event_key)
