@@ -2,11 +2,13 @@ import sys
 import math
 import numpy
 import tools_GL3D
+import tools_render_CV
 import glfw
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_rotate_start, pos_rotate_current = None, None
 W,H = 800,800
+folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
 
@@ -33,6 +35,8 @@ def event_key(window, key, scancode, action, mods):
         if key == 323: R.transform_model('yz')
         if key == 325: R.transform_model(None)
 
+        if key == 32: R.stage_data(folder_out)
+
 
     if action == glfw.PRESS and key == glfw.KEY_ESCAPE:
         glfw.set_window_should_close(R.window,True)
@@ -49,8 +53,9 @@ def event_button(window, button, action, mods):
     if (button == glfw.MOUSE_BUTTON_LEFT and action == glfw.RELEASE):
         R.stop_rotation()
 
-    #if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS):
-    #    R.append_object(filename_sphere,(0.5,0,0))
+    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS):
+        R.my_VBO.append_object(filename_sphere,(0.7,0.2,0),do_normalize=True,svec=(0.1,0.1,0.1),tvec=(1,1,1))
+        R.bind_VBO()
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -78,7 +83,7 @@ def example_convert(filename_in,filename_out):
     Obj.convert(filename_in,filename_out)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_out = './images/ex_GL/face/male_head_exp.obj'
+#filename_out = './images/ex_GL/face/male_head_exp.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 #filename_in = './images/ex_GL/rock/TheRock2.obj'
 filename_out = './images/ex_GL/rock/TheRock2_exp.obj'
@@ -89,13 +94,14 @@ filename_out = './images/ex_GL/rock/TheRock2_exp.obj'
 filename_sphere = './images/ex_GL/sphere/sphere.obj'
 filename_box = './images/ex_GL/box/box.obj'
 filename_face = './images/ex_GL/face/face.obj'
-# ----------------------------------------------------------------------------------------------------------------------
+filenama_cat = './images/ex_GL/cat/cat_exp2.obj'
+
 if __name__ == '__main__':
 
     #example_convert(filename_in,filename_out)
     #sys.exit(1)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_face, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filenama_cat, W=W, H=H)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

@@ -14,5 +14,5 @@ def example_plot(filename_in):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    #example_export('./images/ex_GL/face/male_head.obj','./images/ex_GL/face/male_head_exp')
-    example_plot('./images/ex_GL/rock/TheRock2.obj')
+    example_export('./images/ex_GL/cat/cat.obj','./images/ex_GL/cat/cat_exp')
+    #example_plot('./images/ex_GL/cat/cat.obj')
