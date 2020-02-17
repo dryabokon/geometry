@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=W, H=H,is_visible=True)
     #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=W, H=H,is_visible=True)
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/male_head.obj', W=W, H=H,is_visible=True)
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/cow.obj', W=W, H=H,is_visible=True)
 
     glfw.set_key_callback(R.window, key_event)
     glfw.set_mouse_button_callback(R.window, button_event)
