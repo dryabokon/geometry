@@ -33,8 +33,7 @@ def process_key(key):
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live():
 
-
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=camera_W, H=camera_H)
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=camera_W, H=camera_H,is_visible=False,do_normalize=False)
 
     if capturing_device == 'cam':
         cap = cv2.VideoCapture(0)
@@ -66,9 +65,9 @@ def demo_live():
             r_vec, t_vec = D.get_pose(image_actor,L)
             result = D.draw_annotation_box(result,r_vec, t_vec)
 
-            #image_3d = R.get_image(r_vec,t_vec)
-            #clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
-            #result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
+            image_3d = R.get_image(r_vec.flatten(),t_vec.flatten(),flip=True)
+            clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
+            result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
 
         else:
             result = image_actor.copy()
@@ -101,7 +100,7 @@ if __name__ == '__main__':
     capturing_device = 'image'
     folder_in = './images/ex_faceswap/01/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    filename_actor = list_filenames[7]
+    filename_actor = list_filenames[0]
 
     #filename_actor = './images/output/A.jpg'
     #filename_actor = './images/ex_faceswap/01/Person2a.jpg'

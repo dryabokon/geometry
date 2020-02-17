@@ -4,6 +4,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GL import *
 # ----------------------------------------------------------------------------------------------------------------------
+import tools_render_CV
 import tools_aruco
 import tools_image
 # ----------------------------------------------------------------------------------------------------------------------
@@ -95,7 +96,7 @@ class render_GL(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
     def __init_mat_modelvew(self):
-        self.mat_view = tools_aruco.compose_GL_MAT(self.rvec, self.tvec,do_flip=True)
+        self.mat_view = tools_render_CV.compose_GL_MAT(self.rvec, self.tvec,do_flip=True)
         return
 # ----------------------------------------------------------------------------------------------------------------------
     def draw(self):
