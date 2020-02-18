@@ -10,8 +10,6 @@ import tools_wavefront
 # ----------------------------------------------------------------------------------------------------------------------
 marker_length = 0.1
 # ----------------------------------------------------------------------------------------------------------------------
-D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
-# ----------------------------------------------------------------------------------------------------------------------
 def example_project_GL_vs_CV_acuro():
     marker_length = 1
 
@@ -50,20 +48,24 @@ def example_project_GL_vs_CV(filename_in):
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
-def example_face(filename_actor,filename_obj):
+def example_face(filename_actor,filename_obj,filename_3dmarkers=None):
+
+    D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat',filename_3dmarkers)
 
     image_actor = cv2.imread(filename_actor)
     #image_actor = tools_image.smart_resize(image_actor, 480, 640)
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,
                                do_transform_view=True,
-                               do_normalize_model_file=False)
+                               do_normalize_model_file=True)
 
     L = D.get_landmarks(image_actor)
-
-    rvec, tvec = D.get_pose(image_actor,L)
-
     L3D = D.model_68_points
+
+    rvec, tvec = D.get_pose(image_actor,L,L3D)
+    rvec, tvec = rvec.flatten(), tvec.flatten()
+    print('rvec, tvec = ',rvec, tvec)
+
     image_3d = R.get_image(rvec, tvec)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
@@ -121,14 +123,17 @@ def example_ray_interception(filename_in):
     print(collision)
     return
 # ----------------------------------------------------------------------------------------------------------------------
+filename_head_obj1 = './images/ex_GL/face/face_norm.obj'
+filename_markers1 ='./images/ex_GL/face/markers_face_norm.txt'
+# ----------------------------------------------------------------------------------------------------------------------
+filename_head_obj2 = './images/ex_GL/face/male_head_exp_norm.obj'
+filename_markers2 ='./images/ex_GL/face/markers_male_head_exp_norm.txt'
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #filename_head = './images/ex_GL/mesh.obj'
-    filename_head = './images/ex_GL/face/face.obj'
+    #example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj2, filename_3dmarkers = filename_markers2)
+
+    tools_render_CV.align_two_model(filename_head_obj1,filename_markers1,filename_head_obj2,filename_markers2,'./images/output/model.obj','./images/output/m.txt')
 
 
 
-
-    #example_project_GL_vs_CV_acuro()
-    #example_project_GL_vs_CV(filename_cat)
-    example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head)

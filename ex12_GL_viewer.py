@@ -8,12 +8,15 @@ import glfw
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_rotate_start, pos_rotate_current = None, None
-W,H = 800,800
+#W,H = 800,800
+W,H = 912,1024
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
 
-    d=numpy.pi/16.0
+
+    delta_angle = numpy.pi/16.0
+    d=delta_angle
 
     if action == glfw.PRESS:
 
@@ -21,6 +24,9 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('W'): R.rotate_model((+d,0,0))
         if key == ord('A'): R.rotate_model((0,-d,0))
         if key == ord('D'): R.rotate_model((0,+d,0))
+        #if key == ord('Z'): R.rotate_model((0,0,-d))
+        #if key == ord('X'): R.rotate_model((0,0,+d))
+
         if key == ord('R'): R.reset_view()
 
         if key == 334: R.scale_model(1.04)
@@ -107,22 +113,26 @@ def example_convert(filename_in,filename_out):
     Obj.convert(filename_in,filename_out)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-#filename_rockman = './images/ex_GL/rock/TheRock2_exp.obj'
-#filename_marker_obj  = './images/ex_GL/face/male_head_exp.obj'
-#filename_box     = './images/ex_GL/box/box.obj'
-# ----------------------------------------------------------------------------------------------------------------------
-filename_face    = './images/ex_GL/face/face.obj'
-filename_head    = './images/ex_GL/mesh.obj'
-#filename_head    = './images/ex_GL/face/male_head_exp.obj'
+filename_box     = './images/ex_GL/box/box.obj'
 filename_marker_obj    = './images/ex_GL/sphere/sphere.obj'
-
-
 # ----------------------------------------------------------------------------------------------------------------------
+filename_head_obj1 = './images/ex_GL/face/face_norm.obj'
+filename_markers1 ='./images/ex_GL/face/markers_face_norm.txt'
+# ----------------------------------------------------------------------------------------------------------------------
+filename_head_obj2 = './images/ex_GL/face/male_head_exp_norm.obj'
+filename_markers2 ='./images/ex_GL/face/markers_male_head_exp_norm.txt'
+# ----------------------------------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
-    #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=W, H=H,is_visible=True)
-    #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=W, H=H,is_visible=True)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_face, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj2, W=W, H=H)
+
+    #R.load_markers(filename_markers, filename_marker_obj,0.015)
+    #rvec, tvec = numpy.array([-0.08, -math.pi, -0.02]),numpy.array([-0.03, -0.19, 2.4])
+    #R.init_mat_view_RT(rvec, tvec, flip=True)
+
+    R.my_VBO.append_object(filename_head_obj1, (0.7, 0.2, 0), do_normalize_model_file=False, svec=(1, 1, 1), tvec=(0, 0, 0))
+    R.bind_VBO()
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
