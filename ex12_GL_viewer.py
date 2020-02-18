@@ -36,8 +36,8 @@ def event_key(window, key, scancode, action, mods):
         if key == 323: R.transform_model('yz')
         if key == 325: R.transform_model(None)
 
-        if key == 291: R.save_markers(folder_out+'marker.txt')
-        if key == 292: R.load_markers(folder_out + 'marker.txt',filename_sphere)
+        if key == 291: R.save_markers(folder_out+'markers.txt')
+        if key == 292: R.load_markers(folder_out + 'markers.txt',filename_marker_obj)
 
         if key in [32,335]: R.stage_data(folder_out)
 
@@ -66,8 +66,6 @@ def event_button(window, button, action, mods):
     if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS and (mods in [glfw.MOD_CONTROL,glfw.MOD_SHIFT]) ):
         R.start_remove()
 
-
-
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_position(window, xpos, ypos):
@@ -82,7 +80,7 @@ def event_position(window, xpos, ypos):
         ray_begin, ray_end = tools_render_CV.get_ray(point_2d, numpy.full((H, W, 3), 76, dtype=numpy.uint8),R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
         tvec = tools_render_CV.get_interception_ray_triangles(ray_begin, ray_end - ray_begin, R.object.coord_vert,R.object.coord_norm,R.object.idx_vertex,R.object.idx_normal)
         if tvec is not None:
-            R.my_VBO.append_object(filename_sphere, (0.7, 0.2, 0), do_normalize_model_file=True, svec=(0.025, 0.025, 0.025), tvec=tvec)
+            R.my_VBO.append_object(filename_marker_obj, (0.7, 0.2, 0), do_normalize_model_file=True, svec=(R.marker_scale, R.marker_scale, R.marker_scale), tvec=tvec)
             R.bind_VBO()
 
     if R.on_remove == True:
@@ -109,26 +107,28 @@ def example_convert(filename_in,filename_out):
     Obj.convert(filename_in,filename_out)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_face = './images/ex_GL/face/face.obj'
-filename_head = './images/ex_GL/face/male_head_exp.obj'
-filename_rockman = './images/ex_GL/rock/TheRock2_exp.obj'
-filename_sphere = './images/ex_GL/sphere/sphere.obj'
-filename_box = './images/ex_GL/box/box.obj'
+#filename_rockman = './images/ex_GL/rock/TheRock2_exp.obj'
+#filename_marker_obj  = './images/ex_GL/face/male_head_exp.obj'
+#filename_box     = './images/ex_GL/box/box.obj'
+# ----------------------------------------------------------------------------------------------------------------------
+filename_face    = './images/ex_GL/face/face.obj'
+filename_head    = './images/ex_GL/mesh.obj'
+#filename_head    = './images/ex_GL/face/male_head_exp.obj'
+filename_marker_obj    = './images/ex_GL/sphere/sphere.obj'
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=W, H=H,is_visible=True)
     #R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=W, H=H,is_visible=True)
     R = tools_GL3D.render_GL3D(filename_obj=filename_face, W=W, H=H)
 
-
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
     glfw.set_cursor_pos_callback(R.window, event_position)
     glfw.set_scroll_callback(R.window, event_scroll)
     glfw.set_window_size_callback(R.window, event_resize)
-
-    R.transform_model('xz')
 
     while not glfw.window_should_close(R.window):
         R.draw()

@@ -7,6 +7,7 @@ import tools_GL3D
 # ---------------------------------------------------------------------------------------------------------------------
 import time
 import detector_landmarks
+import tools_wavefront
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
@@ -33,9 +34,11 @@ def process_key(key):
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live():
 
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/male_head_exp.obj', W=camera_W, H=camera_H,is_visible=False,do_normalize_model_file=True,do_transform_view=False)
-    rvec, tvec = (0, 0, 0), (0, 0, 5)
-    cv2.imwrite('./images/output/image_GL.png', R.get_image(rvec, tvec))
+
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/face/face.obj', W=camera_W, H=camera_H,
+                               is_visible=False,
+                               do_transform_view=True,
+                               do_normalize_model_file=True)
 
     if capturing_device == 'cam':
         cap = cv2.VideoCapture(0)
@@ -43,7 +46,6 @@ def demo_live():
         cap.set(4, camera_H)
     elif capturing_device == 'mp4':
         cap = cv2.VideoCapture(filename_actor)
-
 
 
     cnt, start_time, fps = 0, time.time(), 0
@@ -65,9 +67,9 @@ def demo_live():
             del_triangles = Delaunay(L).vertices
             result = D.draw_landmarks_v2(image_actor,L,del_triangles)
             r_vec, t_vec = D.get_pose(image_actor,L)
-            result = D.draw_annotation_box(result,r_vec, t_vec)
+            #result = D.draw_annotation_box(result,r_vec, t_vec)
 
-            image_3d = R.get_image(r_vec.flatten(),t_vec.flatten(),flip=False)
+            image_3d = R.get_image(r_vec,t_vec)
             clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
             result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
 
@@ -89,8 +91,8 @@ def demo_live():
 # ---------------------------------------------------------------------------------------------------------------------
 def export_model():
     X = D.model_68_points
-    Ob = tools_GL3D.ObjLoader()
-    Ob.export_model(X,'./images/ex_GL/face/face.obj')
+    Ob = tools_wavefront.ObjLoader()
+    Ob.export_mesh(X,'./images/ex_GL/face/face.obj')
 
     R = tools_GL3D.render_GL3D('./images/ex_GL/face/face.obj')
     result = R.get_image(rvec=(0,0,0),tvec=(0,0,+320),do_debug=True)
@@ -109,13 +111,6 @@ if __name__ == '__main__':
 
     image_actor_default = cv2.imread(folder_in+filename_actor)
     image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
-
-
-    #capturing_device = 'mp4'
-    #filename_actor = './images/ex_DMS/JB_original.mp4'
-
-
-
     demo_live()
 
 

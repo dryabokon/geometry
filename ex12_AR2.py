@@ -14,17 +14,20 @@ D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face
 # ----------------------------------------------------------------------------------------------------------------------
 def example_project_GL_vs_CV_acuro():
     marker_length = 1
+
     frame = cv2.imread('./images/ex_aruco/01.jpg')
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=frame.shape[1], H=frame.shape[0],is_visible=False,do_transform_view=False,scale=(0.5,0.5,0.5))
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=frame.shape[1], H=frame.shape[0],
+                               is_visible=False,
+                               do_transform_view=False,
+                               scale=(0.5,0.5,0.5))
+
     axes_image, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, R.mat_camera, numpy.zeros(4))
 
-    result = tools_render_CV.draw_cube_numpy(frame, R.mat_camera, numpy.zeros(4), rvec.flatten(), tvec.flatten(), (0.5,0.5,0.5))
-    cv2.imwrite('./images/output/cube_CV.png', result)
+    cv2.imwrite('./images/output/cube_CV.png', tools_render_CV.draw_cube_numpy(frame, R.mat_camera, numpy.zeros(4), rvec.flatten(), tvec.flatten(), (0.5,0.5,0.5)))
 
     image_3d = R.get_image(rvec.flatten(), tvec.flatten())
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
-    result = tools_image.blend_avg(frame, image_3d, clr, weight=0)
-    cv2.imwrite('./images/output/cube_GL.png', result)
+    cv2.imwrite('./images/output/cube_GL.png', tools_image.blend_avg(frame, image_3d, clr, weight=0))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -33,11 +36,13 @@ def example_project_GL_vs_CV(filename_in):
     W, H = 800, 800
     rvec, tvec = (0, 0, 0), (0, 0, 5)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H,is_visible=False, do_transform_view=True)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H,is_visible=False,
+                               do_transform_view=True)
+
     cv2.imwrite('./images/output/cube_GL.png', R.get_image(rvec, tvec))
 
     object = tools_wavefront.ObjLoader()
-    object.load_mesh(filename_in, (215, 171, 151), do_normalize=True)
+    object.load_mesh(filename_in, (215, 171, 151), do_autoscale=True)
     points_3d = object.coord_vert
 
     result = tools_render_CV.draw_points_numpy_MVP(points_3d, numpy.full((H,W,3),76,dtype=numpy.uint8), R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
@@ -48,12 +53,17 @@ def example_project_GL_vs_CV(filename_in):
 def example_face(filename_actor,filename_obj):
 
     image_actor = cv2.imread(filename_actor)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,do_transform_view=False,do_normalize_model_file=True)
+    #image_actor = tools_image.smart_resize(image_actor, 480, 640)
+
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,
+                               do_transform_view=True,
+                               do_normalize_model_file=False)
+
     L = D.get_landmarks(image_actor)
 
-    L3D = numpy.array(R.object.coord_vert, dtype=numpy.float)
-    rvec, tvec = D.get_pose(image_actor,L,L3D)
+    rvec, tvec = D.get_pose(image_actor,L)
 
+    L3D = D.model_68_points
     image_3d = R.get_image(rvec, tvec)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
@@ -73,7 +83,7 @@ def example_ray(filename_in):
     rvec, tvec = (0, 0, 0), (0, 0, 5)
     R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize=True)
     object = tools_wavefront.ObjLoader()
-    object.load_mesh(filename_in, (215, 171, 151), do_normalize=True)
+    object.load_mesh(filename_in, (215, 171, 151), do_autoscale=True)
     points_3d = object.coord_vert
 
     cv2.imwrite('./images/output/cube_GL.png', R.get_image(rvec, tvec))
@@ -112,17 +122,13 @@ def example_ray_interception(filename_in):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    filename_face = './images/ex_GL/face/face.obj'
-    filename_head = './images/ex_GL/face/male_head_exp.obj'
-    filename_rockman = './images/ex_GL/rock/TheRock2_exp.obj'
 
-    #filename_in = './images/ex_GL/box/box.obj'
+    #filename_head = './images/ex_GL/mesh.obj'
+    filename_head = './images/ex_GL/face/face.obj'
 
 
-    #filename_in = './images/ex_GL/cat/cat_exp2.obj'
 
 
-    #example_ray_interception(filename_in)
     #example_project_GL_vs_CV_acuro()
-    #example_project_GL_vs_CV(filename_in)
-    example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_face)
+    #example_project_GL_vs_CV(filename_cat)
+    example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head)
