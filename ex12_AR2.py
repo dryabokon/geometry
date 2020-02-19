@@ -1,3 +1,4 @@
+import math
 import cv2
 import numpy
 import tools_GL3D
@@ -16,7 +17,6 @@ def example_project_GL_vs_CV_acuro():
     frame = cv2.imread('./images/ex_aruco/01.jpg')
     R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=frame.shape[1], H=frame.shape[0],
                                is_visible=False,
-                               do_transform_view=False,
                                scale=(0.5,0.5,0.5))
 
     axes_image, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, R.mat_camera, numpy.zeros(4))
@@ -34,8 +34,7 @@ def example_project_GL_vs_CV(filename_in):
     W, H = 800, 800
     rvec, tvec = (0, 0, 0), (0, 0, 5)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H,is_visible=False,
-                               do_transform_view=True)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H,is_visible=False)
 
     cv2.imwrite('./images/output/cube_GL.png', R.get_image(rvec, tvec))
 
@@ -55,26 +54,31 @@ def example_face(filename_actor,filename_obj,filename_3dmarkers=None):
     image_actor = cv2.imread(filename_actor)
     #image_actor = tools_image.smart_resize(image_actor, 480, 640)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,
-                               do_transform_view=True,
-                               do_normalize_model_file=True)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,do_normalize_model_file=True)
+    R.transform_model('xz')
 
     L = D.get_landmarks(image_actor)
     L3D = D.model_68_points
 
-    rvec, tvec = D.get_pose(image_actor,L,L3D)
-    rvec, tvec = rvec.flatten(), tvec.flatten()
-    print('rvec, tvec = ',rvec, tvec)
+    D.r_vec = numpy.array([math.pi/2,math.pi/2,0])
+    rvec, tvec = D.get_pose(image_actor,L,L3D,R.mat_trns)
 
-    image_3d = R.get_image(rvec, tvec)
+    #rvec[1] += math.pi
+    #print(rvec, tvec)
+
+    image_3d = R.get_image(rvec, tvec,do_debug=True)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL.png', result)
 
-    result = tools_render_CV.draw_points_numpy_RT(L3D, image_actor, R.mat_camera, numpy.zeros(4), rvec, tvec)
+    result = tools_render_CV.draw_points_numpy_RT(L3D, image_actor, R.mat_camera, numpy.zeros(4), rvec, tvec,R.mat_trns)
+    result = D.draw_landmarks_v2(result, L)
     cv2.imwrite('./images/output/face_CV_RT.png', result)
 
+    R.mat_model, R.mat_view = tools_render_CV.RT_to_mat_model_view(rvec, tvec)
+
     result = tools_render_CV.draw_points_numpy_MVP(L3D, image_actor, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
+    result = D.draw_landmarks_v2(result, L)
     cv2.imwrite('./images/output/face_CV_MVP.png', result)
 
 
@@ -83,7 +87,7 @@ def example_face(filename_actor,filename_obj,filename_3dmarkers=None):
 def example_ray(filename_in):
     W, H = 800, 800
     rvec, tvec = (0, 0, 0), (0, 0, 5)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize=True)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize_model_file=True)
     object = tools_wavefront.ObjLoader()
     object.load_mesh(filename_in, (215, 171, 151), do_autoscale=True)
     points_3d = object.coord_vert
@@ -113,7 +117,7 @@ def example_ray_interception(filename_in):
     W, H = 800, 800
     rvec, tvec = (0, 0, 0), (0, 0, 5)
     point_2d = (W - 266, 266)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize=True)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize_model_file=True)
     cv2.imwrite('./images/output/cube_GL.png', R.get_image(rvec, tvec))
 
     ray_begin, ray_end= tools_render_CV.get_ray(point_2d, numpy.full((H, W, 3), 76, dtype=numpy.uint8), R.mat_projection,R.mat_view, R.mat_model, R.mat_trns)
@@ -123,17 +127,20 @@ def example_ray_interception(filename_in):
     print(collision)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_head_obj1 = './images/ex_GL/face/face_norm.obj'
-filename_markers1 ='./images/ex_GL/face/markers_face_norm.txt'
+filename_head_obj1 = './images/ex_GL/face/face.obj'
+filename_markers1 ='./images/ex_GL/face/markers_face.txt'
 # ----------------------------------------------------------------------------------------------------------------------
-filename_head_obj2 = './images/ex_GL/face/male_head_exp_norm.obj'
-filename_markers2 ='./images/ex_GL/face/markers_male_head_exp_norm.txt'
+filename_head_obj2 = './images/ex_GL/face/head.obj'
+filename_markers2 ='./images/ex_GL/face/markers_head.txt'
+# ----------------------------------------------------------------------------------------------------------------------
+filename_head_obj3 = './images/ex_GL/face/head_scaled.obj'
+filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
+# ----------------------------------------------------------------------------------------------------------------------
+#tools_render_CV.align_two_model(filename_head_obj2,filename_markers2,filename_head_obj1,filename_markers1,'./images/output/model.obj','./images/output/m.txt')
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj2, filename_3dmarkers = filename_markers2)
-
-    tools_render_CV.align_two_model(filename_head_obj1,filename_markers1,filename_head_obj2,filename_markers2,'./images/output/model.obj','./images/output/m.txt')
+    example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3, filename_3dmarkers = filename_markers3)
 
 
 

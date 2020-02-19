@@ -24,8 +24,8 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('W'): R.rotate_model((+d,0,0))
         if key == ord('A'): R.rotate_model((0,-d,0))
         if key == ord('D'): R.rotate_model((0,+d,0))
-        #if key == ord('Z'): R.rotate_model((0,0,-d))
-        #if key == ord('X'): R.rotate_model((0,0,+d))
+        if key == ord('Z'): R.rotate_model((0,0,-d))
+        if key == ord('X'): R.rotate_model((0,0,+d))
 
         if key == ord('R'): R.reset_view()
 
@@ -116,23 +116,19 @@ def example_convert(filename_in,filename_out):
 filename_box     = './images/ex_GL/box/box.obj'
 filename_marker_obj    = './images/ex_GL/sphere/sphere.obj'
 # ----------------------------------------------------------------------------------------------------------------------
-filename_head_obj1 = './images/ex_GL/face/face_norm.obj'
-filename_markers1 ='./images/ex_GL/face/markers_face_norm.txt'
+filename_head_obj1 = './images/ex_GL/face/face.obj'
+filename_markers1 ='./images/ex_GL/face/markers_face.txt'
 # ----------------------------------------------------------------------------------------------------------------------
-filename_head_obj2 = './images/ex_GL/face/male_head_exp_norm.obj'
-filename_markers2 ='./images/ex_GL/face/markers_male_head_exp_norm.txt'
+filename_head_obj3 = './images/ex_GL/face/head_scaled.obj'
+filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
-
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj2, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj3, W=W, H=H)
 
-    #R.load_markers(filename_markers, filename_marker_obj,0.015)
-    #rvec, tvec = numpy.array([-0.08, -math.pi, -0.02]),numpy.array([-0.03, -0.19, 2.4])
-    #R.init_mat_view_RT(rvec, tvec, flip=True)
-
-    R.my_VBO.append_object(filename_head_obj1, (0.7, 0.2, 0), do_normalize_model_file=False, svec=(1, 1, 1), tvec=(0, 0, 0))
-    R.bind_VBO()
+    R.transform_model('xz')
+    rvec, tvec = [ 1.47, -0.02, -0.01], [-0.02,  0.16,  4.33]
+    R.init_modelview(rvec, tvec)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
