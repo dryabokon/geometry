@@ -8,8 +8,8 @@ import glfw
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_rotate_start, pos_rotate_current = None, None
-#W,H = 800,800
-W,H = 912,1024
+W,H = 800,800
+#W,H = 912,1024
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
@@ -27,12 +27,17 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('Z'): R.rotate_model((0,0,-d))
         if key == ord('X'): R.rotate_model((0,0,+d))
 
-        if key == ord('R'): R.reset_view()
+        if key == 294: R.reset_view()
+
+        if key == ord('O'): R.rotate_view(-d)
+        if key == ord('P'): R.rotate_view(+d)
 
         if key == 334: R.scale_model(1.04)
         if key == 333: R.scale_model(1.0/1.04)
 
-        if key == 294:R.reset_view()
+        if key == ord('1'): R.inverce_transform_model('X')
+        if key == ord('2'): R.inverce_transform_model('Y')
+        if key == ord('3'): R.inverce_transform_model('Z')
 
         if key == 327: R.transform_model('XY')
         if key == 329: R.transform_model('xy')
@@ -47,8 +52,7 @@ def event_key(window, key, scancode, action, mods):
 
         if key in [32,335]: R.stage_data(folder_out)
 
-        if key == glfw.KEY_ESCAPE:
-            glfw.set_window_should_close(R.window,True)
+        if key == glfw.KEY_ESCAPE:glfw.set_window_should_close(R.window,True)
 
         if key == ord('Z') and mods == glfw.MOD_CONTROL:
             R.my_VBO.remove_last_object()
@@ -98,10 +102,8 @@ def event_position(window, xpos, ypos):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_scroll(window, xoffset, yoffset):
-    if yoffset>0:
-        R.translate_view(1.04)
-    else:
-        R.translate_view(1.0/1.04)
+    if yoffset>0:R.translate_view(1.04)
+    else        :R.translate_view(1.0/1.04)
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_resize(window, W, H):
@@ -124,11 +126,11 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj3, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H)
 
-    R.transform_model('xz')
-    rvec, tvec = [ 1.47, -0.02, -0.01], [-0.02,  0.16,  4.33]
-    R.init_modelview(rvec, tvec)
+    #R.transform_model('xz')
+    #rvec, tvec =[ 1.19 , 0.  , -0.06], [-0.04 , 0.12 , 3.95]
+    #R.init_modelview(rvec, tvec)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

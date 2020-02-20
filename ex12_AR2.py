@@ -62,9 +62,7 @@ def example_face(filename_actor,filename_obj,filename_3dmarkers=None):
 
     D.r_vec = numpy.array([math.pi/2,math.pi/2,0])
     rvec, tvec = D.get_pose(image_actor,L,L3D,R.mat_trns)
-
-    #rvec[1] += math.pi
-    #print(rvec, tvec)
+    print(rvec, tvec)
 
     image_3d = R.get_image(rvec, tvec,do_debug=True)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
@@ -140,7 +138,7 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3, filename_3dmarkers = filename_markers3)
+    example_face(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
 
 
 
