@@ -96,7 +96,7 @@ class render_GL(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
     def __init_mat_modelvew(self):
-        self.mat_view = tools_render_CV.compose_GL_MAT(self.rvec, self.tvec,do_flip=True)
+        self.mat_view = tools_render_CV.compose_model_view_from_RT(self.rvec, self.tvec)
         return
 # ----------------------------------------------------------------------------------------------------------------------
     def draw(self):

@@ -4,12 +4,13 @@ import numpy
 import tools_GL3D
 import tools_render_CV
 import glfw
+import tools_aruco
 # ----------------------------------------------------------------------------------------------------------------------
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_rotate_start, pos_rotate_current = None, None
-#W,H = 800,800
-W,H = 912,1024
+W,H = 800,800
+#W,H = 912,1024
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
@@ -22,17 +23,22 @@ def event_key(window, key, scancode, action, mods):
 
         if key == ord('S'): R.rotate_model((-d,0,0))
         if key == ord('W'): R.rotate_model((+d,0,0))
-        if key == ord('A'): R.rotate_model((0,-d,0))
-        if key == ord('D'): R.rotate_model((0,+d,0))
+        if key == ord('A'): R.rotate_model((0,+d,0))
+        if key == ord('D'): R.rotate_model((0,-d,0))
         if key == ord('Z'): R.rotate_model((0,0,-d))
         if key == ord('X'): R.rotate_model((0,0,+d))
 
-        if key == ord('R'): R.reset_view()
+        if key == 294: R.reset_view()
+
+        if key == ord('O'): R.rotate_view((-d,0,0))
+        if key == ord('P'): R.rotate_view((+d,0,0))
 
         if key == 334: R.scale_model(1.04)
         if key == 333: R.scale_model(1.0/1.04)
 
-        if key == 294:R.reset_view()
+        if key == ord('1'): R.inverce_transform_model('X')
+        if key == ord('2'): R.inverce_transform_model('Y')
+        if key == ord('3'): R.inverce_transform_model('Z')
 
         if key == 327: R.transform_model('XY')
         if key == 329: R.transform_model('xy')
@@ -47,8 +53,7 @@ def event_key(window, key, scancode, action, mods):
 
         if key in [32,335]: R.stage_data(folder_out)
 
-        if key == glfw.KEY_ESCAPE:
-            glfw.set_window_should_close(R.window,True)
+        if key == glfw.KEY_ESCAPE:glfw.set_window_should_close(R.window,True)
 
         if key == ord('Z') and mods == glfw.MOD_CONTROL:
             R.my_VBO.remove_last_object()
@@ -78,7 +83,7 @@ def event_position(window, xpos, ypos):
 
     if R.on_rotate == True:
         delta_angle = (pos_rotate_start-numpy.array((xpos,ypos)))*1.0*math.pi/W
-        R.rotate_model((delta_angle[1], -delta_angle[0], 0))
+        R.rotate_model((delta_angle[1], delta_angle[0], 0))
 
     if R.on_append == True:
         R.stop_append()
@@ -98,10 +103,12 @@ def event_position(window, xpos, ypos):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_scroll(window, xoffset, yoffset):
-    if yoffset>0:
-        R.translate_view(1.04)
+    if R.projection_type=='P':
+        if yoffset>0:R.translate_view(1.04)
+        else        :R.translate_view(1.0/1.04)
     else:
-        R.translate_view(1.0/1.04)
+        if yoffset>0:R.translate_ortho(1.04)
+        else        :R.translate_ortho(1.0/1.04)
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_resize(window, W, H):
@@ -124,10 +131,11 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H)
-
+    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='P')
     R.transform_model('xz')
-    rvec, tvec = [ 1.47, -0.02, -0.01], [-0.02,  0.16,  4.33]
+
+    rvec, tvec = [ 1.28, -0.06, -0.00], [-0.03,  0.14,  4.26]
+    #rvec, tvec =[-5.00, 0.22, 0.00], [-0.03, 0.14, 4.26]
     R.init_modelview(rvec, numpy.array(tvec))
 
     glfw.set_key_callback(R.window, event_key)
