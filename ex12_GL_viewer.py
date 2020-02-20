@@ -124,11 +124,11 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj3, W=W, H=H)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H)
 
     R.transform_model('xz')
     rvec, tvec = [ 1.47, -0.02, -0.01], [-0.02,  0.16,  4.33]
-    R.init_modelview(rvec, tvec)
+    R.init_modelview(rvec, numpy.array(tvec))
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
