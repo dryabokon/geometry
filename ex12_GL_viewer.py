@@ -1,3 +1,4 @@
+import cv2
 import sys
 import math
 import numpy
@@ -8,7 +9,7 @@ import tools_aruco
 # ----------------------------------------------------------------------------------------------------------------------
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
-pos_rotate_start, pos_rotate_current = None, None
+pos_button_start, pos_rotate_current = None, None
 W,H = 912,1024
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
@@ -19,6 +20,9 @@ def event_key(window, key, scancode, action, mods):
     d=delta_angle
 
     if action == glfw.PRESS:
+
+
+        #if key == ord('0'): R.translate_model((-1,0,0))
 
         if key == ord('S'): R.rotate_model((-d,0,0))
         if key == ord('W'): R.rotate_model((+d,0,0))
@@ -61,28 +65,32 @@ def event_key(window, key, scancode, action, mods):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_button(window, button, action, mods):
-    global pos_rotate_start
+    global pos_button_start
 
-    if (button == glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS):
-        R.start_rotation()
-        pos_rotate_start = glfw.get_cursor_pos(window)
+    if (button == glfw.MOUSE_BUTTON_LEFT  and action == glfw.PRESS   and (mods not in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):R.start_rotation();pos_button_start = glfw.get_cursor_pos(window)
+    if (button == glfw.MOUSE_BUTTON_LEFT  and action == glfw.RELEASE and (mods not in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):R.stop_rotation()
 
-    if (button == glfw.MOUSE_BUTTON_LEFT and action == glfw.RELEASE):
-        R.stop_rotation()
+    if (button == glfw.MOUSE_BUTTON_LEFT  and action == glfw.PRESS   and (mods     in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):
+        R.start_translation();
+        pos_button_start = glfw.get_cursor_pos(window)
 
-    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS and (mods not in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):
-        R.start_append()
+    if (button == glfw.MOUSE_BUTTON_LEFT  and action == glfw.RELEASE and (mods     in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):
+        R.stop_translation()
 
-    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS and (mods in [glfw.MOD_CONTROL,glfw.MOD_SHIFT]) ):
-        R.start_remove()
+    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS   and (mods not in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):R.start_append()
+    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS   and (mods in [glfw.MOD_CONTROL,glfw.MOD_SHIFT]) ):R.start_remove()
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_position(window, xpos, ypos):
 
     if R.on_rotate == True:
-        delta_angle = (pos_rotate_start-numpy.array((xpos,ypos)))*1.0*math.pi/W
+        delta_angle = (pos_button_start - numpy.array((xpos, ypos))) * 1.0 * math.pi / W
         R.rotate_model((delta_angle[1], delta_angle[0], 0))
+
+    if R.on_translate == True:
+        delta_pos = (pos_button_start - numpy.array((xpos, ypos))) * 1.0/100
+        R.translate_model((-delta_pos[0], -delta_pos[1], 0))
 
     if R.on_append == True:
         R.stop_append()
@@ -96,7 +104,6 @@ def event_position(window, xpos, ypos):
     if R.on_remove == True:
         R.stop_remove()
         R.my_VBO.remove_last_object()
-
         R.bind_VBO()
 
     return
@@ -130,12 +137,13 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H,projection_type='O',scale=(1,1,1))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='O',scale=(1,1,1))
     R.transform_model('xz')
 
-    #rvec, tvec =[ 1.09, -0.05, 0.00], [-0.03,  0.11,  3.93]
-    #R.init_modelview(rvec, numpy.array(tvec))
-    #R.set_standardize_rvec(False)
+    rvec, tvec, scale_factor = [-1.58, 3.14, 0.22], [-0.11, -0.38, 9.75], 1.73
+    R.init_ortho_view(rvec,tvec,scale_factor)
+    R.set_standardize_rvec(False)
+
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
