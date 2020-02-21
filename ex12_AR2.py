@@ -57,11 +57,13 @@ def example_face(filename_actor,filename_obj,filename_3dmarkers=None):
     image_actor = cv2.imread(filename_actor)
     #image_actor = tools_image.smart_resize(image_actor, 480, 640)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,do_normalize_model_file=True)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,scale=(1,1,0.01))
     R.transform_model('xz')
 
     L = D.get_landmarks(image_actor)
     L3D = D.model_68_points
+    L3D[:,2] = 0
+
 
     D.r_vec = numpy.array([math.pi/2,math.pi/2,0])
     rvec, tvec= D.get_pose(image_actor,L,L3D,R.mat_trns)

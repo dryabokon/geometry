@@ -9,8 +9,7 @@ import tools_aruco
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_rotate_start, pos_rotate_current = None, None
-W,H = 800,800
-#W,H = 912,1024
+W,H = 912,1024
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
@@ -131,12 +130,12 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='P')
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H,projection_type='O',scale=(1,1,1))
     R.transform_model('xz')
 
-    rvec, tvec = [ 1.28, -0.06, -0.00], [-0.03,  0.14,  4.26]
-    #rvec, tvec =[-5.00, 0.22, 0.00], [-0.03, 0.14, 4.26]
-    R.init_modelview(rvec, numpy.array(tvec))
+    #rvec, tvec =[ 1.09, -0.05, 0.00], [-0.03,  0.11,  3.93]
+    #R.init_modelview(rvec, numpy.array(tvec))
+    #R.set_standardize_rvec(False)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
