@@ -27,7 +27,7 @@ def example_board_pose_estimation(folder_input, folder_output, chess_rows, chess
 
         img = cv2.imread(folder_input + image_name)
         img_gray_rgb = tools_image.desaturate(img)
-        rvecs, tvecs = tools_calibrate.get_rvecs_tvecs(img,chess_rows, chess_cols,cameraMatrix, dist)
+        rvecs, tvecs = tools_calibrate.get_rvecs_tvecs_for_chessboard(img, chess_rows, chess_cols, cameraMatrix, dist)
 
         if rvecs.size!=0:
 
@@ -50,7 +50,7 @@ def example_augment_board_live(chess_rows, chess_cols,camera_matrix, dist):
 
     while (True):
         ret, img = cap.read()
-        rvecs, tvecs = tools_calibrate.get_rvecs_tvecs(img, chess_rows, chess_cols, camera_matrix, dist)
+        rvecs, tvecs = tools_calibrate.get_rvecs_tvecs_for_chessboard(img, chess_rows, chess_cols, camera_matrix, dist)
         if rvecs.size!=0:
             axis_2d_end, jac   = cv2.projectPoints(axis_3d_end  , rvecs, tvecs, camera_matrix, dist)
             axis_2d_start, jac = cv2.projectPoints(axis_3d_start, rvecs, tvecs, camera_matrix, dist)

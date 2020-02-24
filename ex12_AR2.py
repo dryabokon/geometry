@@ -1,10 +1,9 @@
 import math
 import cv2
 import numpy
-from numpy import cos, sin
 import tools_GL3D
 import pyrr
-import tools_calibrate
+import tools_pr_geom
 # ----------------------------------------------------------------------------------------------------------------------
 import tools_aruco
 import tools_render_CV
@@ -59,14 +58,10 @@ def example_face_perspective(filename_actor,filename_obj,filename_3dmarkers=None
     #image_actor = tools_image.smart_resize(image_actor, 480, 640)
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,scale=(1,1,0.01))
-    R.transform_model('xz')
-
     L = D.get_landmarks(image_actor)
     L3D = D.model_68_points
     L3D[:,2] = 0
 
-
-    D.r_vec = numpy.array([math.pi/2,math.pi/2,0])
     rvec, tvec= D.get_pose_perspective(image_actor,L,L3D,R.mat_trns)
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f]'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2]))
 
@@ -75,16 +70,11 @@ def example_face_perspective(filename_actor,filename_obj,filename_3dmarkers=None
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL.png', result)
 
-    M = tools_render_CV.compose_model_view_from_RT(rvec, tvec)
-    R.mat_model, R.mat_view = tools_render_CV.decompose_model_view(M)
+    M = pyrr.matrix44.multiply(pyrr.matrix44.create_from_eulers(rvec), pyrr.matrix44.create_from_translation(tvec))
+    R.mat_model, R.mat_view = tools_pr_geom.decompose_model_view(M)
     result = tools_render_CV.draw_points_numpy_MVP(L3D, image_actor, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
     result = D.draw_landmarks_v2(result, L)
     cv2.imwrite('./images/output/face_CV_MVP.png', result)
-
-
-    result = tools_render_CV.draw_points_numpy_RT(L3D, image_actor, R.mat_camera, numpy.zeros(4), rvec, tvec,R.mat_trns)
-    result = D.draw_landmarks_v2(result, L)
-    cv2.imwrite('./images/output/face_CV_RT.png', result)
 
 
     return
@@ -95,25 +85,18 @@ def example_face_ortho(filename_actor,filename_obj,filename_3dmarkers=None):
     image_actor = cv2.imread(filename_actor)
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,projection_type='O',scale=(1, 1, 1))
-    #R.transform_model('xz')
-
+    R.inverce_transform_model('Z')
     L = D.get_landmarks(image_actor)
     L3D = D.model_68_points
 
-    rvec, tvec, scale_factor = D.get_pose_ortho(image_actor,L,L3D,R.mat_trns)
-    #rvec, tvec, scale_factor = [ -3.13, 3.11, 0.00], [0.00,  -0.00,  9.75], 2.11
-    print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f] , %1.2f'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2],scale_factor))
+    rvec, tvec, scale_factor  = D.get_pose_ortho(image_actor,L,L3D,R.mat_trns,do_debug=False)
+    print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f], [%1.2f,%1.2f]'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2],scale_factor[0],scale_factor[1]))
 
-    image_3d = R.get_image_ortho(rvec, tvec, scale_factor, do_debug=True)
+    image_3d = R.get_image_ortho(rvec, tvec, scale_factor, do_debug=False)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL_ortho.png', result)
-
-    R.init_ortho_view(rvec, tvec, scale_factor)
-    result = tools_render_CV.draw_points_numpy_MVP_ortho(L3D, image_actor, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
-    result = D.draw_landmarks_v2(result, L)
-    cv2.imwrite('./images/output/face_CV_MVP_ortho.png', result)
-
+    cv2.imwrite('./images/output/face_image_3d.png', image_3d)
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -173,5 +156,5 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
+    example_face_ortho(filename_actor = './images/ex_faceswap/01/person1f.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
 

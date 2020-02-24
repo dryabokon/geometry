@@ -1,3 +1,4 @@
+import pyrr
 import cv2
 import numpy
 from OpenGL.GLUT import *
@@ -96,7 +97,9 @@ class render_GL(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
     def __init_mat_modelvew(self):
-        self.mat_view = tools_render_CV.compose_model_view_from_RT(self.rvec, self.tvec)
+        R = pyrr.matrix44.create_from_eulers(self.rvec)
+        T = pyrr.matrix44.create_from_translation(self.tvec)
+        self.mat_view = pyrr.matrix44.multiply(R, T)
         return
 # ----------------------------------------------------------------------------------------------------------------------
     def draw(self):

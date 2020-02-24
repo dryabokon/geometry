@@ -42,6 +42,7 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('1'): R.inverce_transform_model('X')
         if key == ord('2'): R.inverce_transform_model('Y')
         if key == ord('3'): R.inverce_transform_model('Z')
+        if key == ord('4'): R.inverce_screen_Y()
 
         if key == 327: R.transform_model('XY')
         if key == 329: R.transform_model('xy')
@@ -137,10 +138,9 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='O',scale=(1,1,1))
-    R.transform_model('xz')
+    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj3, W=W, H=H,projection_type='O',scale=(1,1,1))
 
-    rvec, tvec, scale_factor = [-1.58, 3.14, 0.22], [-0.11, -0.38, 9.75], 1.73
+    rvec, tvec, scale_factor = [ -0.00, -0.03, -0.00], [-0.02,  0.19,  0.00],4.34
     R.init_ortho_view(rvec,tvec,scale_factor)
     R.set_standardize_rvec(False)
 

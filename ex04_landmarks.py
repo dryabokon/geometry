@@ -11,13 +11,14 @@ import tools_render_CV
 import tools_wavefront
 # ---------------------------------------------------------------------------------------------------------------------
 capturing_devices = ['cam','mp4','image']
-#camera_W, camera_H = 640, 480
-camera_W, camera_H = 912, 1024
+camera_W, camera_H = 640, 480
+mode = 'L'
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
 
     global list_filenames,filename_actor
     global image_actor_default
+    global mode
 
     if key in [ord('a'),ord('d'),ord('w'),ord('s')]:
         idx = tools_IO.smart_index(list_filenames, filename_actor)[0]
@@ -30,14 +31,19 @@ def process_key(key):
         image_actor_default = cv2.imread(folder_in + filename_actor)
         image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
 
+    if key in [ord('1'), ord('2'), ord('3')]:
+
+        if key == ord('1'): mode = 'L'
+        if key == ord('2'): mode = 'Box'
+        if key == ord('3'): mode = 'AR'
+
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_live(filename_obj,filename_3dmarkers=None):
 
     D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat',filename_3dmarkers)
-
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=camera_W, H=camera_H,is_visible=False,do_normalize_model_file=True)
-    R.transform_model('xz')
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=camera_W, H=camera_H,is_visible=False, do_normalize_model_file=True, projection_type='O',)
+    R.inverce_transform_model('Z')
 
     if capturing_device == 'cam':
         cap = cv2.VideoCapture(0)
@@ -54,27 +60,32 @@ def demo_live(filename_obj,filename_3dmarkers=None):
         else:
             ret, image_actor = cap.read()
             if capturing_device=='mp4':
-                xxx = tools_image.smart_resize(image_actor,camera_H,camera_W)
-                cv2.imwrite('./images/output/A.jpg',xxx)
+                cv2.imwrite('./images/output/A.jpg',tools_image.smart_resize(image_actor,camera_H,camera_W))
                 image_actor = cv2.imread('./images/output/A.jpg')
             if capturing_device=='cam':
                 cv2.flip(image_actor, 1)
 
         L = D.get_landmarks(image_actor)
+
+
+
         if D.are_landmarks_valid(L):
-            del_triangles = Delaunay(L).vertices
-            result = D.draw_landmarks_v2(image_actor,L)
-            rvec, tvec  = D.get_pose(image_actor,L,D.model_68_points,R.mat_trns)
-            result = tools_render_CV.draw_points_numpy_RT(D.model_68_points, result, R.mat_camera, numpy.zeros(4), rvec, tvec,R.mat_trns)
+            if mode == 'L':
+                #del_triangles = Delaunay(L).vertices
+                result = D.draw_landmarks_v2(image_actor,L)
 
-            #result = D.draw_annotation_box(result,r_vec, t_vec)
-            image_3d = R.get_image(rvec,tvec)
-            clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
-            result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
-            print(rvec, tvec)
+            if mode == 'Box':
+                rvec, tvec, scale  = D.get_pose_ortho(image_actor,L,D.model_68_points,R.mat_trns)
+                result = D.draw_annotation_box_v2(image_actor,rvec, tvec,scale)
 
-        else:
-            result = image_actor.copy()
+            if mode == 'AR':
+                rvec, tvec, scale  = D.get_pose_ortho(image_actor,L,D.model_68_points,R.mat_trns)
+                image_3d = R.get_image_ortho(rvec,tvec,scale)
+                clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
+                result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
+
+            if mode is None:
+                result = image_actor.copy()
 
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
         result = cv2.putText(result, '{0: 1.1f} {1}'.format(fps, ' fps'), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 0), 1, cv2.LINE_AA)
@@ -107,6 +118,10 @@ if __name__ == '__main__':
 
     image_actor_default = cv2.imread(folder_in+filename_actor)
     image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
+
+
+    capturing_device = 'mp4'
+    filename_actor = './images/ex_DMS/JB_original.mp4'
 
     demo_live(filename_head_obj3,filename_markers3)
 
