@@ -50,22 +50,24 @@ def example_project_GL_vs_CV(filename_in):
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
-def example_face_perspective(filename_actor,filename_obj,filename_3dmarkers=None):
+def example_face_perspective(filename_actor,filename_obj,filename_3dmarkers=None,do_debug=False):
 
     D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat',filename_3dmarkers)
 
     image_actor = cv2.imread(filename_actor)
-    #image_actor = tools_image.smart_resize(image_actor, 480, 640)
+    image_actor = tools_image.smart_resize(image_actor, 640, 640)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,scale=(1,1,0.01))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=image_actor.shape[1], H=image_actor.shape[0],is_visible=False,projection_type='P',scale=(1,1,0.25))
+
     L = D.get_landmarks(image_actor)
     L3D = D.model_68_points
     L3D[:,2] = 0
 
     rvec, tvec= D.get_pose_perspective(image_actor,L,L3D,R.mat_trns)
+
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f]'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2]))
 
-    image_3d = R.get_image_perspective(rvec, tvec,do_debug=True)
+    image_3d = R.get_image_perspective(rvec, tvec,do_debug=do_debug)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL.png', result)
@@ -89,10 +91,10 @@ def example_face_ortho(filename_actor,filename_obj,filename_3dmarkers=None):
     L = D.get_landmarks(image_actor)
     L3D = D.model_68_points
 
-    rvec, tvec, scale_factor  = D.get_pose_ortho(image_actor,L,L3D,R.mat_trns,do_debug=False)
+    rvec, tvec, scale_factor  = D.get_pose_ortho(image_actor,L,L3D,R.mat_trns,do_debug=True)
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f], [%1.2f,%1.2f]'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2],scale_factor[0],scale_factor[1]))
 
-    image_3d = R.get_image_ortho(rvec, tvec, scale_factor, do_debug=False)
+    image_3d = R.get_image_ortho(rvec, tvec, scale_factor, do_debug=True)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL_ortho.png', result)
@@ -150,11 +152,15 @@ filename_head_obj2 = './images/ex_GL/face/head.obj'
 filename_markers2 ='./images/ex_GL/face/markers_head.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 filename_head_obj3 = './images/ex_GL/face/head_scaled.obj'
+filename_head_obj3_cut = './images/ex_GL/face/head_scaled_cut.obj'
 filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 #tools_render_CV.align_two_model(filename_head_obj2,filename_markers2,filename_head_obj1,filename_markers1,'./images/output/model.obj','./images/output/m.txt')
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    example_face_ortho(filename_actor = './images/ex_faceswap/01/person1f.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
 
+
+    example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
+
+    #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)

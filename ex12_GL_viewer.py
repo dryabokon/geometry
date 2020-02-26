@@ -28,7 +28,7 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('W'): R.rotate_model((+d,0,0))
         if key == ord('A'): R.rotate_model((0,+d,0))
         if key == ord('D'): R.rotate_model((0,-d,0))
-        if key == ord('Z'): R.rotate_model((0,0,-d))
+        #if key == ord('Z'): R.rotate_model((0,0,-d))
         if key == ord('X'): R.rotate_model((0,0,+d))
 
         if key == 294: R.reset_view()
@@ -87,7 +87,7 @@ def event_position(window, xpos, ypos):
 
     if R.on_rotate == True:
         delta_angle = (pos_button_start - numpy.array((xpos, ypos))) * 1.0 * math.pi / W
-        R.rotate_model((delta_angle[1], delta_angle[0], 0))
+        R.rotate_model((delta_angle[1], -delta_angle[0], 0))
 
     if R.on_translate == True:
         delta_pos = (pos_button_start - numpy.array((xpos, ypos))) * 1.0/100
@@ -138,11 +138,12 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj3, W=W, H=H,projection_type='O',scale=(1,1,1))
-
-    rvec, tvec, scale_factor = [ -0.00, -0.03, -0.00], [-0.02,  0.19,  0.00],4.34
-    R.init_ortho_view(rvec,tvec,scale_factor)
-    R.set_standardize_rvec(False)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='P',scale=(1,1,1))
+    R.transform_model('xz')
+    R.inverce_transform_model('Y')
+    #rvec, tvec, scale_factor = [ -0.00, -0.03, -0.00], [-0.02,  0.19,  0.00], [4.34,4.34]
+    #R.init_ortho_view(rvec,tvec,scale_factor)
+    #R.set_standardize_rvec(False)
 
 
     glfw.set_key_callback(R.window, event_key)
