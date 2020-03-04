@@ -160,7 +160,6 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 if __name__ == '__main__':
 
 
-
     example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
 
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)
