@@ -139,12 +139,6 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 if __name__ == '__main__':
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='P',scale=(1,1,1))
-    R.transform_model('xz')
-    R.inverce_transform_model('Y')
-    #rvec, tvec, scale_factor = [ -0.00, -0.03, -0.00], [-0.02,  0.19,  0.00], [4.34,4.34]
-    #R.init_ortho_view(rvec,tvec,scale_factor)
-    #R.set_standardize_rvec(False)
-
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
