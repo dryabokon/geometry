@@ -10,7 +10,8 @@ import tools_aruco
 from tools_wavefront import ObjLoader
 # ----------------------------------------------------------------------------------------------------------------------
 pos_button_start, pos_rotate_current = None, None
-W,H = 912,1024
+#W,H = 1920,1080
+W,H = 640,480
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
@@ -21,20 +22,14 @@ def event_key(window, key, scancode, action, mods):
 
     if action == glfw.PRESS:
 
-
-        #if key == ord('0'): R.translate_model((-1,0,0))
-
         if key == ord('S'): R.rotate_model((-d,0,0))
         if key == ord('W'): R.rotate_model((+d,0,0))
         if key == ord('A'): R.rotate_model((0,+d,0))
         if key == ord('D'): R.rotate_model((0,-d,0))
-        #if key == ord('Z'): R.rotate_model((0,0,-d))
+        if key == ord('Z'): R.rotate_model((0,0,-d))
         if key == ord('X'): R.rotate_model((0,0,+d))
 
         if key == 294: R.reset_view()
-
-        if key == ord('O'): R.rotate_view((-d,0,0))
-        if key == ord('P'): R.rotate_view((+d,0,0))
 
         if key == 334: R.scale_model(1.04)
         if key == 333: R.scale_model(1.0/1.04)
@@ -127,7 +122,7 @@ def example_convert(filename_in,filename_out):
     Obj.convert(filename_in,filename_out)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_box     = './images/ex_GL/box/box.obj'
+filename_box     = './images/ex_GL/box/box2.obj'
 filename_marker_obj    = './images/ex_GL/sphere/sphere.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 filename_head_obj1 = './images/ex_GL/face/face.obj'
@@ -136,9 +131,24 @@ filename_markers1 ='./images/ex_GL/face/markers_face.txt'
 filename_head_obj3 = './images/ex_GL/face/head_scaled.obj'
 filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
+filename_playground = './images/ex_GL/playground.obj'
+filename_texture = './images/ex_GL/playground.png'
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=W, H=H,projection_type='P',scale=(1,1,1))
+    #filename_in = filename_box
+    #scale = (0.5, 0.5, 0.5)
+    #r_vec, t_vec = [-2.40, -0.96, 1.07], [0.02, -1.20, 5.25]
+    #W,H = 640,480
+
+    W, H = 1600, 900
+    filename_in = filename_playground
+    scale = (1,1,1)
+    r_vec, t_vec = [-1.25, -0.47, -0.61], [-31.33, -475.77, -133.02]
+
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in,filename_texture=filename_texture,W=W, H=H,do_normalize_model_file=False,projection_type='P',scale=(1,1,1))
+
+    R.init_perspective_view(r_vec,t_vec,scale)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

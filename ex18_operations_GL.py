@@ -6,46 +6,10 @@ from scipy.linalg import polar
 import tools_calibrate
 import tools_render_CV
 import detector_landmarks
+import tools_pr_geom
 # ----------------------------------------------------------------------------------------------------------------------
 numpy.set_printoptions(suppress=True)
 numpy.set_printoptions(precision=2)
-# ----------------------------------------------------------------------------------------------------------------------
-def apply_matrix(M,X):
-    if X.shape[1]==3:
-        X4D = numpy.full((X.shape[0], 4), 1)
-        X4D[:, :3] = X
-    else:
-        X4D = X
-
-    Y1 = pyrr.matrix44.multiply(M, X4D.T).T
-    Y2 = numpy.array([pyrr.matrix44.apply_to_vector(M.T, x) for x in X4D])
-
-    return Y1
-# ----------------------------------------------------------------------------------------------------------------------
-def apply_rotation(rvec,X):
-    R = pyrr.matrix44.create_from_eulers(rvec)
-    Y = apply_matrix(R, X)
-    return Y
-# ----------------------------------------------------------------------------------------------------------------------
-def apply_translation(tvec,X):
-    T = pyrr.matrix44.create_from_translation(tvec).T
-    Y = apply_matrix(T,X)
-    return Y
-# ----------------------------------------------------------------------------------------------------------------------
-def apply_RT(rvec,tvec,X):
-    R = pyrr.matrix44.create_from_eulers(rvec)
-    T = pyrr.matrix44.create_from_translation(tvec).T
-    M = pyrr.matrix44.multiply(T,R)
-    Y = apply_matrix(M,X)
-    return Y
-# ----------------------------------------------------------------------------------------------------------------------
-def compose_RT_mat(rvec,tvec):
-
-    R = pyrr.matrix44.create_from_eulers(rvec)
-    T = pyrr.matrix44.create_from_translation(tvec).T
-    M = pyrr.matrix44.multiply(T, R)
-
-    return M
 # ----------------------------------------------------------------------------------------------------------------------
 def check_decompose():
     for i in range(1):
@@ -53,11 +17,11 @@ def check_decompose():
         T[0,0]=3
 
         rvec, tvec = numpy.random.rand(3)*0.1,numpy.random.rand(3)
-        M = pyrr.matrix44.multiply(compose_RT_mat(rvec, tvec),T)
+        M = pyrr.matrix44.multiply(tools_pr_geom.compose_RT_mat(rvec, tvec),T)
         T, R, K = tools_render_CV.decompose_into_TRK(M)
         rvec2 = tools_calibrate.rotationMatrixToEulerAngles(R[:3,:3])
         tvec2 = T[:3,3]
-        M2 = compose_RT_mat(rvec2, tvec2)
+        M2 = tools_pr_geom.compose_RT_mat(rvec2, tvec2)
 
         print(rvec, tvec)
         print(rvec2, tvec2)

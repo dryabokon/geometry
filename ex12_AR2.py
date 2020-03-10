@@ -17,19 +17,17 @@ def example_project_GL_vs_CV_acuro():
     marker_length = 1
 
     frame = cv2.imread('./images/ex_aruco/01.jpg')
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=frame.shape[1], H=frame.shape[0],
-                               is_visible=False,
-                               projection_type='P',
-                               scale=(0.5,0.5,0.5))
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=frame.shape[1], H=frame.shape[0],is_visible=False,projection_type='P',scale=(0.5,0.5,0.5))
 
-    axes_image, rvec, tvec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, R.mat_camera, numpy.zeros(4))
+    axes_image, r_vec, t_vec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, R.mat_camera, numpy.zeros(4))
+    cv2.imwrite('./images/output/cube_CV.png', tools_render_CV.draw_cube_numpy(frame, R.mat_camera, numpy.zeros(4), r_vec.flatten(), t_vec.flatten(), (0.5,0.5,0.5)))
 
-    cv2.imwrite('./images/output/cube_CV.png', tools_render_CV.draw_cube_numpy(frame, R.mat_camera, numpy.zeros(4), rvec.flatten(), tvec.flatten(), (0.5,0.5,0.5)))
-
-    image_3d = R.get_image_perspective(rvec.flatten(), tvec.flatten())
+    image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),scale=(0.5,0.5,0.5))
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     cv2.imwrite('./images/output/cube_GL.png', tools_image.blend_avg(frame, image_3d, clr, weight=0))
 
+    r_vec, t_vec = r_vec.flatten(), t_vec.flatten()
+    print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f]' % (r_vec[0], r_vec[1], r_vec[2], t_vec[0], t_vec[1], t_vec[2]))
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def example_project_GL_vs_CV(filename_in):
@@ -158,8 +156,7 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 #tools_render_CV.align_two_model(filename_head_obj2,filename_markers2,filename_head_obj1,filename_markers1,'./images/output/model.obj','./images/output/m.txt')
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-
-
-    example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
-
+    example_project_GL_vs_CV_acuro()
+    #example_project_GL_vs_CV(filename_head_obj1)
+    #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)
