@@ -27,8 +27,8 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('Z'): R.rotate_model((0,0,-d))
         if key == ord('X'): R.rotate_model((0,0,+d))
 
-        if key == ord('O'): R.rotate_view((0, 0, +d))
-        if key == ord('P'): R.rotate_view((0, 0, -d))
+        if key == ord('O'): R.rotate_view((0,+d*0.2,0))
+        if key == ord('P'): R.rotate_view((0,-d*0.2,0))
 
         if key == 294: R.reset_view()
 
