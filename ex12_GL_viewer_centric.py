@@ -107,8 +107,8 @@ def event_position(window, xpos, ypos):
 # ----------------------------------------------------------------------------------------------------------------------
 def event_scroll(window, xoffset, yoffset):
     if R.projection_type=='P':
-        if yoffset>0:R.translate_view(1.04)
-        else        :R.translate_view(1.0/1.04)
+        if yoffset>0:R.translate_view_by_scale(1.04)
+        else        :R.translate_view_by_scale(1.0 / 1.04)
     else:
         if yoffset>0:R.translate_ortho(1.04)
         else        :R.translate_ortho(1.0/1.04)
