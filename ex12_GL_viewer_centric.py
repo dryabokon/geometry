@@ -136,7 +136,7 @@ filename_texture = './images/ex_GL/box/box.png'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box,filename_texture=filename_texture,W=W, H=H,do_normalize_model_file=False,projection_type='P',scale=(1,1,1))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box,filename_texture=filename_texture,W=W, H=H,do_normalize_model_file=False,projection_type='P')
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
