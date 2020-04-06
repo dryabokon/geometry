@@ -11,12 +11,11 @@ import tools_image
 import tools_draw_numpy
 import tools_IO
 # ---------------------------------------------------------------------------------------------------------------------
-def example_find_matches_for_frames(detector='SIFT', matchtype='knn'):
+def example_find_matches_for_frames(filename1_in,filename2_in, folder_output, detector='SIFT', matchtype='knn'):
 
-    folder_input = 'images/ex_homography_affine/'
-    folder_output = 'images/output/'
-    img1 = cv2.imread(folder_input + 'first.jpg')
-    img2 = cv2.imread(folder_input + 'scond.jpg')
+
+    img1 = cv2.imread(filename1_in)
+    img2 = cv2.imread(filename2_in)
 
     if not os.path.exists(folder_output):
         os.makedirs(folder_output)
@@ -39,8 +38,7 @@ def example_find_matches_for_frames(detector='SIFT', matchtype='knn'):
     img1_gray_rgb = tools_image.desaturate(img1)
     img2_gray_rgb = tools_image.desaturate(img2)
     for m1,m2 in zip(match1,match2):
-        if math.sqrt((m1[1]-m2[1])*(m1[1]-m2[1]) + (m1[0]-m2[0])*(m1[0]-m2[0])) > 5 and \
-                math.sqrt((m1[1]-m2[1])*(m1[1]-m2[1]) + (m1[0]-m2[0])*(m1[0]-m2[0])) < 55:
+        if math.sqrt((m1[1]-m2[1])*(m1[1]-m2[1]) + (m1[0]-m2[0])*(m1[0]-m2[0])) > 5 and math.sqrt((m1[1]-m2[1])*(m1[1]-m2[1]) + (m1[0]-m2[0])*(m1[0]-m2[0])) < 55:
             r = int(255 * numpy.random.rand())
             color = cv2.cvtColor(numpy.array([r, 255, 225], dtype=numpy.uint8).reshape(1, 1, 3), cv2.COLOR_HSV2BGR)
 
@@ -53,6 +51,14 @@ def example_find_matches_for_frames(detector='SIFT', matchtype='knn'):
     return
 
 # --------------------------------------------------------------------------------------------------------------------------
-
+folder_output = 'images/output/'
+# --------------------------------------------------------------------------------------------------------------------------
+#filename1_in = 'images/ex_homography_affine/first.jpg'
+#filename2_in = 'images/ex_homography_affine/scond.jpg'
+# --------------------------------------------------------------------------------------------------------------------------
+filename1_in = 'images/ex_bin/frame000098.jpg'
+filename2_in = 'images/ex_bin/frame000099.jpg'
+# --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    example_find_matches_for_frames('SIFT', 'flann')
+
+    example_find_matches_for_frames(filename1_in,filename2_in,folder_output,'SIFT', 'flann')

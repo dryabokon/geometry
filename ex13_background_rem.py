@@ -25,7 +25,7 @@ def demo_bg_removal():
 		if USE_CAMERA:
 			ret, frame = cap.read()
 
-		fgmask = fgbg.apply(frame)
+		fgmask = fgbg.get_flow_image(frame)
 		tools_image.desaturate_2d(frame)
 
 		# gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
