@@ -73,9 +73,6 @@ if __name__ == '__main__':
     chess_rows, chess_cols = 7,7
     width,height =1200, 800
 
-    camera_matrix = numpy.array([[height,0,width],[0,width,height],[0,0,1]]).astype(numpy.float64)
-    dist=numpy.zeros((1,5))
     camera_matrix, dist = tools_calibrate.get_proj_dist_mat_for_images(path_input, chess_rows, chess_cols)
-
     example_board_pose_estimation(path_input, path_output, chess_rows, chess_cols,camera_matrix, dist)
-    #example_augment_board_live(8, 8,camera_matrix, dist)
+

@@ -15,7 +15,7 @@ marker_length = 0.1
 # ----------------------------------------------------------------------------------------------------------------------
 def example_project_GL_vs_CV_acuro():
     marker_length = 1
-    aperture_x,aperture_y = 0.25, 0.25
+    aperture_x,aperture_y = 0.5, 0.5
 
     frame = cv2.imread('./images/ex_aruco/01.jpg')
     R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box.obj', W=frame.shape[1], H=frame.shape[0],is_visible=False,projection_type='P')
@@ -166,8 +166,8 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #example_project_GL_vs_CV_acuro()
-    example_project_GL_vs_CV(filename_head_obj1)
+    example_project_GL_vs_CV_acuro()
+    #example_project_GL_vs_CV(filename_head_obj1)
 
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)

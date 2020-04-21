@@ -7,8 +7,6 @@ import tools_IO
 import tools_image
 import tools_alg_match
 import tools_draw_numpy
-import tools_video
-import tools_animation
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
     folder_input = 'images/ex_homography_manual/'
@@ -234,10 +232,9 @@ def example_03_find_homography_live():
     cv2.destroyAllWindows()
     return
 # ---------------------------------------------------------------------------------------------------------------------
-
 if __name__ == '__main__':
 
-    example_03_find_homography_manual()
+    #example_03_find_homography_manual()
     #example_03_find_homography_by_keypoints('ORB')
     #example_03_find_translateion_by_keypoints('ORB')
 

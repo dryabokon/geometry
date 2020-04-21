@@ -1,10 +1,9 @@
 import numpy
 import cv2
 import tools_soccer_field
-import tools_GL3D
-import tools_pr_geom
 import tools_IO
-import tools_Skeletone
+import tools_image
+import tools_Hough
 #----------------------------------------------------------------------------------------------------------------------
 folder_in = './images/ex_lines/'
 folder_out = './images/output/'
@@ -16,25 +15,25 @@ def process_folder(folder_in, folder_out):
     tools_IO.remove_files(folder_out, create=True)
     filenames = tools_IO.get_filenames(folder_in, '*.jpg')
 
-    for filename in filenames[2:3]:
+    for filename in filenames:
         SFP.process_view(folder_in+filename,do_debug=True)
 
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
-def example_03():
-    filename_obj = './images/output/playground.obj'
-    filename_texture = './images/output/playground.png'
-    SFP.export_playground(filename_obj,filename_texture)
-    return
+#image = cv2.imread(folder_in+'frame000159.jpg')
+#patches = tools_image.do_patch(image)
+#for i,patch in enumerate(patches):cv2.imwrite(folder_out+'%03d.jpg'%i,patch)
+#cv2.imwrite(folder_out+'res.png',tools_image.do_stitch(image.shape[0],image.shape[1],patches))
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    process_folder(folder_in,folder_out)
+    #process_folder(folder_in,folder_out)
+    #cv2.imwrite(folder_out+'pg.png',SFP.draw_playground_GT())
+    #L_GT, lines_GT = SFP.get_GT()
+    #for i,lm in enumerate(L_GT):print(i,lm)
 
-
-
-
+    SFP.unit_test_01(cv2.imread(folder_in+'frame000000.jpg'))
 
 
 
