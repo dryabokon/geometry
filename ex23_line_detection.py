@@ -2,8 +2,7 @@ import numpy
 import cv2
 import tools_soccer_field
 import tools_IO
-import tools_image
-import tools_Hough
+import tools_render_CV
 #----------------------------------------------------------------------------------------------------------------------
 folder_in = './images/ex_lines/'
 folder_out = './images/output/'
@@ -15,8 +14,9 @@ def process_folder(folder_in, folder_out):
     tools_IO.remove_files(folder_out, create=True)
     filenames = tools_IO.get_filenames(folder_in, '*.jpg')
 
-    for filename in filenames:
+    for filename in filenames[290:291]:
         SFP.process_view(folder_in+filename,do_debug=True)
+
 
 
     return
@@ -28,12 +28,9 @@ def process_folder(folder_in, folder_out):
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #process_folder(folder_in,folder_out)
-    #cv2.imwrite(folder_out+'pg.png',SFP.draw_playground_GT())
-    #L_GT, lines_GT = SFP.get_GT()
-    #for i,lm in enumerate(L_GT):print(i,lm)
+    process_folder(folder_in,folder_out)
 
-    SFP.unit_test_01(cv2.imread(folder_in+'frame000000.jpg'))
-
+    #SFP.process_view(folder_in + 'frame002170.jpg', do_debug=True)
+    #SFP.unit_test_01(cv2.imread(folder_in+'frame002170.jpg'))
 
 
