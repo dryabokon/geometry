@@ -53,15 +53,28 @@ def example_03_check_intersection():
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def example_04_distance_segment_to_line():
-    line = (10, 100, 1000, 100)
-    segm = (200, 200, 80, 90)
-    d = tools_render_CV.distance_segment_to_line(segm, line)
-    print(d)
+    #line = (10, 100, 1000, 100)
+    #segm = (200, 200, 80, 90)
 
-    image = numpy.full((1080, 1920, 3), 64, dtype=numpy.uint8)
-    cv2.line(image, (segm[0], segm[1]), (segm[2], segm[3]), color_blue, thickness=2)
-    cv2.line(image, (line[0], line[1]), (line[2], line[3]), color_red, thickness=2)
-    cv2.imwrite(folder_out+'04_dist_segment_to_line.png',image)
+    segm = [1920, 281, 0, 623]
+    lines = [[-1369.14, 867.18, 1584.37, 341.08],
+             [-1325.43, 1028.71, 1617.43, 446.],
+             [-1259.76, 1240.39, 1667.99, 585.96],
+             [-1178.02, 1475.58, 1732.87, 749.81],
+             [-1510.85, 167.71, 1485.04, 324.72],
+             [-1521.51, 246.43, 1470.81, 460.92],
+             [-1556.03, 509.86, 1430.16, 797.39],
+             [-1598.1, 775.79, 1382.62, 1115.4]]
+
+    for line in numpy.array(lines).astype(int):
+        d = tools_render_CV.distance_segment_to_line(segm, line)
+        print(d)
+
+        image = numpy.full((1080, 1920, 3), 64, dtype=numpy.uint8)
+        cv2.line(image, (segm[0], segm[1]), (segm[2], segm[3]), color_blue, thickness=2)
+        cv2.line(image, (line[0], line[1]), (line[2], line[3]), color_red, thickness=2)
+        cv2.imwrite(folder_out+'04_dist_segment_to_line.png',image)
+
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def example_05_trim_line_by_box():
@@ -127,4 +140,7 @@ def example_06_ratio_skewed_rect():
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    example_06_ratio_skewed_rect()
+
+    example_04_distance_segment_to_line()
+
+
