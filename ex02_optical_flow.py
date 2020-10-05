@@ -8,8 +8,6 @@ import cv2
 import tools_Skeletone
 import tools_image
 # --------------------------------------------------------------------------------------------------------------------------
-S = tools_Skeletone.Skelenonizer()
-# --------------------------------------------------------------------------------------------------------------------------
 class OpticalFlow_DenseByLines():
     def __init__(self):
         self.step = 16  # configure this if you need other steps...
@@ -115,8 +113,10 @@ def example_folder(OF,folder_in,folder_out):
 OF = OpticalFlow_LucasKanade()
 # --------------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/'
-folder_in = './images/ex_bin/'
+folder_in = './images/ex_bin4/'
 ID_start = 60
+S = tools_Skeletone.Skelenonizer(folder_out)
+# --------------------------------------------------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     #example_cam()

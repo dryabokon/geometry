@@ -7,50 +7,73 @@ import tools_IO
 import tools_image
 import tools_alg_match
 import tools_draw_numpy
+import tools_pr_geom
+import matplotlib.pyplot as plt
+# ---------------------------------------------------------------------------------------------------------------------
+def example_02_homography_manual(filename_source, filename_target,filename_out):
+    im_source = cv2.imread(filename_source)
+    im_target = cv2.imread(filename_target)
+
+    pad = 0
+
+
+    p_source = numpy.array([[0+pad, 0+pad],
+                            [im_source.shape[1]-pad, pad],
+                            [im_source.shape[1]-pad, im_source.shape[0]-pad],
+                            [pad, im_source.shape[0]-pad]],dtype=numpy.float)
+
+    p_target = numpy.array([[9, 53], [69, 82], [94, 214], [36, 173]])
+
+    homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
+
+    image_trans = cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0]))
+
+
+    result = tools_image.put_layer_on_image(im_target,image_trans,background_color = (0, 0, 0))
+    cv2.imwrite(filename_out, result)
+    return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
     folder_input = 'images/ex_homography_manual/'
-    im_scene = cv2.imread(folder_input + 'background.jpg')
-    im_rect = cv2.imread(folder_input + 'rect.jpg')
+    im_target = cv2.imread(folder_input + 'background.jpg')
+    im_source = cv2.imread(folder_input + 'rect.jpg')
     folder_output = 'images/output/'
-    filename_output_rect = folder_output + 'rect_out.jpg'
-    filename_output_blend = folder_output + 'background_out.jpg'
+
 
     if not os.path.exists(folder_output):
         os.makedirs(folder_output)
     else:
         tools_IO.remove_files(folder_output)
 
-    c1,r1 = 262, 22
-    c2,r2 = 644, 135
+    c1,r1 = 296, 95
+    c2,r2 = 570, 180
     c3,r3 = 404, 614
     c4,r4 = 130, 531
 
-    pts_scene = numpy.array([[c1,r1],[c2,r2], [c3,r3], [c4,r4]])
-    pts_rect = numpy.array([[0, 0], [im_rect.shape[1], 0], [im_rect.shape[1], im_rect.shape[0]], [0, im_rect.shape[0]]])
+    p_target = numpy.array([[c1,r1],[c2,r2], [c3,r3], [c4,r4]])
+    p_source = numpy.array([[0, 0], [im_source.shape[1], 0], [im_source.shape[1], im_source.shape[0]], [0, im_source.shape[0]]],dtype=numpy.float)
 
-    #homography, status = cv2.findHomography(pts_rect, pts_scene)
-    homography_afine, status = cv2.estimateAffine2D(pts_rect, pts_scene)
+    # via affine
+    homography_afine, status = tools_pr_geom.fit_affine(p_source, p_target)
     homography = numpy.vstack((homography_afine,numpy.array([0,0,1])))
+    cv2.imwrite(folder_output+'affine.png', tools_image.put_layer_on_image(im_target, cv2.warpPerspective(im_source, homography, (im_target.shape[1], im_target.shape[0])), background_color=(0,0,0)))
+
+    # homography itself
+    homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
+    cv2.imwrite(folder_output + 'homography.png', tools_image.put_layer_on_image(im_target,cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0])),background_color=(0, 0, 0)))
+
+    # homography normalized
+    K = numpy.array([[im_target.shape[1], 0, 0], [0, im_target.shape[0], 0], [0, 0, 1]])
+    n, R, T, normal = cv2.decomposeHomographyMat(homography, K)
+    R = numpy.array(R[0])
+    T = numpy.array(T[0])
+    normal = numpy.array(normal[0])
+    homography3 = tools_calibrate.compose_homography(R, T, normal, K)
+    cv2.imwrite(folder_output + 'homography_normalized.png', tools_image.put_layer_on_image(im_target,cv2.warpPerspective(im_source, homography3, (im_target.shape[1], im_target.shape[0])),background_color=(0, 0, 0)))
 
 
-    #K = numpy.array([[1000, 0, 0], [0, 1000, 0], [0, 0, 1]])
-    #n, R, T, normal = cv2.decomposeHomographyMat(homography, K)
-    #R = numpy.array(R[0])
-    #T = numpy.array(T[0])
-    #normal = numpy.array(normal[0])
-    #HH=tools_calibrate.compose_homography(R,T,normal,K)
-    #print(homography-HH)
-
-    im_rect_out = cv2.warpPerspective(im_rect, homography, (im_scene.shape[1], im_scene.shape[0]))
-    im_scene = tools_image.put_layer_on_image(im_scene, im_rect_out, background_color=(0,0,0))
-
-    cv2.imwrite(filename_output_rect, im_rect_out)
-    cv2.imwrite(filename_output_blend, im_scene)
 
     return
-
-
 # --------------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_by_keypoints(detector='SIFT', matchtype='knn'):
 
@@ -135,8 +158,6 @@ def example_03_find_translateion_by_keypoints(detector='SIFT', matchtype='knn'):
 
 
 # --------------------------------------------------------------------------------------------------------------------------
-
-
 def example_03_find_translation_with_ECC(warp_mode=cv2.MOTION_TRANSLATION):
     # warp_mode = cv2.MOTION_TRANSLATION
     # warp_mode = cv2.MOTION_EUCLIDEAN
@@ -232,7 +253,38 @@ def example_03_find_homography_live():
     cv2.destroyAllWindows()
     return
 # ---------------------------------------------------------------------------------------------------------------------
+def example_homography_video(filename_target,folder_in,folder_out):
+
+    tools_IO.remove_files(folder_out,create=True)
+
+    im_target = cv2.imread(filename_target)
+    p_target = numpy.array([[62, 48], [225, 48], [225, 93], [62, 93]])
+
+    mask = numpy.where(im_target==(0,0,255))
+
+    filenames = tools_IO.get_filenames(folder_in,'*.jpg')
+    im_source = cv2.imread(folder_in+filenames[0])
+    pad = 0
+    p_source = numpy.array([[0 + pad, 0 + pad],
+                            [im_source.shape[1] - pad, pad],
+                            [im_source.shape[1] - pad, im_source.shape[0] - pad],
+                            [pad, im_source.shape[0] - pad]], dtype=numpy.float)
+
+    for filename_in in filenames:
+        im_source = cv2.imread(folder_in + filename_in)
+
+        homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1, 1, 2)), p_target.reshape((-1, 1, 2)))
+        image_trans = cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0]))
+        image_trans2 = numpy.zeros_like(image_trans)
+        image_trans2[mask] = image_trans[mask]
+
+        result = tools_image.put_layer_on_image(im_target, image_trans2, background_color=(0, 0, 0))
+        cv2.imwrite(folder_out+filename_in, result)
+
+    return
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    #example_02_homography_manual('D:/l1.png','D:/res2.png','D:/res3.png')
 
     #example_03_find_homography_manual()
     #example_03_find_homography_by_keypoints('ORB')
@@ -241,3 +293,4 @@ if __name__ == '__main__':
     #example_03_find_translation_with_ECC()
     #example_03_find_homography_live()
 
+    example_homography_video('./images/ex_homography_manual/car.png', 'D:/LM/ex10/', './images/output/')

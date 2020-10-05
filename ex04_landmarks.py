@@ -12,7 +12,7 @@ import tools_wavefront
 # ---------------------------------------------------------------------------------------------------------------------
 capturing_devices = ['cam','mp4','image']
 camera_W, camera_H = 640, 640
-mode = 'Ortho'
+mode = 'Box'
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
 
@@ -118,21 +118,22 @@ filename_head_obj3 = './images/ex_GL/face/head_scaled.obj'
 filename_head_obj3_cut = './images/ex_GL/face/head_scaled_cut.obj'
 filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
+#filename_actor = './images/ex_DMS/JB_original.mp4'
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    capturing_device = 'image'
-    folder_in = './images/ex_faceswap/01/'
-    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    filename_actor = list_filenames[0]
-    image_actor_default = cv2.imread(folder_in+filename_actor)
-    image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
+    #capturing_device = 'image'
+    #folder_in = './images/ex_faceswap/01/'
+    #list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
+    #filename_actor = list_filenames[0]
+    #image_actor_default = cv2.imread(folder_in+filename_actor)
+    #image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
 
-    #capturing_device = 'mp4'
-    #filename_actor = './images/ex_DMS/JB_original.mp4'
-    capturing_device = 'cam'
+    capturing_device = 'mp4'
+    filename_actor = 'D://ddd/'
 
-    #demo_live(filename_head_obj1, filename_markers1, 'O')
-    demo_live(filename_head_obj3_cut,filename_markers3,'O')
+
+    demo_live(filename_head_obj1,filename_markers1,'P')
 
 
 

@@ -4,6 +4,9 @@ from zhou_accv_2018 import p3l,p3p
 import tools_render_CV
 import tools_pr_geom
 import tools_IO
+import tools_soccer_GT_data
+# ----------------------------------------------------------------------------------------------------------------------
+soccer_data = tools_soccer_GT_data.Soccer_Field_GT_data()
 # ----------------------------------------------------------------------------------------------------------------------
 def example_p3l():
 
@@ -235,7 +238,7 @@ tvec = numpy.array([0, 0, -7])
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #draw_cube(H,W,rvec,tvec)
+    draw_cube(H,W,rvec,tvec)
     check_p3l(H,W,rvec, tvec)
 
 

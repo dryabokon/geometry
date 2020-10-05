@@ -54,8 +54,8 @@ def example_04_blend_multi_band_black():
 # ---------------------------------------------------------------------------------------------------------------------
 def example_04_blend_multi_band_mask():
     folder_input = 'images/ex_blend/'
-    img1 = cv2.imread(folder_input + 'part1.png')
-    img2 = cv2.imread(folder_input + 'part2.png')
+    img1 = cv2.imread(folder_input + 'black_R.png')
+    img2 = cv2.imread(folder_input + 'black_L.png')
     folder_output = 'images/output/'
 
     if not os.path.exists(folder_output):
@@ -63,7 +63,7 @@ def example_04_blend_multi_band_mask():
     else:
         tools_IO.remove_files(folder_output)
 
-    cv2.imwrite(folder_output + 'res.png', tools_image.blend_multi_band_large_small(img1, img2,(0, 0, 0)))
+    cv2.imwrite(folder_output + 'res.png', tools_image.blend_multi_band_large_small(img1, img2,(0, 0, 0),filter_size=10,adjust_colors=True,do_debug=True))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_04_blend_multi_band_white():
@@ -117,7 +117,9 @@ if __name__ == '__main__':
     #example_04_blend_multi_band_white()
     #example_04_find_homography_blend_multi_band('ORB')
 
-    example_04_blend_multi_band_mask()
+    #example_04_blend_multi_band_mask()
+
+
 
 
 

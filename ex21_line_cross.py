@@ -138,9 +138,36 @@ def example_06_ratio_skewed_rect():
 
     return ratio
 # ----------------------------------------------------------------------------------------------------------------------
+def example_07_match_boxed_lines():
+
+    W, H = 1920,1080
+    segm = [1920, 281, 0, 623]
+    lines = [[-1369.14, 867.18, 1584.37, 341.08],
+             [-1325.43, 1028.71, 1617.43, 446.],
+             [-1259.76, 1240.39, 1667.99, 585.96],
+             [-1178.02, 1475.58, 1732.87, 749.81],
+             [-1510.85, 167.71, 1485.04, 324.72],
+             [-1521.51, 246.43, 1470.81, 460.92],
+             [-1556.03, 509.86, 1430.16, 797.39],
+             [-1598.1, 775.79, 1382.62, 1115.4]]
+
+    boxed_lines = numpy.array([tools_render_CV.line_box_intersection(line,(0,0,W-1,H-1)) for line in lines])
+    boxed_segment = tools_render_CV.line_box_intersection(segm,(0,0,W-1,H-1))
+    encoded_lines = numpy.array([tools_render_CV.encode_boxed_line(boxed_line, W, H) for boxed_line in boxed_lines])
+    encoded_segm = tools_render_CV.encode_boxed_line(boxed_segment, W, H)
+    tol = 5
+    cond =  (abs(encoded_lines[:,0] - encoded_segm[0]) <= tol) & (abs(encoded_lines[:,1] - encoded_segm[1]) <= tol)
+
+    for l,line in enumerate(boxed_lines.astype(int)):
+
+        image = numpy.full((1080, 1920, 3), 64, dtype=numpy.uint8)
+        cv2.line(image, (boxed_segment[0], boxed_segment[1]), (boxed_segment[2], boxed_segment[3]), color_blue, thickness=2)
+        cv2.line(image, (line[0], line[1]), (line[2], line[3]), color_red,  thickness=2)
+        cv2.imwrite(folder_out+'07_match_%02d.png'%l,image)
+
+
+    return
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-
-    example_04_distance_segment_to_line()
-
-
+    example_03_check_intersection()

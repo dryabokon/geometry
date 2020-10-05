@@ -10,6 +10,7 @@ import tools_image
 import tools_draw_numpy
 import tools_calibrate
 import tools_IO
+import tools_plot
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ def example_find_matches_for_homography(detector='SIFT', matchtype='knn'):
 		fpr, tpr, thresholds = metrics.roc_curve(hit, -distance)
 		roc_auc = auc(fpr, tpr)
 		filename_out = folder_output + ('_ROC_%s_%s_auc_%1.3f.png' % (detector, matchtype, roc_auc))
-		tools_IO.plot_tp_fp(plt.subplot(1, 1, 1), fig, tpr, fpr, roc_auc)
+		tools_plot.plot_tp_fp(plt.subplot(1, 1, 1), fig, tpr, fpr, roc_auc)
 		plt.savefig(filename_out)
 
 

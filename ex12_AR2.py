@@ -4,6 +4,7 @@ import numpy
 import tools_GL3D
 import pyrr
 import tools_pr_geom
+import tools_draw_numpy
 # ----------------------------------------------------------------------------------------------------------------------
 import tools_aruco
 import tools_render_CV
@@ -37,20 +38,34 @@ def example_project_GL_vs_CV(filename_in):
 
     W, H = 800, 800
 
-    rvec, tvec , aperture = (0, 0, 0), [0, 0, 5],0.5
+    rvec, tvec , aperture = (0.0, 0, 0), [+5.0, 0, +15],0.5
     rvec = numpy.array(rvec)
     tvec = numpy.array(tvec)
+    scale = 1.0
+
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H,is_visible=False,projection_type='P')
+    RT = tools_pr_geom.compose_RT_mat(rvec, tvec)
 
-    cv2.imwrite('./images/output/model_GL.png', R.get_image_perspective(rvec, tvec,aperture,aperture,scale=(0.5,0.5,0.5)))
+    cv2.imwrite('./images/output/model_GL.png', R.get_image_perspective(rvec, tvec,aperture,aperture,scale=scale*numpy.array((1,1,1)),lookback=False,do_debug=True))
+    cv2.imwrite('./images/output/model_GL_RT.png', R.get_image_perspective_M(RT,aperture,aperture,scale=scale*numpy.array((1,1,1)),lookback=False,do_debug=True))
+
 
     object = tools_wavefront.ObjLoader()
     object.load_mesh(filename_in, (215, 171, 151), do_autoscale=True)
     points_3d = object.coord_vert
 
-    result = tools_render_CV.draw_points_numpy_MVP(points_3d, numpy.full((H,W,3),76,dtype=numpy.uint8), R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
+    mat_trans = scale * numpy.eye(4)
+    mat_trans[3,3]=1
+
+    mat_projection = tools_pr_geom.compose_projection_mat_4x4(W, H, aperture_x=aperture,aperture_y=aperture)
+
+    result = tools_render_CV.draw_points_numpy_MVP(points_3d, numpy.full((H,W,3),76,dtype=numpy.uint8), mat_projection, RT, numpy.eye(4), mat_trans)
     cv2.imwrite('./images/output/model_CV_MVP.png', result)
+
+    camera_matrix_3x3 = tools_pr_geom.compose_projection_mat_3x3(W, H, aperture, aperture)
+    result2 = tools_render_CV.draw_points_numpy_RT(points_3d, numpy.full((H, W, 3), 76, dtype=numpy.uint8),RT,camera_matrix_3x3)
+    cv2.imwrite('./images/output/model_CV_RT.png', result2)
 
 
     return
@@ -166,8 +181,8 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    example_project_GL_vs_CV_acuro()
-    #example_project_GL_vs_CV(filename_head_obj1)
+    #example_project_GL_vs_CV_acuro()
+    example_project_GL_vs_CV(filename_head_obj1)
 
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)
