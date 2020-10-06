@@ -115,8 +115,6 @@ def generate_idx0(C,N,M):
 # ---------------------------------------------------------------------------------------------------------------------
 def generate_idx(C,N,M):
 
-
-
     idx = numpy.full((C + 5, M),-1).astype(int)
     idx[:C, 3] = numpy.arange(0, C)
     idx[:C, 2] = numpy.arange(C,2*C)
@@ -161,8 +159,6 @@ def create_slides():
 if __name__ == '__main__':
 
     #create_slides()
-    #tools_animation.folder_to_animated_gif_imageio(folder_out,folder_out+'ani.gif', mask='*.png', framerate=8,resize_H=512//2, resize_W=896//2,do_reverce=False)
+    tools_animation.folder_to_animated_gif_imageio(folder_out,folder_out+'ani.gif', mask='*.png', framerate=12,resize_H=512//2, resize_W=896//2,do_reverce=False)
     #tools_animation.folder_to_video(folder_out, folder_out + 'ani.avi', mask='*.png',framerate=18,resize_W=896,resize_H=512)
 
-    print(123+456+789)
-    print(234+567+891)
