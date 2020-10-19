@@ -46,11 +46,11 @@ def example_01():
     else:
         tools_IO.remove_files(folder_output)
 
-    img_base = cv2.imread(folder_input + 'boxes.png')
-    img_tmpl = cv2.imread(folder_input + 'pattern2.png')
+    #img_base = cv2.imread(folder_input + 'boxes.png')
+    #img_tmpl = cv2.imread(folder_input + 'pattern2.png')
 
-    #img_base = cv2.imread(folder_input + 'beach.png',0)
-    #img_tmpl = cv2.imread(folder_input + 'waldo.png',0)
+    img_base = cv2.imread(folder_input + 'beach.png',0)
+    img_tmpl = cv2.imread(folder_input + 'waldo.png',0)
 
     hitmap_2d = tools_alg_match.calc_hit_field_basic(img_base, img_tmpl)
     cv2.imwrite(folder_output + 'hitmap_basic.png', hitmap_2d)

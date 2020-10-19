@@ -80,7 +80,7 @@ def process_key(key):
 def demo_live(FS):
 
     if use_camera:
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(1)
         cap.set(3, camera_W)
         cap.set(4, camera_H)
     else:
