@@ -52,7 +52,7 @@ def example_project_GL_vs_CV(filename_in):
 
 
     object = tools_wavefront.ObjLoader()
-    object.load_mesh(filename_in, (215, 171, 151), do_autoscale=True)
+    object.load_mesh(filename_in, do_autoscale=True)
     points_3d = object.coord_vert
 
     mat_trans = scale * numpy.eye(4)
@@ -127,7 +127,7 @@ def example_ray(filename_in):
     rvec, tvec = (0, 0, 0), (0, 0, 5)
     R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize_model_file=True,projection_type='P')
     object = tools_wavefront.ObjLoader()
-    object.load_mesh(filename_in, (215, 171, 151), do_autoscale=True)
+    object.load_mesh(filename_in, do_autoscale=True)
     points_3d = object.coord_vert
 
     cv2.imwrite('./images/output/cube_GL.png', R.get_image_perspective(rvec, tvec))

@@ -19,6 +19,7 @@ import tools_pr_geom
 import tools_render_CV
 import tools_IO
 import tools_animation
+import tools_wavefront
 # ----------------------------------------------------------------------------------------------------------------------
 class Tracklet(object):
     """
@@ -525,6 +526,15 @@ def get_cube_3D(record):
     #corners_3D_1 = np.vstack((corners_3D, np.ones((corners_3D.shape[-1]))))
     return corners_3D.T
 # ----------------------------------------------------------------------------------------------------------------------
+def get_bbox(record):
+    obj = detectionInfo(record)
+
+    x_corners = [obj.xmin, obj.xmin, obj.xmax, obj.xmax]
+    y_corners = [obj.ymin, obj.ymax, obj.ymin, obj.ymax]
+    corners_2D = numpy.array([x_corners, y_corners]).T
+
+    return corners_2D
+# ----------------------------------------------------------------------------------------------------------------------
 def project_2D(P2, corners_3D):
 
     corners_3D_1 = numpy.vstack((corners_3D.T, numpy.ones(((corners_3D.T).shape[-1]))))
@@ -584,20 +594,47 @@ def draw_3Dbox(ax, P2, line, color):
     ax.add_patch(p)
     ax.add_patch(front_fill)
 # ----------------------------------------------------------------------------------------------------------------------
-def points_to_lines(points):
+def points_cuboid_to_lines(points):
 
-    idx = [(0,1),(1,2),(2,7),(7,0),(3,4),(4,5),(5,6),(6,3),(0,1),(1,4),(4,5),(5,0),(2,3),(3,6),(6,7),(7,2),(0,5),(5,6),(6,7),(7,0),(1,2),(2,3),(3,4),(4,1)]
     lines = []
-    for i in idx:
+    for i in [(0,1),(1,2),(2,7),(7,0),(3,4),(4,5),(5,6),(6,3),(0,1),(1,4),(4,5),(5,0),(2,3),(3,6),(6,7),(7,2),(0,5),(5,6),(6,7),(7,0),(1,2),(2,3),(3,4),(4,1)]:
         lines.append(numpy.array((points[i[0]],points[i[1]])).flatten())
 
     return lines
 # ----------------------------------------------------------------------------------------------------------------------
-def project_2D_BEV(X_source,H):
-    res = cv2.perspectiveTransform(X_source.reshape(-1, 1, 2), H).reshape((-1, 2))
-    return res
+def points_bbox_to_lines(points):
+
+    lines = []
+    for i in [(0,1),(2,3),(0,2),(1,3)]:lines.append(numpy.array((points[i[0]],points[i[1]])).flatten())
+    return lines
+# ----------------------------------------------------------------------------------------------------------------------
+def project_2D_BEV(points, H):
+    res = cv2.perspectiveTransform(points.reshape(-1, 1, 2), H).reshape((-1, 2))
+    return res.astype(numpy.int)
+# ----------------------------------------------------------------------------------------------------------------------
+def default_2D_BEV(points,H):
+    p = numpy.array(points)
+
+    ax,ay = p[:, 0].mean(), p[:, 1].max()
+
+    points2 = numpy.array([(ax,ay)])
+    res = cv2.perspectiveTransform(points2.reshape(-1, 1, 2), H).reshape((-1, 2))
+    #res = points2
+    return res.astype(numpy.int)
+# ----------------------------------------------------------------------------------------------------------------------
+def draw_grid(image,dR,dC,col=(128,128,128),transp=0.0):
+    image_result = image.copy()
+    H,W = image.shape[:2]
+
+    for r in numpy.arange(image.shape[0]-1,0,-dR):image_result = tools_draw_numpy.draw_line(image_result, r, 0, r, W, col, alpha_transp=transp)
+    for c in numpy.arange(image.shape[1]//2,0,-dC):image_result = tools_draw_numpy.draw_line(image_result, 0, c, H, c, col, alpha_transp=transp)
+    for c in numpy.arange(image.shape[1]//2,image.shape[1],dC): image_result = tools_draw_numpy.draw_line(image_result, 0, c, H,c, col,alpha_transp=transp)
+
+
+    return image_result
 # ----------------------------------------------------------------------------------------------------------------------
 def draw_boxes(folder_out, folder_images, folder_labels_GT, folder_calib):
+    draw_cuboids = True
 
     tools_IO.remove_files(folder_out,create=True)
     local_filenames = get_filenames(folder_images, '*.png,*.jpg')
@@ -617,36 +654,113 @@ def draw_boxes(folder_out, folder_images, folder_labels_GT, folder_calib):
         target_BEV_W, target_BEV_H = int(H*0.75),H
         point_van_xy = (631, 166)
 
-
+        if not os.path.exists(filename_label):continue
         records = open(filename_label).readlines()
-        colors = tools_draw_numpy.get_colors(len(records))
+        colors = tools_draw_numpy.get_colors(len(records),colormap='rainbow')
         image_2d = image.copy()
-        h_ipersp = tools_render_CV.get_h_ipersp(image,target_BEV_W, target_BEV_H,point_van_xy)
+        h_ipersp = tools_render_CV.get_inverce_perspective_mat_v2(image,target_BEV_W, target_BEV_H,point_van_xy)
         image_BEV = cv2.warpPerspective(image, h_ipersp, (target_BEV_W, target_BEV_H), borderValue=(32, 32, 32))
+        image_BEV = draw_grid(image_BEV, 20, 20,transp=0.9)
+
+
         for record,color in zip(records,colors):
             record = record.strip().split(' ')
 
-            points_3d = get_cube_3D(record)
-            points_2d = project_2D(mat_proj, points_3d)
-            points_2d_BEV = project_2D_BEV(points_2d[[2,3,6,7]],h_ipersp)
-            lines_2d = points_to_lines(points_2d)
+            if draw_cuboids:
+                points_2d = project_2D(mat_proj, get_cube_3D(record))
+                if (numpy.array(points_2d).min()<0) or (numpy.array(points_2d).min()>W):continue
+                lines_2d = points_cuboid_to_lines(points_2d)
+                points_2d_BEV = project_2D_BEV(points_2d[[2, 3, 6, 7]], h_ipersp)
+                image_BEV = tools_draw_numpy.draw_contours(image_BEV, points_2d_BEV, color_fill=color.tolist(), color_outline=color.tolist(),transp_fill=0.25,transp_outline=0.75)
 
-            #image = tools_draw_numpy.draw_lines(image,lines_2d,color=color.tolist(),w=1)
-            #image = tools_render_CV.draw_points_numpy_RT(points_3d, image,mat_proj,camera_matrix_4x4, flipX=True)
-            #image = tools_render_CV.draw_points_numpy_RT(points_3d, image,PP      ,numpy.eye(3)     , flipX=True)
-            #image = R.get_image_perspective_M(PP,aperture,aperture,scale=1*numpy.array((1,1,1)),lookback=False,do_debug=True)
+            else:
+                points_2d = get_bbox(record)
+                lines_2d = points_bbox_to_lines(points_2d)
+                center_2d_BEV = default_2D_BEV(points_2d, h_ipersp)[0]
+                image_BEV = tools_draw_numpy.draw_ellipse(image_BEV, (center_2d_BEV[0]-10, center_2d_BEV[1]-10, center_2d_BEV[0]+10,center_2d_BEV[1]+10),color.tolist(), transperency=0.75)
 
-            #image = tools_render_CV.draw_cube_numpy_RT(points_3d,image,PP,numpy.eye(3),color=color,flipX=True)
-            image_2d = tools_draw_numpy.draw_convex_hull_cv(image_2d,points_2d,color.tolist(),transperency=0.75)
+            image_2d = tools_draw_numpy.draw_convex_hull(image_2d,points_2d,color.tolist(),transperency=0.75)
             image_2d = tools_draw_numpy.draw_lines(image_2d,lines_2d,color.tolist(),w=1)
-            image_BEV = tools_draw_numpy.draw_convex_hull_cv(image_BEV, points_2d_BEV, color.tolist(), transperency=0.25)
-
 
         image_result = numpy.zeros((H,W+target_BEV_W,3),dtype=numpy.uint8)
         image_result[:,:W]=image_2d
         image_result[:,W:]=image_BEV
 
         cv2.imwrite(folder_out + base_name + '.png', image_result)
+
+    return
+# ----------------------------------------------------------------------------------------------------------------------
+def export_boxes(folder_out, folder_images, folder_labels_GT,folder_calib):
+    ObjLoader = tools_wavefront.ObjLoader()
+
+    tools_IO.remove_files(folder_out,create=True)
+    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[67:68]
+
+    for index,local_filename in enumerate(local_filenames):
+        base_name = local_filename.split('/')[-1].split('.')[0]
+        print(base_name)
+        filename_image = folder_images + local_filename
+        filename_label = folder_labels_GT + base_name + '.txt'
+        filename_calib = folder_calib + base_name + '.txt'
+
+        record = open(filename_calib).readlines()[0]
+        mat_proj = numpy.asarray([float(i) for i in record.split(' ')[1:]]).reshape((3, 4))
+
+        image = tools_image.desaturate(cv2.imread(filename_image))
+
+        H, W = image.shape[:2]
+        target_BEV_W, target_BEV_H = 256,256
+        point_van_xy = (631, 166)
+
+        h_ipersp = tools_render_CV.get_inverce_perspective_mat_v2(image, target_BEV_W, target_BEV_H, point_van_xy)
+        image_BEV = cv2.warpPerspective(image, h_ipersp, (target_BEV_W, target_BEV_H), borderValue=(32, 32, 32))
+        image_BEV[:2,:2]=255
+        cv2.imwrite(folder_out+base_name+'_BEV.png',image_BEV)
+        ObjLoader.export_material(folder_out + base_name + '.mtl', (255,255,255),base_name+'_BEV.png')
+        ObjLoader.export_mesh(folder_out + base_name + '_BEV.obj', numpy.array([[-1,-1,0],[-1,+1,0],[+1,+1,0],[+1,-1,0]]),
+                              idx_vertex=[[0,1,2],[2,3,0]],
+                              coord_texture = [[0,0],[0,1],[1,1],[1,0]],
+                              filename_material=base_name + '.mtl')
+
+
+
+        records = open(filename_label).readlines()
+        colors = tools_draw_numpy.get_colors(len(records),colormap='rainbow')
+        for c in range(len(records)):
+            color = colors[c]
+            color_hex = '%02x%02x%02x' % (color[2], color[1], color[0])
+            record = records[c].strip().split(' ')
+            #points_3d = get_cube_3D(record)
+            #idx_vert = [[0,1,2],[0,2,7],[3,4,5],[3,5,6],[0,1,4],[0,4,5],[2,3,6],[2,6,7],[0,5,6],[0,6,7],[1,2,3],[1,3,4]]
+            #ObjLoader.export_material(folder_out + color_hex + '.mtl',color[[2,1,0]])
+            #ObjLoader.export_mesh(folder_out + base_name + '_%03d.obj'%c, points_3d,idx_vertex=idx_vert,filename_material=color_hex + '.mtl')
+
+            points_2d = project_2D(mat_proj, get_cube_3D(record))
+            points_2d_BEV = project_2D_BEV(points_2d[[2, 3, 6, 7]], h_ipersp)
+            #image_2d = tools_draw_numpy.draw_convex_hull(image_BEV, points_2d_BEV, color.tolist(), transperency=0.25)
+            #cv2.imwrite(folder_out+ base_name + '_%03d.png'%c,image_2d)
+
+
+            points_3d_BEV = numpy.zeros((8,3),dtype=numpy.float32)
+            points_3d_BEV[:4,:2]=points_2d_BEV/128-1
+            points_3d_BEV[4:,:2]=points_2d_BEV/128-1
+            points_3d_BEV[:4, 2]=-0.01
+            points_3d_BEV[4:, 2]=-0.05
+
+            idx_vert = [[0,1,2],[2,3,0],[4,5,6],[6,7,4],[0,1,5],[4,5,0],[2,3,6],[6,7,3],[0,3,4],[7,4,3],[1,2,5],[6,2,5]]
+            ObjLoader.export_material(folder_out + color_hex + '.mtl',color[[2,1,0]])
+            ObjLoader.export_mesh(folder_out + base_name + '_%03d.obj'%c, points_3d_BEV,idx_vertex=idx_vert,filename_material=color_hex + '.mtl')
+
+
+        obj_filenames = numpy.sort(get_filenames(folder_out,'%s_*.obj'%base_name))
+
+        with open(folder_out+base_name+'.obj', 'w') as g:
+            for obj_filename in obj_filenames:
+                with open(folder_out+obj_filename, 'r') as f:
+                    g.writelines('#-------------------------------------\n')
+                    for each in f.readlines():
+                        g.writelines(each)
+                os.remove(folder_out+obj_filename)
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -659,6 +773,8 @@ def extract_boxes_from_labels(folder_out, folder_images, folder_labels_GT):
         filename_label = folder_labels_GT + base_name + '.txt'
 
         cubes = []
+        if not os.path.exists(filename_label):continue
+
         with open(filename_label) as f1:
             for line_p in f1:
                 line_p = line_p.strip().split(' ')
@@ -671,15 +787,16 @@ def extract_boxes_from_labels(folder_out, folder_images, folder_labels_GT):
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    folder_tracklets = '../kitti_dataset/2011_09_26/2011_09_26_drive_0001_sync/'
+    folder_tracklets = '../kitti_dataset/2011_09_26/2011_09_26_drive_0009_sync/'
     folder_labels = folder_tracklets + 'label_02/'
     folder_images = folder_tracklets + 'image_02/data/'
     folder_calib  = folder_tracklets + 'calib_02/'
-    folder_out = folder_tracklets + 'output/'
+    folder_out = './images/output/'
 
     #extract_labels_from_tracklets(folder_tracklets,folder_labels,folder_images)
     #extract_calibs_from_tracklets(folder_tracklets,folder_calib)
-    #extract_boxes_from_labels(folder_out, folder_images, folder_labels)
-    #draw_boxes(folder_out, folder_images, folder_labels, folder_calib)
+
+    draw_boxes(folder_out, folder_images, folder_labels, folder_calib)
+    #export_boxes(folder_out, folder_images,folder_labels,folder_calib)
     #tools_animation.folder_to_animated_gif_imageio(folder_out, folder_out+'kitti_00.gif', mask='*.png', framerate=10,resize_H=int(375*0.75), resize_W=int(1429*0.75),do_reverce=False)
-    tools_animation.folder_to_video(folder_out,folder_out+'kitti_00.mp4',mask='*.png',framerate=10)
+    #tools_animation.folder_to_video(folder_out,folder_out+'kitti_00.mp4',mask='*.png',framerate=10)
