@@ -19,7 +19,7 @@ def example_calibrate_camera():
     else:
         tools_IO.remove_files(folder_output)
 
-    camera_matrix, dist = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_output)
+    camera_matrix, dist,rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_output)
 
     image_chess = cv2.imread(folder_input+ filename_input)
     undistorted_chess = cv2.undistort(image_chess, camera_matrix, dist, None, None)

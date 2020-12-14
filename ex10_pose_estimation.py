@@ -10,6 +10,7 @@ import tools_IO
 import tools_alg_match
 import tools_image
 import tools_draw_numpy
+import tools_render_CV
 # ---------------------------------------------------------------------------------------------------------------------
 def example_board_pose_estimation(folder_input, folder_output, chess_rows, chess_cols,cameraMatrix, dist):
 
@@ -18,10 +19,17 @@ def example_board_pose_estimation(folder_input, folder_output, chess_rows, chess
     else:
         tools_IO.remove_files(folder_output)
 
-    R = 2
+    R = 1
 
     axis_3d_end   = numpy.array([[R, 0, 0], [0, R, 0], [0, 0, -R]],dtype = numpy.float32)
     axis_3d_start = numpy.array([[0, 0, 0]],dtype=numpy.float32)
+
+    points_3d = numpy.array([[-1, -1, -1], [-1, +1, -1], [+1, +1, -1], [+1, -1, -1], [-1, -1, +1], [-1, +1, +1], [+1, +1, +1],[+1, -1, +1]], dtype=numpy.float32)
+    points_3d[:, [0,1,2]] *= 0.5
+    points_3d[:, [0,1,2]] += 0.5
+    points_3d[:, [2]] *= -1
+
+    points_3d[:, [0,1]] += 2
 
     for image_name in fnmatch.filter(listdir(folder_input), '*.jpg'):
 
@@ -36,6 +44,8 @@ def example_board_pose_estimation(folder_input, folder_output, chess_rows, chess
             cv2.line(img_gray_rgb, (axis_2d_start[0,0,0], axis_2d_start[0,0,1]),(axis_2d_end[0,0,0],axis_2d_end[0,0,1]), (0,0,255), thickness=3)
             cv2.line(img_gray_rgb, (axis_2d_start[0,0,0], axis_2d_start[0,0,1]),(axis_2d_end[1,0,0],axis_2d_end[1,0,1]), (0,255,0), thickness=3)
             cv2.line(img_gray_rgb, (axis_2d_start[0,0,0], axis_2d_start[0,0,1]),(axis_2d_end[2,0,0],axis_2d_end[2,0,1]), (255,0,0), thickness=3)
+            img_gray_rgb = tools_render_CV.draw_cube_numpy(img_gray_rgb, camera_matrix, numpy.zeros(4), rvecs.flatten(), tvecs.flatten(),(0.5, 0.5, 0.5),points_3d=points_3d)
+
 
         cv2.imwrite(folder_output + image_name, img_gray_rgb)
 
@@ -73,6 +83,11 @@ if __name__ == '__main__':
     chess_rows, chess_cols = 7,7
     width,height =1200, 800
 
-    camera_matrix, dist = tools_calibrate.get_proj_dist_mat_for_images(path_input, chess_rows, chess_cols)
+    tools_IO.remove_files(path_output)
+
+    camera_matrix, dist,rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(path_input, chess_rows, chess_cols)
     example_board_pose_estimation(path_input, path_output, chess_rows, chess_cols,camera_matrix, dist)
+
+
+
 
