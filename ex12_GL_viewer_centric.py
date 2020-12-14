@@ -107,15 +107,15 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_box     = './images/output/0000000067.obj'
-#filename_box     = './images/ex_GL/box/box2_simple.obj'
+#filename_box     = './images/output/00010.obj'
+filename_box     = './images/ex_GL/box/box2_simple.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
-W,H = 1280,720
+W,H = 720,720
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box,W=W, H=H,do_normalize_model_file=False,projection_type='P',scale=(0.5,1,1))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1))
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

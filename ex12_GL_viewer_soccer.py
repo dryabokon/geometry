@@ -32,14 +32,14 @@ def event_key(window, key, scancode, action, mods):
         if key == 324: R.translate_view((+10,0,0))
         if key == 326: R.translate_view((-10,0,0))
         if key == 325:
-            for c in range(4):
-                R.center_view()
+            #for c in range(4):
+            R.center_view()
 
 
         if key == 294: R.reset_view()
 
-        if key == 334: R.scale_model(1.04)
-        if key == 333: R.scale_model(1.0/1.04)
+        if key == 334: R.scale_model_vector((1.05, 1.05, 1.05))
+        if key == 333: R.scale_model_vector((1.0/1.05, 1.0/1.05, 1.0/1.05))
 
         if key in [32, 335]: R.stage_data(folder_out)
 
@@ -89,18 +89,19 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_playground = './images/ex_GL/pg.obj'
-filename_texture = './images/ex_GL/pg.png'
+filename_obj = './images/ex_GL/pg.obj'
+#filename_obj     = './images/ex_GL/box/box2_simple.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_playground,filename_texture=filename_texture,W=W, H=H,do_normalize_model_file=False,projection_type='P',scale=(1,1,1))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj,W=W, H=H,do_normalize_model_file=False,projection_type='P',scale=(1,1,1))
 
-    #R.init_mat_view_ETU(eye=(0,200,100) , target = (0,0,0), up=(0,+1, -2))
+    R.init_mat_view_ETU(eye=(0,0,20) , target = (0,0,0), up=(0,-1, -2))
+    R.center_view()
     #R.init_perspective_view([-0.49, -0.45, -1.02], [-45.85, 3.37, 2.30], 1.54,1.54)
 
-    RT = numpy.array([[    1.  ,    -0.01,  -0.01,     0.  ],[    0.01 ,   -0.33,   0.95 ,    0.  ],[   -0.02 ,   -0.95,  -0.33 ,    0.  ],[ -560.65 ,  123.73,  -1043.38 ,    1.  ]])
-    image = R.get_image_perspective_M(RT, lookback=False,do_debug=True)
+    #RT = numpy.array([[    1.  ,    -0.01,  -0.01,     0.  ],[    0.01 ,   -0.33,   0.95 ,    0.  ],[   -0.02 ,   -0.95,  -0.33 ,    0.  ],[ -560.65 ,  123.73,  -1043.38 ,    1.  ]])
+    #image = R.get_image_perspective_M(RT, lookback=False,do_debug=True)
     #cv2.imwrite(folder_out + 'GT_M.png', image)
 
     glfw.set_key_callback(R.window, event_key)

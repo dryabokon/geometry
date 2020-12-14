@@ -597,7 +597,7 @@ def draw_3Dbox(ax, P2, line, color):
 def points_cuboid_to_lines(points):
 
     lines = []
-    for i in [(0,1),(1,2),(2,7),(7,0),(3,4),(4,5),(5,6),(6,3),(0,1),(1,4),(4,5),(5,0),(2,3),(3,6),(6,7),(7,2),(0,5),(5,6),(6,7),(7,0),(1,2),(2,3),(3,4),(4,1)]:
+    for i in [(0,1),(1,2),(2,7),(7,0),   (3,4),(4,5),(5,6),(6,3),   (0,1),(1,4),(4,5),(5,0),   (2,3),(3,6),(6,7),(7,2),(0,5),(5,6),(6,7),(7,0),(1,2),(2,3),(3,4),(4,1)]:
         lines.append(numpy.array((points[i[0]],points[i[1]])).flatten())
 
     return lines
@@ -633,29 +633,36 @@ def draw_grid(image,dR,dC,col=(128,128,128),transp=0.0):
 
     return image_result
 # ----------------------------------------------------------------------------------------------------------------------
-def draw_boxes(folder_out, folder_images, folder_labels_GT, folder_calib):
+def filter_records(records,conf_th=0.1,domains=['car', 'truck', 'pedestrian']):
+    res = []
+    for r in records:
+        if r[0] not in domains: continue
+        if float(r[1])<conf_th:continue
+        res.append(r)
+
+    return numpy.array(res)
+# ----------------------------------------------------------------------------------------------------------------------
+def draw_boxes(folder_out, folder_images, folder_labels_GT,mat_proj, point_van_xy):
     draw_cuboids = True
 
     tools_IO.remove_files(folder_out,create=True)
-    local_filenames = get_filenames(folder_images, '*.png,*.jpg')
+    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[9:10]
 
     for index,local_filename in enumerate(local_filenames):
         base_name = local_filename.split('/')[-1].split('.')[0]
         print(base_name)
         filename_image = folder_images + local_filename
         filename_label = folder_labels_GT + base_name + '.txt'
-        filename_calib = folder_calib + base_name + '.txt'
-
-        record = open(filename_calib).readlines()[0]
-        mat_proj = numpy.asarray([float(i) for i in record.split(' ')[1:]]).reshape((3, 4))
 
         image = tools_image.desaturate(cv2.imread(filename_image))
         H,W = image.shape[:2]
         target_BEV_W, target_BEV_H = int(H*0.75),H
-        point_van_xy = (631, 166)
 
         if not os.path.exists(filename_label):continue
-        records = open(filename_label).readlines()
+        records = tools_IO.load_mat(filename_label,delim=' ',dtype=numpy.str)
+        records = filter_records(records)
+
+
         colors = tools_draw_numpy.get_colors(len(records),colormap='rainbow')
         image_2d = image.copy()
         h_ipersp = tools_render_CV.get_inverce_perspective_mat_v2(image,target_BEV_W, target_BEV_H,point_van_xy)
@@ -664,12 +671,13 @@ def draw_boxes(folder_out, folder_images, folder_labels_GT, folder_calib):
 
 
         for record,color in zip(records,colors):
-            record = record.strip().split(' ')
+            record = numpy.insert(record,1,'0')
+            record = numpy.insert(record,1,'0')
 
             if draw_cuboids:
                 points_2d = project_2D(mat_proj, get_cube_3D(record))
                 if (numpy.array(points_2d).min()<0) or (numpy.array(points_2d).min()>W):continue
-                lines_2d = points_cuboid_to_lines(points_2d)
+                lines_2d = numpy.array(points_cuboid_to_lines(points_2d))
                 points_2d_BEV = project_2D_BEV(points_2d[[2, 3, 6, 7]], h_ipersp)
                 image_BEV = tools_draw_numpy.draw_contours(image_BEV, points_2d_BEV, color_fill=color.tolist(), color_outline=color.tolist(),transp_fill=0.25,transp_outline=0.75)
 
@@ -679,6 +687,7 @@ def draw_boxes(folder_out, folder_images, folder_labels_GT, folder_calib):
                 center_2d_BEV = default_2D_BEV(points_2d, h_ipersp)[0]
                 image_BEV = tools_draw_numpy.draw_ellipse(image_BEV, (center_2d_BEV[0]-10, center_2d_BEV[1]-10, center_2d_BEV[0]+10,center_2d_BEV[1]+10),color.tolist(), transperency=0.75)
 
+            #image_2d = tools_draw_numpy.draw_ellipse(image_2d,(center_2d_BEV[0]-10, center_2d_BEV[1]-10, center_2d_BEV[0]+10,center_2d_BEV[1]+10),color.tolist(),transperency=0.75)
             image_2d = tools_draw_numpy.draw_convex_hull(image_2d,points_2d,color.tolist(),transperency=0.75)
             image_2d = tools_draw_numpy.draw_lines(image_2d,lines_2d,color.tolist(),w=1)
 
@@ -690,11 +699,11 @@ def draw_boxes(folder_out, folder_images, folder_labels_GT, folder_calib):
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
-def export_boxes(folder_out, folder_images, folder_labels_GT,folder_calib):
+def export_boxes(folder_out, folder_images, folder_labels_GT,mat_proj,point_van_xy):
     ObjLoader = tools_wavefront.ObjLoader()
 
     tools_IO.remove_files(folder_out,create=True)
-    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[67:68]
+    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[9:10]
 
     for index,local_filename in enumerate(local_filenames):
         base_name = local_filename.split('/')[-1].split('.')[0]
@@ -703,14 +712,11 @@ def export_boxes(folder_out, folder_images, folder_labels_GT,folder_calib):
         filename_label = folder_labels_GT + base_name + '.txt'
         filename_calib = folder_calib + base_name + '.txt'
 
-        record = open(filename_calib).readlines()[0]
-        mat_proj = numpy.asarray([float(i) for i in record.split(' ')[1:]]).reshape((3, 4))
 
         image = tools_image.desaturate(cv2.imread(filename_image))
 
         H, W = image.shape[:2]
         target_BEV_W, target_BEV_H = 256,256
-        point_van_xy = (631, 166)
 
         h_ipersp = tools_render_CV.get_inverce_perspective_mat_v2(image, target_BEV_W, target_BEV_H, point_van_xy)
         image_BEV = cv2.warpPerspective(image, h_ipersp, (target_BEV_W, target_BEV_H), borderValue=(32, 32, 32))
@@ -722,14 +728,19 @@ def export_boxes(folder_out, folder_images, folder_labels_GT,folder_calib):
                               coord_texture = [[0,0],[0,1],[1,1],[1,0]],
                               filename_material=base_name + '.mtl')
 
+        records = tools_IO.load_mat(filename_label, delim=' ', dtype=numpy.str)
+        records = filter_records(records)
 
 
-        records = open(filename_label).readlines()
         colors = tools_draw_numpy.get_colors(len(records),colormap='rainbow')
         for c in range(len(records)):
             color = colors[c]
             color_hex = '%02x%02x%02x' % (color[2], color[1], color[0])
-            record = records[c].strip().split(' ')
+            record = records[c]
+            record = numpy.insert(record, 1, '0')
+            record = numpy.insert(record, 1, '0')
+
+
             #points_3d = get_cube_3D(record)
             #idx_vert = [[0,1,2],[0,2,7],[3,4,5],[3,5,6],[0,1,4],[0,4,5],[2,3,6],[2,6,7],[0,5,6],[0,6,7],[1,2,3],[1,3,4]]
             #ObjLoader.export_material(folder_out + color_hex + '.mtl',color[[2,1,0]])
@@ -785,9 +796,20 @@ def extract_boxes_from_labels(folder_out, folder_images, folder_labels_GT):
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
+#folder_tracklets = '../kitti_dataset/2011_09_26/2011_09_26_drive_0009_sync/'
+#mat_proj =numpy.array([[7.215377e+02,0.000000e+00, 6.095593e+02, 4.485728e+01],[0.000000e+00, 7.215377e+02, 1.728540e+02, 2.163791e-01],[0.000000e+00, 0.000000e+00, 1.000000e+00, 2.745884e-03]])
+#point_van_xy = (631, 166)
+# ----------------------------------------------------------------------------------------------------------------------
+folder_tracklets = '../kitti_dataset/2011_09_26/NuScene/'
+mat_proj = numpy.array([[633.0, 0.0, 400.0, 0.0], [0.0, 633.0, 224.0, 0.0], [0.0, 0.0, 1.0, 0.0]])
+point_van_xy = (448, 237)
+# ----------------------------------------------------------------------------------------------------------------------
+#folder_tracklets = '../kitti_dataset/2011_09_26/Melco/'
+#mat_proj = numpy.array([[633.0, 0.0, 360.0, 0.0], [0.0, 633.0, 180.0, 0.0], [0.0, 0.0, 1.0, 0.0]])
+#point_van_xy = (360, 203)
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    folder_tracklets = '../kitti_dataset/2011_09_26/2011_09_26_drive_0009_sync/'
     folder_labels = folder_tracklets + 'label_02/'
     folder_images = folder_tracklets + 'image_02/data/'
     folder_calib  = folder_tracklets + 'calib_02/'
@@ -796,7 +818,7 @@ if __name__ == '__main__':
     #extract_labels_from_tracklets(folder_tracklets,folder_labels,folder_images)
     #extract_calibs_from_tracklets(folder_tracklets,folder_calib)
 
-    draw_boxes(folder_out, folder_images, folder_labels, folder_calib)
-    #export_boxes(folder_out, folder_images,folder_labels,folder_calib)
+    draw_boxes(folder_out, folder_images, folder_labels,mat_proj,point_van_xy)
+    #export_boxes(folder_out, folder_images,folder_labels,mat_proj,point_van_xy)
     #tools_animation.folder_to_animated_gif_imageio(folder_out, folder_out+'kitti_00.gif', mask='*.png', framerate=10,resize_H=int(375*0.75), resize_W=int(1429*0.75),do_reverce=False)
-    #tools_animation.folder_to_video(folder_out,folder_out+'kitti_00.mp4',mask='*.png',framerate=10)
+    #tools_animation.folder_to_video(folder_out,folder_out+'nuscene.mp4',mask='*.png',framerate=6)

@@ -3,11 +3,15 @@ import numpy
 import cv2.aruco as aruco
 import tools_image
 # ---------------------------------------------------------------------------------------------------------------------
-filename_in = 'images/ex_aruco/01.jpg'
+#filename_in = 'images/ex_aruco/01.jpg'
+filename_in = 'images/ex_aruco/Image1.png'
 filename_out = 'images/output/aruco_out.jpg'
 USE_CAMERA = False
 # ---------------------------------------------------------------------------------------------------------------------
-def demo_aruco(camera_matrix, dist):
+def demo_aruco(image=None):
+
+
+
 
     marker_length  = 0.5
 
@@ -15,13 +19,19 @@ def demo_aruco(camera_matrix, dist):
         cap = cv2.VideoCapture(0)
     else:
         cap = []
-        frame = cv2.imread(filename_in)
+        frame = image.copy()
+        camera_matrix = numpy.array([[frame.shape[0], 0, frame.shape[1]], [0, frame.shape[0], frame.shape[1]], [0, 0, 1]]).astype(numpy.float64)
+        dist = numpy.zeros((1, 5))
 
-    aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_50)
+
+
+    aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 
     while (True):
         if USE_CAMERA:
             ret, frame = cap.read()
+            camera_matrix = numpy.array([[frame.shape[0], 0, frame.shape[1]], [0, frame.shape[0] , frame.shape[1] ], [0, 0, 1]]).astype(numpy.float64)
+            dist = numpy.zeros((1, 5))
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_rgb = tools_image.desaturate(frame)
@@ -47,8 +57,4 @@ def demo_aruco(camera_matrix, dist):
 # ---------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    width, height = 1200,800
-
-    camera_matrix = numpy.array([[height, 0, width], [0, height, width], [0, 0, 1]]).astype(numpy.float64)
-    dist = numpy.zeros((1, 5))
-    demo_aruco(camera_matrix, dist)
+    demo_aruco(cv2.imread(filename_in))

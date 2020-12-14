@@ -26,7 +26,7 @@ def example_project_GL_vs_CV_acuro():
     axes_image, r_vec, t_vec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, mat_camera, numpy.zeros(4))
     cv2.imwrite('./images/output/cube_CV.png', tools_render_CV.draw_cube_numpy(frame, mat_camera, numpy.zeros(4), r_vec.flatten(), t_vec.flatten(), (0.5,0.5,0.5)))
 
-    image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),aperture_x,aperture_y,scale=(0.5,0.5,0.5))
+    image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),aperture_x,aperture_y,scale=(0.5,0.5,0.5),do_debug=True)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     cv2.imwrite('./images/output/cube_GL.png', tools_image.blend_avg(frame, image_3d, clr, weight=0))
 
@@ -181,8 +181,8 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #example_project_GL_vs_CV_acuro()
-    example_project_GL_vs_CV(filename_head_obj1)
+    example_project_GL_vs_CV_acuro()
+    #example_project_GL_vs_CV(filename_box)
 
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)
