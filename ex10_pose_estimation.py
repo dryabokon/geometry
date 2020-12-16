@@ -29,7 +29,8 @@ def example_board_pose_estimation(folder_input, folder_output, chess_rows, chess
     points_3d[:, [0,1,2]] += 0.5
     points_3d[:, [2]] *= -1
 
-    points_3d[:, [0,1]] += 2
+    points_3d[:, [0]] += 3
+    points_3d[:, [1]] += 4
 
     for image_name in fnmatch.filter(listdir(folder_input), '*.jpg'):
 
