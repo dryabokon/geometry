@@ -646,7 +646,7 @@ def draw_boxes(folder_out, folder_images, folder_labels_GT,mat_proj, point_van_x
     draw_cuboids = True
 
     tools_IO.remove_files(folder_out,create=True)
-    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[9:10]
+    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[:10]
 
     for index,local_filename in enumerate(local_filenames):
         base_name = local_filename.split('/')[-1].split('.')[0]
@@ -665,7 +665,7 @@ def draw_boxes(folder_out, folder_images, folder_labels_GT,mat_proj, point_van_x
 
         colors = tools_draw_numpy.get_colors(len(records),colormap='rainbow')
         image_2d = image.copy()
-        h_ipersp = tools_render_CV.get_inverce_perspective_mat_v2(image,target_BEV_W, target_BEV_H,point_van_xy)
+        h_ipersp = tools_render_CV.get_inverce_perspective_mat_v2(image,target_BEV_W, target_BEV_H,point_van_xy,20,2,2)
         image_BEV = cv2.warpPerspective(image, h_ipersp, (target_BEV_W, target_BEV_H), borderValue=(32, 32, 32))
         image_BEV = draw_grid(image_BEV, 20, 20,transp=0.9)
 
@@ -703,7 +703,7 @@ def export_boxes(folder_out, folder_images, folder_labels_GT,mat_proj,point_van_
     ObjLoader = tools_wavefront.ObjLoader()
 
     tools_IO.remove_files(folder_out,create=True)
-    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[9:10]
+    local_filenames = get_filenames(folder_images, '*.png,*.jpg')[:10]
 
     for index,local_filename in enumerate(local_filenames):
         base_name = local_filename.split('/')[-1].split('.')[0]
@@ -746,7 +746,8 @@ def export_boxes(folder_out, folder_images, folder_labels_GT,mat_proj,point_van_
             #ObjLoader.export_material(folder_out + color_hex + '.mtl',color[[2,1,0]])
             #ObjLoader.export_mesh(folder_out + base_name + '_%03d.obj'%c, points_3d,idx_vertex=idx_vert,filename_material=color_hex + '.mtl')
 
-            points_2d = project_2D(mat_proj, get_cube_3D(record))
+            corners_3d = get_cube_3D(record)
+            points_2d = project_2D(mat_proj, corners_3d)
             points_2d_BEV = project_2D_BEV(points_2d[[2, 3, 6, 7]], h_ipersp)
             #image_2d = tools_draw_numpy.draw_convex_hull(image_BEV, points_2d_BEV, color.tolist(), transperency=0.25)
             #cv2.imwrite(folder_out+ base_name + '_%03d.png'%c,image_2d)

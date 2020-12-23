@@ -24,7 +24,7 @@ def example_project_GL_vs_CV_acuro():
     mat_camera = tools_pr_geom.compose_projection_mat_3x3(frame.shape[1], frame.shape[0],aperture_x,aperture_y)
 
     axes_image, r_vec, t_vec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, mat_camera, numpy.zeros(4))
-    cv2.imwrite('./images/output/cube_CV.png', tools_render_CV.draw_cube_numpy(frame, mat_camera, numpy.zeros(4), r_vec.flatten(), t_vec.flatten(), (0.5,0.5,0.5)))
+    cv2.imwrite('./images/output/cube_CV.png', tools_render_CV.draw_cube_numpy(axes_image, mat_camera, numpy.zeros(4), r_vec.flatten(), t_vec.flatten(), (0.5,0.5,0.5)))
 
     image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),aperture_x,aperture_y,scale=(0.5,0.5,0.5),do_debug=True)
     clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
