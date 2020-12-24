@@ -20,33 +20,21 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('Z'): R.rotate_model((0,0,-d))
         if key == ord('X'): R.rotate_model((0,0,+d))
 
-        if key == ord('O'): R.rotate_view((0,0,+d))
-        if key == ord('P'): R.rotate_view((0,0,-d))
-        if key == ord('I'): R.rotate_view((+d,0,0))
-        if key == ord('K'): R.rotate_view((-d,0,0))
+        if key == 328: R.translate_model((0,+10, 0))
+        if key == 322: R.translate_model((0,-10, 0))
+        if key == 329: R.translate_model((0,0,+10))
+        if key == 323: R.translate_model((0,0,-10))
+        #if key == 324: R.translate_model((+10,0,0))
+        #if key == 326: R.translate_model((-10,0,0))
 
-        if key == 327: R.transform_model('XY')
-        if key == 329: R.transform_model('xy')
-        if key == 324: R.transform_model('XZ')
-        if key == 326: R.transform_model('xz')
-        if key == 321: R.transform_model('YZ')
-        if key == 323: R.transform_model('yz')
 
         if key==341:
             R.ctrl_pressed = True
 
-        if key == 294: R.reset_view()
-
-        if key == 334: R.scale_model_vector((1,1.04,1))
-        if key == 333: R.scale_model_vector((1,1.0/1.04,1))
-
-        if key == ord('1'): R.inverce_transform_model('X')
-        if key == ord('2'): R.inverce_transform_model('Y')
-        if key == ord('3'): R.inverce_transform_model('Z')
-
-        if key == ord('L'):
-            R.wired_mode = not R.wired_mode
-            R.bind_VBO(R.wired_mode)
+        if key == 294:
+            R.reset_view()
+            R.init_mat_view_ETU((0, 0, 0), (0, 0, -1), (0, -1, 0))
+            R.rotate_model((2*numpy.pi/3, 0, 0))
 
         if key in [32,335]: R.stage_data(folder_out)
 
@@ -71,8 +59,6 @@ def event_button(window, button, action, mods):
     if (button == glfw.MOUSE_BUTTON_LEFT  and action == glfw.RELEASE and (mods     in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):
         R.stop_translation()
 
-    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS   and (mods not in [glfw.MOD_CONTROL,glfw.MOD_SHIFT])):R.start_append()
-    if (button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS   and (mods in [glfw.MOD_CONTROL,glfw.MOD_SHIFT]) ):R.start_remove()
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -80,26 +66,18 @@ def event_position(window, xpos, ypos):
 
     if R.on_rotate == True:
         delta_angle = (pos_button_start - numpy.array((xpos, ypos))) * 1.0 * math.pi / W
-        R.rotate_model((-delta_angle[1], -delta_angle[0], 0))
+        R.rotate_model((+delta_angle[1], +delta_angle[0], 0))
 
     if R.on_translate == True:
-        delta_pos = (pos_button_start - numpy.array((xpos, ypos))) * 1.0/100
-        R.translate_model((delta_pos[0], -delta_pos[1], 0))
+        delta_pos = (pos_button_start - numpy.array((xpos, ypos))) * 1.0/2
+        R.translate_model((0, -delta_pos[1], delta_pos[0]))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_scroll(window, xoffset, yoffset):
 
-    if not R.ctrl_pressed:
-        if R.projection_type=='P':
-            if yoffset>0:R.translate_view_by_scale(1.04)
-            else        :R.translate_view_by_scale(1.0 / 1.04)
-        else:
-            if yoffset>0:R.translate_ortho(1.04)
-            else        :R.translate_ortho(1.0/1.04)
-    else:
-        if yoffset>0:R.scale_projection(1.10)
-        else        :R.scale_projection(1.0 / 1.10)
+    if yoffset>0:R.scale_projection(1.10)
+    else        :R.scale_projection(1.0 / 1.10)
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -107,14 +85,16 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_box     = './images/ex_GL/box/box_1.obj'
+filename_box     = './images/ex_GL/soccer/soccer_field2.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
-W,H = 720,720
+W,H = 1280,720
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,0,0))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,50,50))
+    R.init_mat_view_ETU((0,0,0), (0,0,-1), (0,-1,0))
+    R.rotate_model((2*numpy.pi/3,0,0))
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
