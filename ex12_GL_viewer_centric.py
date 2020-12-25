@@ -56,6 +56,8 @@ def event_key(window, key, scancode, action, mods):
         if key == 341:
             R.ctrl_pressed = False
 
+
+
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def event_button(window, button, action, mods):
@@ -90,16 +92,16 @@ def event_position(window, xpos, ypos):
 # ----------------------------------------------------------------------------------------------------------------------
 def event_scroll(window, xoffset, yoffset):
 
-    if not R.ctrl_pressed:
-        if R.projection_type=='P':
-            if yoffset>0:R.translate_view_by_scale(1.04)
-            else        :R.translate_view_by_scale(1.0 / 1.04)
-        else:
-            if yoffset>0:R.translate_ortho(1.04)
-            else        :R.translate_ortho(1.0/1.04)
-    else:
-        if yoffset>0:R.scale_projection(1.10)
-        else        :R.scale_projection(1.0 / 1.10)
+    # if not R.ctrl_pressed:
+    #     if R.projection_type=='P':
+    #         if yoffset>0:R.translate_view_by_scale(1.04)
+    #         else        :R.translate_view_by_scale(1.0 / 1.04)
+    #     else:
+    #         if yoffset>0:R.translate_ortho(1.04)
+    #         else        :R.translate_ortho(1.0/1.04)
+    # else:
+    if yoffset>0:R.scale_projection(1.10)
+    else        :R.scale_projection(1.0 / 1.10)
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -111,10 +113,10 @@ filename_box     = './images/ex_GL/box/box_1.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
 W,H = 720,720
+R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,0,0))
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,0,0))
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

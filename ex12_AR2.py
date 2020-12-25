@@ -11,6 +11,7 @@ import tools_render_CV
 import tools_image
 import detector_landmarks
 import tools_wavefront
+import tools_IO
 # ----------------------------------------------------------------------------------------------------------------------
 marker_length = 0.1
 # ----------------------------------------------------------------------------------------------------------------------
@@ -34,35 +35,43 @@ def example_project_GL_vs_CV_acuro():
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f],  %1.2f' % (r_vec[0], r_vec[1], r_vec[2], t_vec[0], t_vec[1], t_vec[2],aperture_x))
     return
 # ----------------------------------------------------------------------------------------------------------------------
-def example_project_GL_vs_CV(filename_in):
+def example_project_GL_vs_CV(filename_in, folder_out):
+
+    tools_IO.remove_files(folder_out)
 
     W, H = 800, 800
     empty = numpy.full((H, W, 3), 32, dtype=numpy.uint8)
-    rvec, tvec , aperture = (0.0, 0, 0), [+5.0, 0, +15],0.5
+    rvec, tvec , aperture = (0.0, 0, 0), [+5.0, 0, +15],0.50
     rvec = numpy.array(rvec)
     tvec = numpy.array(tvec)
     scale = 1.0
 
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H,is_visible=False,projection_type='P')
-    RT = tools_pr_geom.compose_RT_mat(rvec, tvec)
+    RT_GL = tools_pr_geom.compose_RT_mat(rvec, tvec,do_flip=True)
     camera_matrix_3x3 = tools_pr_geom.compose_projection_mat_3x3(W, H, aperture, aperture)
 
-    cv2.imwrite('./images/output/model_GL.png',    R.get_image_perspective  (rvec, tvec,aperture,aperture,scale=scale*numpy.array((1,1,1)),lookback=False,do_debug=True))
-    cv2.imwrite('./images/output/model_GL_RT.png', R.get_image_perspective_M(RT        ,aperture,aperture,scale=scale*numpy.array((1,1,1)),lookback=False,do_debug=True))
+    cv2.imwrite(folder_out + 'GL.png',    R.get_image_perspective  (rvec, tvec,aperture,aperture,scale=scale*numpy.array((1,1,1)),lookback=False,do_debug=True))
+    cv2.imwrite(folder_out + 'GL_RT.png', R.get_image_perspective_M(RT_GL ,aperture,aperture,scale=scale*numpy.array((1,1,1)),lookback=False,do_debug=True))
 
     object = tools_wavefront.ObjLoader()
     object.load_mesh(filename_in, do_autoscale=True)
-    points_3d = object.coord_vert
+    points_3d = numpy.array(object.coord_vert,dtype=numpy.float32)
 
     mat_trans = scale * numpy.eye(4)
     mat_trans[3,3]=1
 
-    mat_projection = tools_pr_geom.compose_projection_mat_4x4(W, H, aperture_x=aperture,aperture_y=aperture)
+    mat_flip = numpy.eye(4)
+    mat_flip[0,0]*=-1
 
-    cv2.imwrite('./images/output/model_CV_MVP.png', tools_render_CV.draw_points_numpy_MVP(points_3d, numpy.full((H,W,3),76,dtype=numpy.uint8), mat_projection, RT, numpy.eye(4), mat_trans))
-    cv2.imwrite('./images/output/model_CV_RT.png', tools_render_CV.draw_points_numpy_RT(points_3d, numpy.full((H, W, 3), 76, dtype=numpy.uint8),RT,camera_matrix_3x3))
-    cv2.imwrite('./images/output/model_CV_numpy.png',tools_render_CV.draw_cube_numpy(empty, camera_matrix_3x3, numpy.zeros(4), rvec, tvec))
+    RT_CV = tools_pr_geom.compose_RT_mat(rvec, tvec, do_flip=False)
+
+    cv2.imwrite(folder_out + 'CV_MVP_points.png', tools_render_CV.draw_points_numpy_MVP(points_3d, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns))
+    cv2.imwrite(folder_out + 'CV_RT.png'        , tools_render_CV.draw_points_numpy_RT (points_3d, empty,RT_CV,camera_matrix_3x3))
+    cv2.imwrite(folder_out + 'CV_numpy.png'     , tools_render_CV.draw_cube_numpy(empty, camera_matrix_3x3, numpy.zeros(4), rvec, tvec))
+    cv2.imwrite(folder_out + 'CV_MVP_cube.png'  , tools_render_CV.draw_cube_numpy_MVP(empty, R.mat_projection,mat_flip.dot(R.mat_view), R.mat_model, R.mat_trns))
+    cv2.imwrite(folder_out + 'CV_cuboids_M.png' , tools_draw_numpy.draw_cuboid(empty,tools_pr_geom.project_points_M(points_3d,RT_CV, camera_matrix_3x3, numpy.zeros(5)), color=(0, 90, 255), w=2))
+    cv2.imwrite(folder_out + 'CV_cuboids.png'   , tools_draw_numpy.draw_cuboid(empty,tools_pr_geom.project_points  (points_3d, rvec,tvec,camera_matrix_3x3,numpy.zeros(5))[0],color=(0,190, 255), w=2))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -162,7 +171,7 @@ def example_ray_interception(filename_in):
     print(collision)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_box= './images/ex_GL/box/box.obj'
+filename_box= './images/ex_GL/box/box_1.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 filename_head_obj1 = './images/ex_GL/face/face.obj'
 filename_markers1 ='./images/ex_GL/face/markers_face.txt'
@@ -179,9 +188,9 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 if __name__ == '__main__':
 
     #example_project_GL_vs_CV_acuro()
-    #example_project_GL_vs_CV(filename_box)
+    example_project_GL_vs_CV(filename_box,'./images/output/')
 
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj1, filename_3dmarkers = filename_markers1)
     #example_face_ortho(filename_actor = './images/ex_faceswap/01/person1a.jpg',filename_obj= filename_head_obj3_cut, filename_3dmarkers = filename_markers3)
 
-    example_ray(filename_box,'./images/output/')
+    #example_ray(filename_box,'./images/output/')

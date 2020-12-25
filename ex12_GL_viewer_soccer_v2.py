@@ -1,7 +1,13 @@
+import cv2
 import math
 import numpy
 import tools_GL3D
 import glfw
+import pyrr
+# ----------------------------------------------------------------------------------------------------------------------
+import tools_IO
+import tools_render_CV
+import tools_pr_geom
 # ----------------------------------------------------------------------------------------------------------------------
 pos_button_start, pos_rotate_current = None, None
 # ----------------------------------------------------------------------------------------------------------------------
@@ -10,15 +16,14 @@ def event_key(window, key, scancode, action, mods):
     delta_angle = numpy.pi/16.0
     d=delta_angle
 
-
     if action == glfw.PRESS:
 
         if key == ord('S'): R.rotate_model((-d,0,0))
         if key == ord('W'): R.rotate_model((+d,0,0))
         if key == ord('A'): R.rotate_model((0,+d,0))
         if key == ord('D'): R.rotate_model((0,-d,0))
-        if key == ord('Z'): R.rotate_model((0,0,-d))
-        if key == ord('X'): R.rotate_model((0,0,+d))
+        #if key == ord('Z'): R.rotate_model((0,0,-d))
+        #if key == ord('X'): R.rotate_model((0,0,+d))
 
         if key == 328: R.translate_model((0,+10, 0))
         if key == 322: R.translate_model((0,-10, 0))
@@ -27,22 +32,20 @@ def event_key(window, key, scancode, action, mods):
         #if key == 324: R.translate_model((+10,0,0))
         #if key == 326: R.translate_model((-10,0,0))
 
-
-        if key==341:
-            R.ctrl_pressed = True
+        if key==341:R.ctrl_pressed = True
 
         if key == 294:
             R.reset_view()
             R.init_mat_view_ETU((0, 0, 0), (0, 0, -1), (0, -1, 0))
             R.rotate_model((2*numpy.pi/3, 0, 0))
 
-        if key in [32,335]: R.stage_data(folder_out)
+        if key in [32,335]:
+            R.stage_data(folder_out)
+            #stage_playground(folder_out,R.W,R.H,R.mat_projection,R.mat_view,R.mat_model,R.mat_trns)
 
         if key == glfw.KEY_ESCAPE:glfw.set_window_should_close(R.window,True)
 
-    if action ==glfw.RELEASE:
-        if key == 341:
-            R.ctrl_pressed = False
+    if (action ==glfw.RELEASE) and (key == 341):R.ctrl_pressed = False
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -86,6 +89,23 @@ def event_resize(window, W, H):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 filename_box     = './images/ex_GL/soccer/soccer_field2.obj'
+# ----------------------------------------------------------------------------------------------------------------------
+def stage_playground(folder_out,W,H,mat_projection,mat_view,mat_model,mat_trns):
+
+    M = pyrr.matrix44.multiply(mat_view.T, pyrr.matrix44.multiply(mat_model.T, mat_trns.T))
+    rvec, tvec = tools_pr_geom.decompose_to_rvec_tvec(M)
+    aperture = 0.5 * (1 - mat_projection[2][0])
+    camera_matrix = tools_pr_geom.compose_projection_mat_3x3(W, H, aperture, aperture)
+    H = tools_pr_geom.RT_to_H(rvec, tvec, camera_matrix)
+
+    empty = numpy.full((R.H, R.W, 3), 32, dtype=numpy.uint8)
+    result = tools_render_CV.draw_points_numpy_MVP(R.object.coord_vert, empty, R.mat_projection,R.mat_view, R.mat_model, R.mat_trns)
+
+    ids = [(f.split('.')[0]).split('_')[1] for f in tools_IO.get_filenames(folder_out, 'screenshot*.png')]
+    i = 0
+    if len(ids) > 0: i = 1 + numpy.array(ids, dtype=int).max()
+    cv2.imwrite(folder_out + 'screenshot_%03d.png' % i, result)
+    return
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
 W,H = 1280,720
