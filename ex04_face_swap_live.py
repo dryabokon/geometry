@@ -2,8 +2,8 @@ import cv2
 # ---------------------------------------------------------------------------------------------------------------------
 import time
 import tools_IO
-import tools_faceswap
-import detector_landmarks
+from CV import tools_faceswap
+from detector import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
 D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat')
 # ---------------------------------------------------------------------------------------------------------------------
@@ -77,22 +77,22 @@ def process_key(key):
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
-def demo_live(FS):
+def demo_live(FS,cam_id=0):
 
     if use_camera:
-        cap = cv2.VideoCapture(1)
+        cap = cv2.VideoCapture(cam_id)
         cap.set(3, camera_W)
         cap.set(4, camera_H)
     else:
         cap = None
 
-    cv2.setMouseCallback('frame', click_handler)
+    #cv2.setMouseCallback('frame', click_handler)
 
     cnt, start_time, fps = 0, time.time(), 0
     while (True):
         if use_camera:
             if cap is None:
-                cap = cv2.VideoCapture(0)
+                cap = cv2.VideoCapture(cam_id)
                 cap.set(3, camera_W)
                 cap.set(4, camera_H)
 
@@ -125,18 +125,16 @@ def demo_live(FS):
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
+folder_in = './images/ex_faceswap/01/'
+folder_out = './images/output1/'
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    folder_in = './images/ex_faceswap/01/'
-    folder_out = './images/output1/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-
     filename_clbrt, filename_actor = list_filenames[-1], list_filenames[ 1]
-    #filename_clbrt = folder_in+'Person5c.jpg'
-    #filename_actor = folder_in+'Person2a.jpg'
     image_clbrt = cv2.imread(folder_in+filename_clbrt)
     image_actor = cv2.imread(folder_in+filename_actor)
 
-    FS = tools_faceswap.Face_Swaper(D, image_clbrt,image_actor,device='cpu',adjust_every_frame=True,do_narrow_face=True)
+    FS = tools_faceswap.Face_Swapper(D, image_clbrt, image_actor, device='cpu', adjust_every_frame=True, do_narrow_face=True)
     demo_live(FS)
 

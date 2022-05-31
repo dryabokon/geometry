@@ -7,7 +7,7 @@ import pyrr
 # ----------------------------------------------------------------------------------------------------------------------
 import tools_IO
 import tools_render_CV
-import tools_pr_geom
+from CV import tools_pr_geom
 # ----------------------------------------------------------------------------------------------------------------------
 pos_button_start, pos_rotate_current = None, None
 # ----------------------------------------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ def stage_playground(folder_out,W,H,mat_projection,mat_view,mat_model,mat_trns):
     H = tools_pr_geom.RT_to_H(rvec, tvec, camera_matrix)
 
     empty = numpy.full((R.H, R.W, 3), 32, dtype=numpy.uint8)
-    result = tools_render_CV.draw_points_numpy_MVP(R.object.coord_vert, empty, R.mat_projection,R.mat_view, R.mat_model, R.mat_trns)
+    result = tools_render_CV.draw_points_numpy_MVP_GL(R.object.coord_vert, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
 
     ids = [(f.split('.')[0]).split('_')[1] for f in tools_IO.get_filenames(folder_out, 'screenshot*.png')]
     i = 0
@@ -112,7 +112,7 @@ W,H = 1280,720
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,50,50))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,-50,50))
     R.init_mat_view_ETU((0,0,0), (0,0,-1), (0,-1,0))
     R.rotate_model((2*numpy.pi/3,0,0))
 
@@ -128,3 +128,4 @@ if __name__ == '__main__':
         glfw.swap_buffers(R.window)
 
     glfw.terminate()
+    

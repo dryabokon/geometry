@@ -164,6 +164,8 @@ if __name__ == '__main__':
     tools_IO.remove_files(folder_out)
     #example_calibrate_aruco_markers('./images/ex_aruco/01.jpg', marker_length_mm=100 , marker_space_mm=5, dct=aruco.DICT_6X6_50)
     #example_calibrate_folder('./images/ex_aruco/cam01/',folder_out,dct=aruco.DICT_4X4_50)
-    evaluate_K_bruteforce_F('./images/ex_calibration/01000.jpg', './images/ex_calibration/points.csv', f_min=1920, f_max=10000)
+    #evaluate_K_bruteforce_F('./images/ex_calibration/01000.jpg', './images/ex_calibration/points.csv', f_min=1920, f_max=10000)
+
+
 
 

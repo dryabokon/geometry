@@ -114,9 +114,9 @@ class Circles:
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    filename_in  = './images/ex_circles/data.txt'
+    filename_in  = './images/ex_pack_text/data2.txt'
     filename_out = './images/output/circles.svg'
-    A = tools_IO.load_mat(filename_in,delim=',')
+    A = tools_IO.load_mat_pd(filename_in,delim='\t')
     weights = numpy.array(A[:, 0], dtype=numpy.int)
     labels = numpy.array(A[:, 1], dtype=numpy.str)
 

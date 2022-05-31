@@ -1,14 +1,11 @@
 import numpy
 import cv2
-from scipy.spatial import Delaunay
 import tools_IO
 import tools_image
 import tools_GL3D
 # ---------------------------------------------------------------------------------------------------------------------
 import time
-import detector_landmarks
-import tools_render_CV
-import tools_wavefront
+from detector import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
 capturing_devices = ['cam','mp4','image']
 camera_W, camera_H = 640, 640
@@ -82,13 +79,13 @@ def demo_live(filename_obj,filename_3dmarkers,projection_type='O',scale=(1,1,1))
             if mode == 'Ortho':
                 rvec, tvec, scale  = D.get_pose_ortho(image_actor,L,D.model_68_points,R.mat_trns)
                 image_3d = R.get_image_ortho(rvec,tvec,scale)
-                clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
+                clr = (255 * numpy.array(R.color_bg)).astype(numpy.int)
                 result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
 
             if mode == 'Perspective':
                 rvec, tvec  = D.get_pose_perspective(image_actor,L,D.model_68_points,R.mat_trns)
                 image_3d = R.get_image_perspective(rvec,tvec)
-                clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
+                clr = (255 * numpy.array(R.color_bg)).astype(numpy.int)
                 result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
 
 

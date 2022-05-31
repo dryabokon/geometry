@@ -80,7 +80,7 @@ def get_images(folder_in,H,W):
 
     return numpy.array(images)
 # ---------------------------------------------------------------------------------------------------------------------
-folder_in = './images/ex_pack/'
+folder_in = './images/ex_pack_images/'
 folder_out = './images/output/'
 W,H = 4*128,4*128
 # ---------------------------------------------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ def create_slides():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #create_slides()
-    tools_animation.folder_to_animated_gif_imageio(folder_out,folder_out+'ani.gif', mask='*.png', framerate=12,resize_H=512//2, resize_W=896//2,do_reverce=False)
+    create_slides()
+    #tools_animation.folder_to_animated_gif_imageio(folder_out,folder_out+'ani.gif', mask='*.png', framerate=12,resize_H=512//2, resize_W=896//2,do_reverce=False)
     #tools_animation.folder_to_video(folder_out, folder_out + 'ani.avi', mask='*.png',framerate=18,resize_W=896,resize_H=512)
 

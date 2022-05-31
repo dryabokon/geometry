@@ -2,9 +2,10 @@ import numpy
 import cv2
 import tools_image
 import tools_IO
-import tools_Hough
-import tools_Skeletone
+from CV import tools_Hough
+from CV import tools_Skeletone
 import tools_render_CV
+import tools_draw_numpy
 # ----------------------------------------------------------------------------------------------------------------------
 def draw_lines(image, lines,color=(255,255,255),w=4,put_text=False):
 
@@ -33,8 +34,8 @@ def example_01_lines_ski(filename_in, folder_out):
     image = cv2.imread(filename_in)
     H,W = image.shape[:2]
 
-    #skeleton = cv2.Canny(image, 20, 80)
-    skeleton = Ske.binarized_to_skeleton_ski(Ske.binarize(image))
+    skeleton = cv2.Canny(image, 20, 80)
+    #skeleton = Ske.binarized_to_skeleton_ski(Ske.binarize(image))
 
     lines_vert, weights_vert = Hough.get_lines_ski(skeleton, max_count=5, min_weight=50,the_range=Hough.get_angle_range(angle_bound1, 20, 1))
     lines_horz, weights_horz = Hough.get_lines_ski(skeleton, max_count=5, min_weight=50,the_range =Hough.get_angle_range(angle_bound2,20, 1))
@@ -57,13 +58,14 @@ def example_01_lines_ski(filename_in, folder_out):
 def example_01_lines_cv(filename_in, folder_out):
     image = cv2.imread(filename_in)
 
-    preprocessed = Ske.binarized_to_skeleton_ski(Ske.binarize(image))
+    #preprocessed = Ske.binarized_to_skeleton_ski(Ske.binarize(image))
+    preprocessed = cv2.Canny(image, 20, 80)
     lines,weights = Hough.get_lines_cv(preprocessed)
 
-    colors = tools_IO.get_colors(256)
     result = tools_image.saturate(preprocessed.copy())
+
     for line,w in zip(reversed(lines),reversed(weights)):
-        cv2.line(result, (int(line[0]), int(line[1])), (int(line[2]), int(line[3])), color=colors[int(w)].tolist(), thickness=4)
+        cv2.line(result, (int(line[0]), int(line[1])), (int(line[2]), int(line[3])), color=(0,0,200), thickness=4)
 
     cv2.imwrite(folder_out + 'preprocessed.png', preprocessed)
     cv2.imwrite(folder_out + 'result.png', result)
@@ -72,11 +74,12 @@ def example_01_lines_cv(filename_in, folder_out):
 folder_out = './images/output/'
 #filename_in = './images/ex_lines/frame000159.jpg'
 #filename_in = './images/ex_lines/frame000000_vanishing2.png'
-filename_in = './images/output/filtered.png'
+#filename_in = './images/output/filtered.png'
+filename_in = './images/ex_keypoints/_001644.jpg'
 # ----------------------------------------------------------------------------------------------------------------------
 Ske = tools_Skeletone.Skelenonizer(folder_out)
 Hough = tools_Hough.Hough()
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    example_01_lines_ski(filename_in,folder_out)
-    #example_01_lines_cv(filename_in, folder_out)
+    #example_01_lines_ski(filename_in,folder_out)
+    example_01_lines_cv(filename_in, folder_out)

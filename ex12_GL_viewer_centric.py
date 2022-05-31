@@ -1,3 +1,4 @@
+import cv2
 import math
 import numpy
 import tools_GL3D
@@ -25,7 +26,8 @@ def event_key(window, key, scancode, action, mods):
         if key == ord('I'): R.rotate_view((+d,0,0))
         if key == ord('K'): R.rotate_view((-d,0,0))
 
-        if key == 327: R.transform_model('XY')
+        #numpad
+        if key == 327:R.transform_model('XY')
         if key == 329: R.transform_model('xy')
         if key == 324: R.transform_model('XZ')
         if key == 326: R.transform_model('xz')
@@ -37,8 +39,10 @@ def event_key(window, key, scancode, action, mods):
 
         if key == 294: R.reset_view()
 
-        if key == 334: R.scale_model_vector((1,1.04,1))
-        if key == 333: R.scale_model_vector((1,1.0/1.04,1))
+        # if key == 334: R.scale_model_vector((1,1.04,1))
+        # if key == 333: R.scale_model_vector((1,1.0/1.04,1))
+        if key == 334: R.scale_model_vector((1.0,1.0,1.04))
+        if key == 333: R.scale_model_vector((1.0,1.0,1.0/1.04))
 
         if key == ord('1'): R.inverce_transform_model('X')
         if key == ord('2'): R.inverce_transform_model('Y')
@@ -92,14 +96,6 @@ def event_position(window, xpos, ypos):
 # ----------------------------------------------------------------------------------------------------------------------
 def event_scroll(window, xoffset, yoffset):
 
-    # if not R.ctrl_pressed:
-    #     if R.projection_type=='P':
-    #         if yoffset>0:R.translate_view_by_scale(1.04)
-    #         else        :R.translate_view_by_scale(1.0 / 1.04)
-    #     else:
-    #         if yoffset>0:R.translate_ortho(1.04)
-    #         else        :R.translate_ortho(1.0/1.04)
-    # else:
     if yoffset>0:R.scale_projection(1.10)
     else        :R.scale_projection(1.0 / 1.10)
 
@@ -109,14 +105,22 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_box     = './images/ex_GL/box/box_1.obj'
+#filename_box     = './images/ex_GL/box/box_2.obj'
+#filename_car= './images/ex_GL/car/SUV1.obj'
+filename_car_aligned = './images/ex_GL/car/SUV1.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
-W,H = 720,720
-R = tools_GL3D.render_GL3D(filename_obj=filename_box, W=W, H=H, do_normalize_model_file=False, projection_type='P',scale=(1, 1, 1),tvec=(0,0,0))
+W,H = 800,600
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
+    textured = False
+    tvec = (0, 0, -20)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_car_aligned, W=W, H=H, do_normalize_model_file=True, projection_type='P',scale=(1, 1, 1),tvec=tvec,textured=textured)
+    #R.init_mat_view_ETU((0, 0, 5), (0, 0, -1), (0, -1, 0))
+    #rvec, tvec , aperture = numpy.array([0.3, 0.5, 0]), numpy.array([+5.0, 0, +15]),0.50
+    #rvec, tvec, aperture = numpy.array([numpy.pi / 32, 0, 0]), numpy.array([+0.0, +0, +15]), 0.50
+    #R.init_mat_view_RT(rvec,tvec,do_rodriges=True,GL_style=True)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

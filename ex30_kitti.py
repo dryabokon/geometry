@@ -15,7 +15,7 @@ import matplotlib.patches as patches
 import tools_image
 import tools_draw_numpy
 import tools_GL3D
-import tools_pr_geom
+from CV import tools_pr_geom
 import tools_render_CV
 import tools_IO
 import tools_animation

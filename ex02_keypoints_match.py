@@ -5,28 +5,21 @@ from sklearn import metrics
 from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 # ---------------------------------------------------------------------------------------------------------------------
-import tools_alg_match
 import tools_image
 import tools_draw_numpy
-import tools_calibrate
+import tools_plot_v2
 import tools_IO
-import tools_plot
-
-
+from CV import tools_calibrate
+from CV import tools_alg_match
 # ---------------------------------------------------------------------------------------------------------------------
-def example_find_matches_for_homography(detector='SIFT', matchtype='knn'):
-	folder_input = './images/ex_keypoints/'
-	img1 = cv2.imread(folder_input + 'left.jpg')
-	img2 = cv2.imread(folder_input + 'rght.jpg')
+def example_find_matches_for_homography(img1,img2,detector='SIFT', matchtype='knn'):
+
 	img1_gray_rgb = tools_image.desaturate(img1)
 	img2_gray_rgb = tools_image.desaturate(img2)
 
-	folder_output = './images/output/'
 
 	if not os.path.exists(folder_output):
 		os.makedirs(folder_output)
-	#else:
-	#	tools_IO.remove_files(folder_output)
 
 	points1, des1 = tools_alg_match.get_keypoints_desc(img1, detector)
 	points2, des2 = tools_alg_match.get_keypoints_desc(img2, detector)
@@ -60,26 +53,28 @@ def example_find_matches_for_homography(detector='SIFT', matchtype='knn'):
 		fpr, tpr, thresholds = metrics.roc_curve(hit, -distance)
 		roc_auc = auc(fpr, tpr)
 		filename_out = folder_output + ('_ROC_%s_%s_auc_%1.3f.png' % (detector, matchtype, roc_auc))
-		tools_plot.plot_tp_fp(plt.subplot(1, 1, 1), fig, tpr, fpr, roc_auc)
-		plt.savefig(filename_out)
+		P.plot_tp_fp(tpr, fpr, roc_auc,filename_out)
 
 
 	cv2.imwrite(folder_output + ('%s_%s_auc_%1.3f_left_matches.png' % (detector, matchtype, roc_auc)), img1_gray_rgb)
 	cv2.imwrite(folder_output + ('%s_%s_auc_%1.3f_rght_matches.png' % (detector, matchtype, roc_auc)), img2_gray_rgb)
-
 	return
 
 
 # --------------------------------------------------------------------------------------------------------------------------
+folder_output = './images/output/'
+P = tools_plot_v2.Plotter(folder_out=folder_output)
+# --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-	example_find_matches_for_homography('ORB', 'knn')
-	example_find_matches_for_homography('ORB', 'flann')
-	example_find_matches_for_homography('ORB', 'xxx')
 
-	example_find_matches_for_homography('SIFT', 'knn')
-	example_find_matches_for_homography('SIFT', 'flann')
-	example_find_matches_for_homography('SIFT', 'xxx')
+	tools_IO.remove_files(folder_output)
+	img1 = cv2.imread('./images/ex_keypoints/left.jpg')
+	img2 = cv2.imread('./images/ex_keypoints/left2.jpg')
 
-	example_find_matches_for_homography('SURF', 'knn')
-	example_find_matches_for_homography('SURF', 'flann')
-	example_find_matches_for_homography('SURF', 'xxx')
+	example_find_matches_for_homography(img1,img2,detector='ORB', matchtype='knn')
+	example_find_matches_for_homography(img1,img2,detector='ORB', matchtype='flann')
+	example_find_matches_for_homography(img1,img2,detector='ORB', matchtype='xxx')
+
+	example_find_matches_for_homography(img1,img2,detector='SIFT', matchtype='knn')
+	example_find_matches_for_homography(img1,img2,detector='SIFT', matchtype='flann')
+	example_find_matches_for_homography(img1,img2,detector='SIFT', matchtype='xxx')

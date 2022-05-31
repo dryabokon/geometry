@@ -1,16 +1,9 @@
-import cv2
 import numpy as numpy
-import os
-from scipy.spatial import Delaunay
-# ---------------------------------------------------------------------------------------------------------------------
-import tools_image
-import tools_IO
-import tools_calibrate
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.tri as tri
 from mayavi import mlab
 import open3d as o3d
+# ---------------------------------------------------------------------------------------------------------------------
+import tools_IO
+import tools_wavefront
 # ---------------------------------------------------------------------------------------------------------------------
 def mesh():
     mesh = o3d.io.read_triangle_mesh("./images/ex_face_3d/knot.ply")
@@ -73,14 +66,46 @@ def render(filename_in):
     #mesh.vertices = o3d.utility.Vector3dVector(vertices)
     #mesh.triangles = mesh0.triangles
 
+    V = numpy.array(mesh.vertices)
+
     mesh.compute_vertex_normals()
     o3d.visualization.draw_geometries([mesh])
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
+vb = 0.02*numpy.array([[-1, -1, -1],[-1, +1, -1],[+1, +1, -1],[+1, -1, -1],[-1, -1, +1],[-1, +1, +1],[+1, +1, +1],[+1, -1, +1]])
+ib = numpy.array([[1,2,3],[3,4,1],[5,6,7],[7,8,5],[1, 2, 6],[5, 6, 1],[3, 4, 7],[7, 8, 4],[1, 4, 5],[8, 5, 4],[2, 3, 6],[7, 3, 6]])-1
+# ---------------------------------------------------------------------------------------------------------------------
+def ply_to_obj(filename_in,filename_out,pointcloud=True):
+    # mesh = o3d.io.read_triangle_mesh(filename_in)
+    # mesh.compute_vertex_normals()
+    # X = numpy.array(mesh.vertices)
+
+    X = numpy.load('D:\\xxx.npy')
+
+    if pointcloud:
+        idx = numpy.random.choice(X.shape[0], 1200)
+        XX,I,C = [],[],0
+        for x in X[idx]:
+            XX.append(vb + numpy.array(x).reshape((1, 3)))
+            I.append(ib + C)
+            C+=8
+
+        X = numpy.array(XX).reshape((-1,3))
+        I = numpy.array(I).reshape((-1, 3))
+    else:
+        I =  numpy.array(mesh.triangles)
+        I = None
+
+    object = tools_wavefront.ObjLoader()
+    object.export_mesh(filename_out, X, coord_texture=None, idx_vertex=I)
+
+    return
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    converter('./images/ex_face_3d/2.txt',"./images/ex_face_3d/face.ply")
+    folder_out = './images/output/'
+    filename_in = "./images/ex_face_3d/castle/robust.ply"
+    filename_out = folder_out + (filename_in.split('/')[-1]).split('.')[0] + '.obj'
+    ply_to_obj(filename_in,filename_out)
 
-    #render("./images/ex_face_3d/knot2.ply")
-    #render("./images/ex_face_3d/face.ply")

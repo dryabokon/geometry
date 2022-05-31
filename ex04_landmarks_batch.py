@@ -22,7 +22,7 @@ R = tools_GL3D.render_GL3D(filename_obj=filename_head_obj1, W=camera_W, H=camera
 def lm_process(folder_in,folder_out):
     filenames = numpy.array(tools_IO.get_filenames(folder_in, '*.jpg,*.png'))
     tools_IO.remove_files(folder_out,create=True)
-    clr = (255 * numpy.array(R.bg_color[:3])).astype(numpy.int)
+    clr = (255 * numpy.array(R.color_bg[:3])).astype(numpy.int)
 
     D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat',filename_markers1)
     L_prev = None

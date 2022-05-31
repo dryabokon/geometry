@@ -1,9 +1,8 @@
 import cv2
 import numpy
 import tools_render_CV
-import tools_pr_geom
+from CV import tools_pr_geom,tools_soccer_GT_data
 import tools_IO
-import tools_soccer_GT_data
 # ----------------------------------------------------------------------------------------------------------------------
 soccer_data = tools_soccer_GT_data.Soccer_Field_GT_data()
 # ----------------------------------------------------------------------------------------------------------------------

@@ -1,26 +1,18 @@
 import cv2
 import os
 import numpy
-from sklearn import metrics
-from sklearn.metrics import auc
-import matplotlib.pyplot as plt
 import math
 # ---------------------------------------------------------------------------------------------------------------------
-import tools_alg_match
 import tools_image
 import tools_draw_numpy
 import tools_IO
+from CV import tools_alg_match
 # ---------------------------------------------------------------------------------------------------------------------
 def example_find_matches_for_frames(filename1_in,filename2_in, folder_output, detector='SIFT', matchtype='knn'):
 
-
+    tools_IO.remove_files(folder_output)
     img1 = cv2.imread(filename1_in)
     img2 = cv2.imread(filename2_in)
-
-    if not os.path.exists(folder_output):
-        os.makedirs(folder_output)
-    else:
-        tools_IO.remove_files(folder_output)
 
     points1, des1 = tools_alg_match.get_keypoints_desc(img1, detector)
     points2, des2 = tools_alg_match.get_keypoints_desc(img2, detector)
@@ -47,17 +39,12 @@ def example_find_matches_for_frames(filename1_in,filename2_in, folder_output, de
     cv2.imwrite(folder_output + 'out3.png', img1_gray_rgb)
     cv2.imwrite(folder_output + 'out4.png', img2_gray_rgb)
 
-
     return
 
 # --------------------------------------------------------------------------------------------------------------------------
-folder_output = 'images/output/'
-# --------------------------------------------------------------------------------------------------------------------------
-#filename1_in = 'images/ex_homography_affine/first.jpg'
-#filename2_in = 'images/ex_homography_affine/scond.jpg'
-# --------------------------------------------------------------------------------------------------------------------------
-filename1_in = 'images/ex_bin/frame000098.jpg'
-filename2_in = 'images/ex_bin/frame000099.jpg'
+folder_output = './images/output/'
+filename1_in = './images/ex_keypoints/_001644.jpg'
+filename2_in = './images/ex_keypoints/_001645.jpg'
 # --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
