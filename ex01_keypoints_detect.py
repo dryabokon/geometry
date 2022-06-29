@@ -8,88 +8,19 @@ import tools_IO
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def example_01_harris_corner_detection(filename_in, filename_out, R=2):
-    img = cv2.imread(filename_in)
-    gray_rgb = tools_image.desaturate(img)
+def draw_points(image, points, filename_out):
+    image_res = tools_image.desaturate(image)
+    image_res = tools_draw_numpy.draw_points(image_res, points, color=(0, 0, 200), w=4)
+    cv2.imwrite(filename_out, image_res)
 
-    for each in tools_alg_match.get_corners_Harris(img):
-        gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-    cv2.imwrite(filename_out, gray_rgb)
-    return
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def example_02_shi_tomasi_corner_detector(filename_in, filename_out, R=2):
-    img = cv2.imread(filename_in)
-    gray_rgb = tools_image.desaturate(img)
-
-    for each in tools_alg_match.get_corners_Shi_Tomasi(img):
-        gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-    cv2.imwrite(filename_out, gray_rgb)
-    return
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def example_03_SIFT(filename_in, filename_out, R=2):
-    img = cv2.imread(filename_in)
-    gray_rgb = tools_image.desaturate(img)
-
-    points, desc = tools_alg_match.get_keypoints_desc(img, detector='SIFT')
-
-    for each in points:
-        gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-    cv2.imwrite(filename_out, gray_rgb)
-    return
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def example_04_SURF(filename_in, filename_out, R=2):
-    img = cv2.imread(filename_in)
-    gray_rgb = tools_image.desaturate(img)
-
-    points, desc = tools_alg_match.get_keypoints_desc(img, detector='SURF')
-
-    for each in points:
-        gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-    cv2.imwrite(filename_out, gray_rgb)
-    return
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def example_05_Fast_Corner_Detector(filename_in, filename_out, R=2):
-    img = cv2.imread(filename_in)
-    gray_rgb = tools_image.desaturate(img)
-
-    points = tools_alg_match.get_corners_Fast(img)
-
-    for each in points:
-        gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-    cv2.imwrite(filename_out, gray_rgb)
-    return
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def example_06_ORB(filename_in, filename_out, R=2):
-    img = cv2.imread(filename_in)
-    gray_rgb = tools_image.desaturate(img)
-
-    points, desc = tools_alg_match.get_keypoints_desc(img, detector='ORB')
-
-    for each in points:
-        gray_rgb = tools_draw_numpy.draw_circle(gray_rgb, each[1], each[0], R, [0, 0, 255])
-
-    cv2.imwrite(filename_out, gray_rgb)
     return
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/'
-filename_in = './images/ex_keypoints/rght.jpg'
+#filename_in = './images/ex_keypoints/left.jpg'
+#filename_in = './images/ex_keypoints/rght.jpg'
+filename_in = './images/ex_chessboard/01.jpg'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
@@ -98,9 +29,15 @@ if __name__ == '__main__':
     else:
         tools_IO.remove_files(folder_out)
 
-    example_01_harris_corner_detection(filename_in, folder_out + 'harris.png')
-    example_02_shi_tomasi_corner_detector(filename_in, folder_out + 'shi.png')
-    example_03_SIFT(filename_in, folder_out + 'sift.png')
-    #example_04_SURF(filename_in, path_out + 'surf.png')
-    example_05_Fast_Corner_Detector(filename_in, folder_out + 'fast_corners.png')
-    example_06_ORB(filename_in, folder_out + 'orb.png')
+    image = cv2.imread(filename_in)
+    points_harris_corner_detection = tools_alg_match.get_corners_Harris(image)
+    points_Shi_Tomasi = tools_alg_match.get_corners_Shi_Tomasi(image)
+    points_sift, desc_sift = tools_alg_match.get_keypoints_desc(image, detector='SIFT')
+    points_orb, desc_orb = tools_alg_match.get_keypoints_desc(image, detector='ORB')
+    points_fast = tools_alg_match.get_corners_Fast(image)
+
+    draw_points(image, points_harris_corner_detection, folder_out + 'harris.png')
+    draw_points(image, points_Shi_Tomasi, folder_out + 'Shi_Tomasi.png')
+    draw_points(image, points_sift, folder_out + 'sift.png')
+    draw_points(image, points_orb, folder_out + 'orb.png')
+    draw_points(image, points_fast, folder_out + 'fast_corners.png')

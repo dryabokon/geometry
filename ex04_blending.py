@@ -17,9 +17,11 @@ def example_02_blend_multi_band(img1,img2,background_color=(255, 255, 255)):
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_blend_multi_band_mask(img1,img2,background_color=(0, 0, 0)):
+    adjust_colors = 'small'
+    R = 100
     res = tools_image.blend_multi_band_large_small0(img1, img2, background_color=background_color,
-                                                   filter_size=20, adjust_colors=True, do_debug=False)
-    cv2.imwrite(folder_output + 'blend_multi_band_mask.png', res)
+                                                   filter_size=R, adjust_colors=adjust_colors, do_debug=False)
+    cv2.imwrite(folder_output + 'blend_multi_band_mask_%s_R%02d.png'%(adjust_colors,R), res)
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_04_find_homography_blend_multi_band(img_left,img_right,detector='SIFT', matchtype='knn'):
@@ -54,9 +56,9 @@ img4 = cv2.imread('./images/ex_blend/part2.png')
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    tools_IO.remove_files(folder_output)
+    #tools_IO.remove_files(folder_output)
 
     #example_01_blend_avg(img1,img2)
     #example_02_blend_multi_band(img1, img2)
-    #example_03_blend_multi_band_mask(img3,img4,background_color=(0, 0, 0))
+    example_03_blend_multi_band_mask(img3,img4,background_color=(0, 0, 0))
     #example_04_find_homography_blend_multi_band(img1,img2)

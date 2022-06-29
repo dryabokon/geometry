@@ -25,10 +25,10 @@ import tools_plot_v2
 # ---------------------------------------------------------------------------------------------------------------------
 P = tools_plot_v2.Plotter(folder_out)
 # ---------------------------------------------------------------------------------------------------------------------
-def word_count(filename_in = './images/ex_pack_text/skills.txt'):
+def word_count(filename_in,delim=','):
     all_words = []
 
-    lines = tools_IO.get_lines(filename_in,delim=',')
+    lines = tools_IO.get_lines(filename_in,delim=delim)
     for line in lines:
         for item in line:
             all_words.append(item)
@@ -48,8 +48,9 @@ def ex_01_positions():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def ex_02_words():
-    df = word_count()
-    col255 = tools_draw_numpy.get_colors(df.shape[0], colormap='viridis',shuffle=False,interpolate=False)
+    #df = word_count(filename_in = './images/ex_pack_text/skills.txt',delim = ',')
+    df = word_count(filename_in = './images/ex_pack_text/cover_letter.txt',delim = ' ')
+    #col255 = tools_draw_numpy.get_colors(df.shape[0], colormap='viridis',shuffle=False,interpolate=False)
     P.plot_squarify(df, idx_label=1, idx_size=0, stat='#', filename_out='words.png')
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -61,8 +62,8 @@ def ex_03_countries():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def ex_04_sales():
-    df = pd.read_csv('./images/ex_pack_text/sales.csv', sep=',')
-    colors = tools_draw_numpy.values_to_colors(df['sales']/df['calls'], '~RdBu')
+    df = pd.read_csv('./images/ex_pack_text/sales.csv', sep='\t')
+    colors = tools_draw_numpy.values_to_colors(df['sales']/df['calls'], 'warm',)#'~RdBu'
     P.plot_squarify(df, idx_label=2, idx_size=4,colors=colors, stat='', palette='RdBu', filename_out='sales.png')
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -70,8 +71,8 @@ if __name__ == '__main__':
 
     tools_IO.remove_files(folder_out)
     # ex_01_positions()
-    # ex_02_words()
-    # ex_03_countries()
+    #ex_02_words()
+    #ex_03_countries()
     ex_04_sales()
 
 

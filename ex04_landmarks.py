@@ -119,15 +119,15 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #capturing_device = 'image'
-    #folder_in = './images/ex_faceswap/01/'
-    #list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    #filename_actor = list_filenames[0]
-    #image_actor_default = cv2.imread(folder_in+filename_actor)
-    #image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
+    capturing_device = 'image'
+    folder_in = './images/ex_faceswap/01/'
+    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
+    filename_actor = list_filenames[0]
+    image_actor_default = cv2.imread(folder_in+filename_actor)
+    image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
 
-    capturing_device = 'mp4'
-    filename_actor = 'D://ddd/'
+    # capturing_device = 'mp4'
+    # filename_actor = 'D://ddd/'
 
 
     demo_live(filename_head_obj1,filename_markers1,'P')
