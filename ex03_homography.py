@@ -9,32 +9,26 @@ from CV import tools_calibrate
 from CV import tools_alg_match
 from CV import tools_pr_geom
 # ---------------------------------------------------------------------------------------------------------------------
-def example_02_homography_manual(filename_source, filename_target,filename_out):
-    im_source = cv2.imread(filename_source)
-    im_target = cv2.imread(filename_target)
+def example_02_homography_manual():
 
+    im_source = cv2.imread('./images/ex_homography_manual/source.png')
+    im_target = cv2.imread('./images/ex_homography_manual/target.png')
     pad = 0
+    background_color = (0, 0, 200)
 
-
-    p_source = numpy.array([[0+pad, 0+pad],
-                            [im_source.shape[1]-pad, pad],
-                            [im_source.shape[1]-pad, im_source.shape[0]-pad],
-                            [pad, im_source.shape[0]-pad]],dtype=numpy.float)
-
-    p_target = numpy.array([[9, 53], [69, 82], [94, 214], [36, 173]])
-
+    p_source = numpy.array([[0+pad, 0+pad],[im_source.shape[1]-pad, pad],[im_source.shape[1]-pad, im_source.shape[0]-pad],[pad, im_source.shape[0]-pad]],dtype=numpy.float32)
+    p_target = numpy.array([[20, 100], [170, 10], [320, 100], [170, 190]])
     homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
-
-    image_trans = cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0]))
-
-    result = tools_image.put_layer_on_image(im_target,image_trans,background_color = (0, 0, 0))
-    cv2.imwrite(filename_out, result)
+    image_trans = cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0]),borderValue=background_color)
+    #cv2.imwrite(filename_out, image_trans)
+    result = tools_image.put_layer_on_image(im_target,image_trans,background_color = background_color)
+    cv2.imwrite('./images/output/homohraphy_result.png', result)
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
     alpha = 0.6
 
-    folder_input = 'images/ex_homography_manual/05/'
+    folder_input = 'images/ex_homography_manual_gis/05/'
     folder_output = 'images/output/'
 
     im_target = cv2.imread(folder_input + 'map2.jpg')
@@ -48,17 +42,17 @@ def example_03_find_homography_manual():
         os.makedirs(folder_output)
     else:
         tools_IO.remove_files(folder_output)
+    im_source_gray = tools_draw_numpy.draw_points(tools_image.desaturate(im_source), p_source, color=(0, 0, 255), w=4, put_text=True)
+    cv2.imwrite(folder_output+'im_source.png',im_source_gray)
+    cv2.imwrite(folder_output+'im_target.png',tools_draw_numpy.draw_points(tools_image.desaturate(im_target), p_target, color=(0, 0, 255), w=4, put_text=True))
 
+    #im_source = im_source_gray
 
     # via affine
     homography_afine, status = tools_pr_geom.fit_affine(p_source, p_target)
     homography = numpy.vstack((homography_afine,numpy.array([0,0,1])))
     image_affine = tools_image.put_layer_on_image(im_target,cv2.warpPerspective(im_source, homography, (im_target.shape[1], im_target.shape[0])),background_color=(0, 0, 0))
-    cv2.imwrite(folder_output+'affine.png', cv2.addWeighted(im_target,alpha,image_affine,1-alpha,0))
-
-    cv2.imwrite(folder_output+'im_source.png',tools_draw_numpy.draw_points(im_source, p_source,color=(0,0,255),w=4,put_text=True))
-    cv2.imwrite(folder_output+'im_target.png',tools_draw_numpy.draw_points(im_target, p_target, color=(0, 0, 255), w=4, put_text=True))
-
+    cv2.imwrite(folder_output+'affine.png', image_affine)
 
     # homography itself
     homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
@@ -118,7 +112,7 @@ def example_04_find_homography_by_keypoints(detector='SIFT', matchtype='knn'):
     cv2.imwrite(output_filename, result_image)
     return
 # --------------------------------------------------------------------------------------------------------------------------
-def example_05_find_translateion_by_keypoints(detector='SIFT', matchtype='knn'):
+def example_05_find_translation_by_keypoints(detector='SIFT', matchtype='knn'):
 
     folder_input = 'images/ex_keypoints/'
     img1 = cv2.imread(folder_input + 'left.jpg')
@@ -253,10 +247,10 @@ def example_07_find_homography_live():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #example_02_homography_manual('D:/l1.png','D:/res2.png','D:/res3.png')
+    example_02_homography_manual()
     #example_03_find_homography_manual()
-    example_04_find_homography_by_keypoints('ORB')
-    #example_03_find_translateion_by_keypoints('ORB')
-    #example_03_find_translation_with_ECC()
+    #example_04_find_homography_by_keypoints('ORB')
+    #example_05_find_translation_by_keypoints('ORB')
+
 
 

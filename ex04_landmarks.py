@@ -7,9 +7,8 @@ import tools_GL3D
 import time
 from detector import detector_landmarks
 # ---------------------------------------------------------------------------------------------------------------------
-capturing_devices = ['cam','mp4','image']
 camera_W, camera_H = 640, 640
-mode = 'Box'
+mode = 'L'#Box,L,Perspective
 # ---------------------------------------------------------------------------------------------------------------------
 def process_key(key):
 
@@ -40,7 +39,7 @@ def process_key(key):
 def demo_live(filename_obj,filename_3dmarkers,projection_type='O',scale=(1,1,1)):
 
     D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face_landmarks.dat',filename_3dmarkers)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=camera_W, H=camera_H,is_visible=False, do_normalize_model_file=True, projection_type=projection_type,scale=scale)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=camera_W, H=camera_H,is_visible=False, do_normalize_model_file=True,textured=False, projection_type=projection_type,scale=scale)
 
     if capturing_device == 'cam':
         cap = cv2.VideoCapture(0)
@@ -79,14 +78,14 @@ def demo_live(filename_obj,filename_3dmarkers,projection_type='O',scale=(1,1,1))
             if mode == 'Ortho':
                 rvec, tvec, scale  = D.get_pose_ortho(image_actor,L,D.model_68_points,R.mat_trns)
                 image_3d = R.get_image_ortho(rvec,tvec,scale)
-                clr = (255 * numpy.array(R.color_bg)).astype(numpy.int)
-                result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
+
+                result = tools_image.blend_avg(image_actor, image_3d, (200,0,0), weight=0)
 
             if mode == 'Perspective':
                 rvec, tvec  = D.get_pose_perspective(image_actor,L,D.model_68_points,R.mat_trns)
                 image_3d = R.get_image_perspective(rvec,tvec)
-                clr = (255 * numpy.array(R.color_bg)).astype(numpy.int)
-                result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
+
+                result = tools_image.blend_avg(image_actor, image_3d, (200,0,0), weight=0.5)
 
 
         else:
@@ -118,16 +117,17 @@ filename_markers3 ='./images/ex_GL/face/markers_head_scaled.txt'
 #filename_actor = './images/ex_DMS/JB_original.mp4'
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    capturing_device = 'cam'
 
-    capturing_device = 'image'
-    folder_in = './images/ex_faceswap/01/'
-    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    filename_actor = list_filenames[0]
-    image_actor_default = cv2.imread(folder_in+filename_actor)
-    image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
+    # capturing_device = 'image'
+    # folder_in = './images/ex_faceswap/01/'
+    # list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
+    # filename_actor = list_filenames[0]
+    # image_actor_default = cv2.imread(folder_in+filename_actor)
+    # image_actor_default = tools_image.smart_resize(image_actor_default, camera_H, camera_W)
 
-    # capturing_device = 'mp4'
-    # filename_actor = 'D://ddd/'
+    #capturing_device = 'mp4'
+    #filename_actor = 'D://ddd/'
 
 
     demo_live(filename_head_obj1,filename_markers1,'P')

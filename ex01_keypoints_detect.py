@@ -1,3 +1,4 @@
+import numpy
 import cv2
 import os
 # ---------------------------------------------------------------------------------------------------------------------
@@ -30,7 +31,10 @@ if __name__ == '__main__':
         tools_IO.remove_files(folder_out)
 
     image = cv2.imread(filename_in)
+
+
     points_harris_corner_detection = tools_alg_match.get_corners_Harris(image)
+
     points_Shi_Tomasi = tools_alg_match.get_corners_Shi_Tomasi(image)
     points_sift, desc_sift = tools_alg_match.get_keypoints_desc(image, detector='SIFT')
     points_orb, desc_orb = tools_alg_match.get_keypoints_desc(image, detector='ORB')

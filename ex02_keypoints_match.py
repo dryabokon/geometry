@@ -3,7 +3,7 @@ import os
 import numpy
 from sklearn import metrics
 from sklearn.metrics import auc
-import matplotlib.pyplot as plt
+
 # ---------------------------------------------------------------------------------------------------------------------
 import tools_image
 import tools_draw_numpy
@@ -31,6 +31,7 @@ def example_find_matches_for_homography(img1, img2, detector='SIFT', matchtype='
 
     match1, match2, distance = tools_alg_match.get_matches_from_keypoints_desc(points1, des1, points2, des2, matchtype)
     homography = tools_calibrate.get_homography_by_keypoints_desc(points1, des1, points2, des2, matchtype)
+
 
     if homography is None:
         return

@@ -44,6 +44,8 @@ def example_find_matches_for_frames(filename1_in,filename2_in, folder_output, de
 folder_output = './images/output/'
 filename1_in = './images/ex_keypoints/_001644.jpg'
 filename2_in = './images/ex_keypoints/_001645.jpg'
+# filename1_in = './images/ex_keypoints/_001644.jpg'
+# filename2_in = './images/ex_keypoints/_001645.jpg'
 # --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
