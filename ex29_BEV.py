@@ -14,7 +14,7 @@ def BEV_van_point3(filename_in, fov_x_deg,point_van_xy_ver,point_van_xy_hor=None
     fov_y_deg = fov_x_deg*image.shape[0]/image.shape[1]
     VP.H, VP.W = image.shape[:2]
     image_BEV, h_ipersp, cam_height_px, p_camera_BEV_xy, p_center_BEV_xy, lines_edges = VP.build_BEV_by_fov_van_point(image , fov_x_deg, fov_y_deg, point_van_xy_ver, point_van_xy_hor, do_rotation=do_rotation)
-    image_BEV, df_keypoints_pitch, df_vertical = VP.draw_grid_at_BEV(image_BEV, p_camera_BEV_xy, p_center_BEV_xy,lines_edges, fov_x_deg, fov_y_deg)
+    #image_BEV, df_keypoints_pitch, df_vertical = VP.draw_grid_at_BEV(image_BEV, p_camera_BEV_xy, p_center_BEV_xy,lines_edges, fov_x_deg, fov_y_deg)
 
     image_BEV = tools_image.auto_crop(image_BEV, background_color=(32, 32, 32))
     image_BEV = tools_image.do_resize(image_BEV,numpy.array((-1,image.shape[0])))
@@ -39,7 +39,7 @@ def BEV_lines(filename_in,cam_fov_deg = 90.0):
 
 if __name__ == '__main__':
 
-    # BEV_van_point3('./images/ex_BEV/_0000000000.png', fov_x_deg=90,point_van_xy_ver = (631, 166))
+    BEV_van_point3('./images/ex_BEV/0000000000.png', fov_x_deg=90,point_van_xy_ver = (631, 166))
     # BEV_lines('./images/ex_BEV/KZ.jpg', (330,764,1062,38), (924,1054,1346,62),42)
     # BEV_lines('./images/ex_BEV/MELCO_loc_train_03.jpg', (236,438,996,1052), (1810,780,236,226),23)
     # BEV_lines('./images/ex_BEV/loc_train_01_00001.jpg', (9,813,752,420), (1080,870,1240,328),42)
@@ -52,4 +52,4 @@ if __name__ == '__main__':
 
 
     #BEV_van_point3('./images/ex_BEV/TNO_7180R_20220418135426.jpg', fov_x_deg=30, point_van_xy_ver=(144,-526), point_van_xy_hor=(733392,45799), do_rotation=True)
-    BEV_van_point3('./images/ex_BEV/TNO-7180R_20220525174045.jpg', fov_x_deg=30, point_van_xy_ver=(-391,-935), point_van_xy_hor=(6755,-46), do_rotation=True)
+    #BEV_van_point3('./images/ex_BEV/TNO-7180R_20220525174045.jpg', fov_x_deg=30, point_van_xy_ver=(-391,-935), point_van_xy_hor=(6755,-46), do_rotation=True)
