@@ -82,13 +82,13 @@ def tutorial3():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def tutorial4():
-    # example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/part1.png'),
-    #                                  cv2.imread('./images/ex_blend/part2.png'),
-    #                                  background_color=(0,0,0))
+    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/part1.png'),
+                                     cv2.imread('./images/ex_blend/part2.png'),
+                                     background_color=(0,0,0))
 
-    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/black_L.png'),
-                                     cv2.imread('./images/ex_blend/black_R.png'),
-                                     background_color=(0, 0, 0))
+    # example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/black_L.png'),
+    #                                  cv2.imread('./images/ex_blend/black_R.png'),
+    #                                  background_color=(0, 0, 0))
 
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -96,4 +96,4 @@ if __name__ == '__main__':
 
     tools_IO.remove_files(folder_output)
 
-    tutorial1()
+    tutorial4()
