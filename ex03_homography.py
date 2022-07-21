@@ -18,8 +18,11 @@ def example_02_homography_manual():
 
     p_source = numpy.array([[0+pad, 0+pad],[im_source.shape[1]-pad, pad],[im_source.shape[1]-pad, im_source.shape[0]-pad],[pad, im_source.shape[0]-pad]],dtype=numpy.float32)
     p_target = numpy.array([[20, 100], [170, 10], [320, 100], [170, 190]])
-    homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
-    image_trans = cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0]),borderValue=background_color)
+
+    homography2, status = tools_pr_geom.fit_euclid(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
+    image_trans = cv2.warpAffine(im_source, homography2, (im_target.shape[1], im_target.shape[0]),borderValue=background_color)
+
+
     #cv2.imwrite(filename_out, image_trans)
     result = tools_image.put_layer_on_image(im_target,image_trans,background_color = background_color)
     cv2.imwrite('./images/output/homohraphy_result.png', result)
@@ -42,11 +45,11 @@ def example_03_find_homography_manual():
         os.makedirs(folder_output)
     else:
         tools_IO.remove_files(folder_output)
-    im_source_gray = tools_draw_numpy.draw_points(tools_image.desaturate(im_source), p_source, color=(0, 0, 255), w=4, put_text=True)
+    im_source_gray = tools_draw_numpy.draw_points(tools_image.desaturate(im_source), p_source, color=(0, 0, 255), w=24, put_text=True)
     cv2.imwrite(folder_output+'im_source.png',im_source_gray)
     cv2.imwrite(folder_output+'im_target.png',tools_draw_numpy.draw_points(tools_image.desaturate(im_target), p_target, color=(0, 0, 255), w=4, put_text=True))
 
-    #im_source = im_source_gray
+    im_source = im_source_gray
 
     # via affine
     homography_afine, status = tools_pr_geom.fit_affine(p_source, p_target)
@@ -249,6 +252,7 @@ if __name__ == '__main__':
 
     example_02_homography_manual()
     #example_03_find_homography_manual()
+
     #example_04_find_homography_by_keypoints('ORB')
     #example_05_find_translation_by_keypoints('ORB')
 

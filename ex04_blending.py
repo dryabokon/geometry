@@ -17,10 +17,9 @@ def example_02_blend_multi_band(img1,img2,background_color=(255, 255, 255)):
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_blend_multi_band_mask(img1,img2,background_color=(0, 0, 0)):
-    adjust_colors = 'small'
+    adjust_colors = 'avg'# small large
     R = 100
-    res = tools_image.blend_multi_band_large_small0(img1, img2, background_color=background_color,
-                                                   filter_size=R, adjust_colors=adjust_colors, do_debug=False)
+    res = tools_image.blend_multi_band_large_small0(img1, img2, background_color=background_color,filter_size=R, adjust_colors=adjust_colors, do_debug=True)
     cv2.imwrite(folder_output + 'blend_multi_band_mask_%s_R%02d.png'%(adjust_colors,R), res)
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -37,28 +36,64 @@ def example_04_find_homography_blend_multi_band(img_left,img_right,detector='SIF
     points_left, des_left = tools_alg_match.get_keypoints_desc(img_left,detector)
     points_rght, des_rght = tools_alg_match.get_keypoints_desc(img_right,detector)
 
-    homography = tools_calibrate.get_homography_by_keypoints_desc(points_left, des_left, points_rght, des_rght,matchtype=matchtype)
-    result_left, result_right= tools_calibrate.get_stitched_images_using_homography(img_left, img_right, homography)
+
+    homography1 = tools_calibrate.get_homography_by_keypoints_desc(points_left, des_left, points_rght, des_rght,matchtype=matchtype)
+    result_left, result_right= tools_calibrate.get_stitched_images_using_homography(img_left, img_right, homography1)
     result_image = tools_image.blend_multi_band(result_left,result_right)
     cv2.imwrite(output_left, result_image)
 
-    homography = tools_calibrate.get_homography_by_keypoints_desc(points_rght, des_rght, points_left, des_left,matchtype=matchtype)
-    result_right, result_left= tools_calibrate.get_stitched_images_using_homography(img_right, img_left, homography)
+    homography2 = tools_calibrate.get_homography_by_keypoints_desc(points_rght, des_rght, points_left, des_left,matchtype=matchtype)
+    result_right, result_left= tools_calibrate.get_stitched_images_using_homography(img_right, img_left, homography2)
+
     result_image = tools_image.blend_multi_band(result_left,result_right)
     cv2.imwrite(output_rght, result_image)
     return
 # ---------------------------------------------------------------------------------------------------------------------
-img1 = cv2.imread('./images/ex_blend/white_L.png')
-img2 = cv2.imread('./images/ex_blend/white_R.png')
-
 img3 = cv2.imread('./images/ex_blend/part1.png')
 img4 = cv2.imread('./images/ex_blend/part2.png')
 # ---------------------------------------------------------------------------------------------------------------------
+def tutorial1():
+    # white
+    example_01_blend_avg(cv2.imread('./images/ex_blend/white_L.png'),
+                         cv2.imread('./images/ex_blend/white_R.png'),
+                         background_color=(255, 255, 255))
+
+    example_02_blend_multi_band(cv2.imread('./images/ex_blend/white_L.png'),
+                                cv2.imread('./images/ex_blend/white_R.png'),
+                                background_color=(255, 255, 255))
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+def tutorial2():
+    # black
+    example_01_blend_avg(cv2.imread('./images/ex_blend/black_L.png'),
+                         cv2.imread('./images/ex_blend/black_R.png'),
+                         background_color=(0, 0, 0))
+
+    example_02_blend_multi_band(cv2.imread('./images/ex_blend/black_L.png'),
+                                cv2.imread('./images/ex_blend/black_R.png'),
+                                background_color=(0, 0, 0))
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+def tutorial3():
+
+    example_04_find_homography_blend_multi_band(
+        cv2.imread('./images/ex_keypoints/left.jpg'),
+        cv2.imread('./images/ex_keypoints/rght.jpg'))
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+def tutorial4():
+    # example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/part1.png'),
+    #                                  cv2.imread('./images/ex_blend/part2.png'),
+    #                                  background_color=(0,0,0))
+
+    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/black_L.png'),
+                                     cv2.imread('./images/ex_blend/black_R.png'),
+                                     background_color=(0, 0, 0))
+
+    return
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #tools_IO.remove_files(folder_output)
+    tools_IO.remove_files(folder_output)
 
-    #example_01_blend_avg(img1,img2)
-    #example_02_blend_multi_band(img1, img2)
-    example_03_blend_multi_band_mask(img3,img4,background_color=(0, 0, 0))
-    #example_04_find_homography_blend_multi_band(img1,img2)
+    tutorial1()
