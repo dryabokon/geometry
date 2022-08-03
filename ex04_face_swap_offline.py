@@ -10,10 +10,10 @@ D = detector_landmarks.detector_landmarks('..//_weights//shape_predictor_68_face
 def demo_01(folder_out,filename_clbrt,filename_actor):
     image_clbrt = cv2.imread(filename_clbrt)
     image_actor = cv2.imread(filename_actor)
-    FS = tools_faceswap.Face_Swapper(D, image_clbrt, image_actor, device='cpu')
+    FS = tools_faceswap.Face_Swapper(D, image_clbrt, image_actor, device='cpu',do_narrow_face=False)
     FS.update_clbrt(image_clbrt)
 
-    result = FS.do_faceswap(folder_out=folder_out, do_debug=False)
+    result = FS.do_faceswap(folder_out=folder_out, do_debug=True)
     cv2.imwrite(folder_out + 'result.jpg' , result)
 
     return
@@ -60,9 +60,10 @@ if __name__ == '__main__':
     folder_in = './images/ex_faceswap/01/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
-    #list_filenames = ['Person5a.jpg','Person2e.jpg']
-    demo_01(folder_out,folder_in + list_filenames[ 0],folder_in + list_filenames[2])
-    #demo_02(folder_out,folder_in,list_filenames)
-    #demo_03(folder_in,folder_out)
+    #list_filenames = ['Person2h.jpg','Person2c.jpg']
+    #demo_01(folder_out,folder_in + list_filenames[ 0],folder_in + list_filenames[1])
+
+    demo_02(folder_out,folder_in,list_filenames)
+
 
 

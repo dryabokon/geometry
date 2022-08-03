@@ -107,6 +107,7 @@ def demo_live(FS,cam_id=0):
         else:
             result = image_actor
 
+
         if time.time() > start_time: fps = cnt / (time.time() - start_time)
 
         result = cv2.putText(result, '{0: 1.1f} {1}{2}'.format(fps, ' fps@', FS.device), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(128, 128, 0), 1, cv2.LINE_AA)
@@ -130,7 +131,7 @@ folder_out = './images/output1/'
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
+    list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')[:7]
     filename_clbrt, filename_actor = list_filenames[-1], list_filenames[ 1]
     image_clbrt = cv2.imread(folder_in+filename_clbrt)
     image_actor = cv2.imread(folder_in+filename_actor)

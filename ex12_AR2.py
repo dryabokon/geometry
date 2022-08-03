@@ -9,6 +9,7 @@ import tools_draw_numpy
 import tools_render_GL
 from CV import tools_aruco
 from CV import tools_pr_geom
+import tools_render_CV
 from detector import detector_landmarks
 # ----------------------------------------------------------------------------------------------------------------------
 marker_length = 0.1
@@ -25,7 +26,7 @@ def example_acuro_pose_estimation():
 
     R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box_2.obj', do_normalize_model_file=False,W=frame.shape[1], H=frame.shape[0], is_visible=False, projection_type='P')
     image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),fov_x,fov_y,scale=(0.5,0.5,0.5),do_debug=True)
-    cv2.imwrite('./images/output/cube_GL.png', tools_image.blend_avg(frame, image_3d, (255 * numpy.array(R.color_bg)).astype(numpy.int), weight=0))
+    cv2.imwrite('./images/output/cube_GL.png', tools_image.blend_avg(frame, image_3d, (255 * numpy.array(R.bg_color)).astype(numpy.int32), weight=0))
 
     r_vec, t_vec = r_vec.flatten(), t_vec.flatten()
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f],  %1.2f' % (r_vec[0], r_vec[1], r_vec[2], t_vec[0], t_vec[1], t_vec[2],fov_x))
@@ -49,7 +50,7 @@ def example_face_perspective(filename_actor,filename_obj,filename_3dmarkers=None
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f]'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2]))
 
     image_3d = R.get_image_perspective(rvec, tvec,do_debug=do_debug)
-    clr = (255 * numpy.array(R.color_bg)).astype(numpy.int)
+    clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL.png', result)
 
@@ -76,7 +77,7 @@ def example_face_ortho(filename_actor,filename_obj,filename_3dmarkers=None):
     print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f], [%1.2f,%1.2f]'%(rvec[0],rvec[1],rvec[2],tvec[0],tvec[1],tvec[2],scale_factor[0],scale_factor[1]))
 
     image_3d = R.get_image_ortho(rvec, tvec, scale_factor, do_debug=True)
-    clr = (255 * numpy.array(R.color_bg)).astype(numpy.int)
+    clr = (255 * numpy.array(R.bg_color)).astype(numpy.int)
     result = tools_image.blend_avg(image_actor, image_3d, clr, weight=0)
     cv2.imwrite('./images/output/face_GL_ortho.png', result)
     cv2.imwrite('./images/output/face_image_3d.png', image_3d)

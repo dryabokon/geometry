@@ -53,13 +53,13 @@ def example_project_GL_vs_CV(folder_out, filename_in=None):
     cv2.imwrite(folder_out + 'GL_draw_pnts_RT.png'       , tools_render_GL.draw_points_RT_GL (points_3d, empty, RT_GL, camera_matrix_3x3, R.mat_trns))
     cv2.imwrite(folder_out + 'GL_draw_pnts_rvec_tvec.png', tools_render_GL.draw_points_rvec_tvec_GL(points_3d, empty, rvec, tvec, camera_matrix_3x3, R.mat_trns))
     cv2.imwrite(folder_out + 'CV_draw_cube_rvec_tvec.png', tools_render_GL.draw_cube_rvec_tvec_GL  (points_3d, empty, rvec, tvec, camera_matrix_3x3, R.mat_trns))
-    cv2.imwrite(folder_out + 'CV_cuboids_RT.png'         , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_RT_GL(points_3d,RT_GL,camera_matrix_3x3,R.mat_trns)   ,color=(0, 90, 255), w=2))
+    cv2.imwrite(folder_out + 'CV_cuboids_RT.png'         , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_RT_GL(points_3d,RT_GL,camera_matrix_3x3,R.mat_trns)   ,color=(0, 90, 255), w=2,idx_mode=2))
     cv2.imwrite(folder_out + 'CV_cuboids_rvec_tvec.png'  , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_rvec_tvec_GL(points_3d, rvec,tvec, camera_matrix_3x3,R.mat_trns),color=(0,190, 255), w=2))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
-# filename_box= './images/ex_GL/box/box_2.obj'
-# filename_box_aligned= './images/ex_GL/box/box_2_aligned.obj'
+filename_box= './images/ex_GL/box/box_2.obj'
+filename_box_aligned= './images/ex_GL/box/box_2_aligned.obj'
 filename_car = './images/ex_GL/car/SUV1.obj'
 #filename_car= './images/ex_GL/box/temp.obj'
 folder_out = './images/output/'

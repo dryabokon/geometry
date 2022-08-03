@@ -1,4 +1,3 @@
-import cv2
 import math
 import numpy
 import tools_GL3D
@@ -105,8 +104,8 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-#filename_box     = './images/ex_GL/box/box_2.obj'
-#filename_car= './images/ex_GL/car/SUV1.obj'
+filename_box     = './images/ex_GL/box/box_2.obj'
+filename_car= './images/ex_GL/car/SUV1.obj'
 filename_car_aligned = './images/ex_GL/car/SUV1.obj'
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
@@ -115,12 +114,8 @@ W,H = 800,600
 if __name__ == '__main__':
 
     textured = False
-    tvec = (0, 0, -20)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_car_aligned, W=W, H=H, do_normalize_model_file=True, projection_type='P',scale=(1, 1, 1),tvec=tvec,textured=textured)
-    #R.init_mat_view_ETU((0, 0, 5), (0, 0, -1), (0, -1, 0))
-    #rvec, tvec , aperture = numpy.array([0.3, 0.5, 0]), numpy.array([+5.0, 0, +15]),0.50
-    #rvec, tvec, aperture = numpy.array([numpy.pi / 32, 0, 0]), numpy.array([+0.0, +0, +15]), 0.50
-    #R.init_mat_view_RT(rvec,tvec,do_rodriges=True,GL_style=True)
+    tvec = (0, 0, 0)
+    R = tools_GL3D.render_GL3D(filename_obj=filename_car, W=W, H=H, do_normalize_model_file=True, projection_type='P',scale=(1, 1, 1),tvec=tvec,textured=textured)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

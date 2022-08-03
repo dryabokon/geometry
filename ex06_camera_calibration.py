@@ -3,35 +3,39 @@ import os
 import numpy
 from cv2 import aruco
 # ---------------------------------------------------------------------------------------------------------------------
-import tools_calibrate
+from CV import tools_calibrate
 import tools_IO
 import tools_image
 import tools_draw_numpy
 import tools_render_CV
-import tools_pr_geom
-import tools_aruco
+from CV import tools_pr_geom
+# ---------------------------------------------------------------------------------------------------------------------
+def get_image_grid(W,H,dist = 0.0):
+
+    image_grid = numpy.full((H, W, 3), 255, numpy.uint8)
+    image_grid[numpy.arange(0, H, 10), :] = 128
+    image_grid[:, numpy.arange(0, W, 10), :] = 128
+    return image_grid
 # ---------------------------------------------------------------------------------------------------------------------
 def example_calibrate_camera_chess():
 
-    folder_input  = 'images/ex_chessboard_one/'
+    folder_input  = 'images/ex_chessboard/'
     filename_input = '01.jpg'
     folder_output = 'images/output/'
-    chess_rows,chess_cols  = 6, 6
+    chess_rows,chess_cols  = 7, 7
 
     if not os.path.exists(folder_output):
         os.makedirs(folder_output)
     else:
         tools_IO.remove_files(folder_output)
 
-    camera_matrix, dist,rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_output)
+    camera_matrix, dist,rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_out=folder_output)
 
     image_chess = cv2.imread(folder_input+ filename_input)
     undistorted_chess = cv2.undistort(image_chess, camera_matrix, dist, None, None)
     cv2.imwrite(folder_output+'undistorted_'+filename_input, undistorted_chess)
 
-    image_grid = numpy.full(image_chess.shape,255,numpy.uint8)
-    image_grid[numpy.arange(0, image_chess.shape[0], 10),:] = 128
-    image_grid[:,numpy.arange(0, image_chess.shape[1], 10), :] = 128
+    image_grid = get_image_grid(image_chess.shape[1],image_chess.shape[0])
 
     undistorted_grid = cv2.undistort(image_grid, camera_matrix, dist, None, None)
     cv2.imwrite(folder_output+'undistorted_grid.jpg', undistorted_grid)
@@ -160,8 +164,25 @@ def evaluate_K_bruteforce_F(filename_image, filename_points, f_min=1920, f_max=1
 
     return
 # -------------------------------------------------------------------------------------------------------------------------
+def ex_undistort():
+    # W, H = 1200,800
+    # dist = 0.1
+    # image_grid = get_image_grid(W,H)
+
+
+    image_grid = cv2.imread('./images/ex_BEV/CityHealth/00000.jpg')
+    H,W = image_grid.shape[:2]
+    camera_matrix = numpy.array([[W, 0., W / 2], [0., H, H / 2], [0., 0., 1.]])
+    dist = -0.85
+
+    undistorted_grid = cv2.undistort(image_grid, camera_matrix, dist, None, None)
+    cv2.imwrite(folder_out + 'undistorted_grid.jpg', undistorted_grid)
+    return
+# -------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    tools_IO.remove_files(folder_out)
+    #tools_IO.remove_files(folder_out)
+    ex_undistort()
+    #example_calibrate_camera_chess()
     #example_calibrate_aruco_markers('./images/ex_aruco/01.jpg', marker_length_mm=100 , marker_space_mm=5, dct=aruco.DICT_6X6_50)
     #example_calibrate_folder('./images/ex_aruco/cam01/',folder_out,dct=aruco.DICT_4X4_50)
     #evaluate_K_bruteforce_F('./images/ex_calibration/01000.jpg', './images/ex_calibration/points.csv', f_min=1920, f_max=10000)

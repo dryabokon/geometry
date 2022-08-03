@@ -1,25 +1,29 @@
-import cv2
 import numpy
+import cv2
 # ----------------------------------------------------------------------------------------------------------------------
+import tools_IO
 import tools_image
 from CV import tools_vanishing
+import tools_render_CV
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/'
 # ----------------------------------------------------------------------------------------------------------------------
 VP = tools_vanishing.detector_VP(folder_out)
 # ----------------------------------------------------------------------------------------------------------------------
-def BEV_van_point3(filename_in, fov_x_deg,point_van_xy_ver,point_van_xy_hor=None,do_rotation=True):
+def BEV_van_point3(filename_in, fov_x_deg,point_van_xy_ver,point_van_xy_hor=None,do_rotation=False):
 
-    image = tools_image.desaturate(cv2.imread(filename_in), level=0)
+    image = cv2.imread(filename_in)
     fov_y_deg = fov_x_deg*image.shape[0]/image.shape[1]
     VP.H, VP.W = image.shape[:2]
     image_BEV, h_ipersp, cam_height_px, p_camera_BEV_xy, p_center_BEV_xy, lines_edges = VP.build_BEV_by_fov_van_point(image , fov_x_deg, fov_y_deg, point_van_xy_ver, point_van_xy_hor, do_rotation=do_rotation)
     #image_BEV, df_keypoints_pitch, df_vertical = VP.draw_grid_at_BEV(image_BEV, p_camera_BEV_xy, p_center_BEV_xy,lines_edges, fov_x_deg, fov_y_deg)
 
-    image_BEV = tools_image.auto_crop(image_BEV, background_color=(32, 32, 32))
-    image_BEV = tools_image.do_resize(image_BEV,numpy.array((-1,image.shape[0])))
-    image_result = numpy.concatenate([image,image_BEV],axis=1)
-    cv2.imwrite(folder_out + filename_in.split('/')[-1], image_result)
+    cv2.imwrite(folder_out + filename_in.split('/')[-1], image_BEV)
+
+    # image_BEV = tools_image.auto_crop(image_BEV, background_color=(32, 32, 32))
+    # image_BEV = tools_image.do_resize(image_BEV,numpy.array((-1,image.shape[0])))
+    # image_result = numpy.concatenate([image,image_BEV],axis=1)
+    # cv2.imwrite(folder_out + filename_in.split('/')[-1], image_result)
 
     return
 
@@ -36,20 +40,43 @@ def BEV_lines(filename_in,cam_fov_deg = 90.0):
     BEV_van_point3(filename_in, cam_fov_deg,vp_ver)
     return
 # ----------------------------------------------------------------------------------------------------------------------
+def pipeline_BEV(folder_in):
+    filenames = tools_IO.get_filenames(folder_in,'*.jpg')
+    fov_x_deg = 75
+    point_van_xy_ver = (1000, 540)
+    point_van_xy_hor = tools_render_CV.line_intersection((1194,588,224,628), (954,708,34,710))
+    dist = -0.85
 
+    for filename_in in filenames[2700:]:
+        image = cv2.imread(folder_in+filename_in)
+        fov_y_deg = fov_x_deg * image.shape[0] / image.shape[1]
+        VP.H, VP.W = image.shape[:2]
+        camera_matrix = numpy.array([[VP.W, 0., VP.W / 2], [0., VP.H, VP.H / 2], [0., 0., 1.]])
+        image = cv2.undistort(image, camera_matrix, dist, None, None)
+        image_BEV, h_ipersp, cam_height_px, p_camera_BEV_xy, p_center_BEV_xy, lines_edges = VP.build_BEV_by_fov_van_point(image, fov_x_deg, fov_y_deg, point_van_xy_ver, point_van_xy_hor, do_rotation=do_rotation)
+
+        image_BEV = image_BEV[-640:,1715-200:1715+200]#cv2.imwrite(folder_out + filename_in.split('/')[-1],image_BEV)
+        image_BEV = tools_image.auto_crop(image_BEV, background_color=(32, 32, 32))
+        image_BEV = tools_image.do_resize(image_BEV,numpy.array((-1,image.shape[0])))
+        image_result = numpy.concatenate([image,image_BEV],axis=1)
+        cv2.imwrite(folder_out + filename_in.split('/')[-1], image_result)
+
+    return
+# ----------------------------------------------------------------------------------------------------------------------
+#point_van_xy_hor = tools_render_CV.line_intersection((536,617,1246,588), (1522,697,517,726))
+point_van_xy_hor = tools_render_CV.line_intersection((1194,588,224,628), (954,708,34,710))
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    do_rotation = False
 
-    BEV_van_point3('./images/ex_BEV/0000000000.png', fov_x_deg=90,point_van_xy_ver = (631, 166))
-    # BEV_lines('./images/ex_BEV/KZ.jpg', (330,764,1062,38), (924,1054,1346,62),42)
-    # BEV_lines('./images/ex_BEV/MELCO_loc_train_03.jpg', (236,438,996,1052), (1810,780,236,226),23)
-    # BEV_lines('./images/ex_BEV/loc_train_01_00001.jpg', (9,813,752,420), (1080,870,1240,328),42)
-    # BEV_lines('./images/ex_BEV/Abu_dhabi1.jpg', (181, 86, 935, 382), (9, 516, 67, 700), cam_fov_deg=30)
-    # BEV_lines('./images/ex_BEV/image7.jpg', (581, 271, 626, 660), (770, 316, 1040, 675), cam_fov_deg=44)
+    #BEV_van_point3('D://ccc/02727.jpg', fov_x_deg=75, point_van_xy_ver=(1012, 528),point_van_xy_hor=point_van_xy_hor,do_rotation=do_rotation)
+    #BEV_van_point3('./images/ex_BEV/CityHealth/00000u.jpg', fov_x_deg=80, point_van_xy_ver=(1012, 528),point_van_xy_hor=point_van_xy_hor,do_rotation=do_rotation)
+    #BEV_van_point3('./images/ex_BEV/CityHealth/00000.jpg', fov_x_deg=80, point_van_xy_ver=(1000, 540),point_van_xy_hor=point_van_xy_hor,do_rotation=do_rotation)
+    # BEV_van_point3('./images/ex_BEV/0000000000.png', fov_x_deg=90,point_van_xy_ver = (631, 166),do_rotation=do_rotation)
+    # BEV_van_point3('./images/ex_BEV/TNO_7180R_20220418135426.jpg', fov_x_deg=9, point_van_xy_ver=(144,-526), point_van_xy_hor=(733392,45799), do_rotation=do_rotation)
+    # BEV_van_point3('./images/ex_BEV/TNO-7180R_20220525174045.jpg', fov_x_deg=9, point_van_xy_ver=(-391,-935), point_van_xy_hor=(6755,-46), do_rotation=do_rotation)
+    # BEV_van_point3('./images/ex_BEV/TNO-7180R_20220418134537.jpg', fov_x_deg=8.5, point_van_xy_ver=(1047, -1522),point_van_xy_hor=(-103164, 3660), do_rotation=do_rotation)
 
-    #BEV_lines('./images/ex_BEV/screenshot_008.png', (636, 219, 636, 450), (880, 219, 1069, 611), 45)
-    #BEV_lines('./images/ex_BEV/screenshot_013.png', (635, 358, 635, 660), (1098, 358, 1275, 658), 90)
-    #BEV_lines('./images/ex_BEV/screenshot_023.png',  cam_fov_deg=26.26)
+    #pipeline_BEV('./images/ex_BEV/CityHealth/')
+    pipeline_BEV('D://ccc/')
 
-
-    #BEV_van_point3('./images/ex_BEV/TNO_7180R_20220418135426.jpg', fov_x_deg=30, point_van_xy_ver=(144,-526), point_van_xy_hor=(733392,45799), do_rotation=True)
-    #BEV_van_point3('./images/ex_BEV/TNO-7180R_20220525174045.jpg', fov_x_deg=30, point_van_xy_ver=(-391,-935), point_van_xy_hor=(6755,-46), do_rotation=True)

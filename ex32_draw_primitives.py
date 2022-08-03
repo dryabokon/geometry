@@ -1,4 +1,3 @@
-import struct
 import cv2
 import numpy
 # ----------------------------------------------------------------------------------------------------------------------
@@ -46,4 +45,5 @@ if __name__ == '__main__':
     cv2.imwrite(folder_out + 'contours.png',tools_draw_numpy.draw_contours(empty, points[[0,1,3,2]], color=color_fill, w=w,transperency=alpha))
 
     cv2.imwrite(folder_out + 'text.png',tools_draw_numpy.draw_text(empty,u'\u00B0',(100,100), color_fg=(255,255,0)))
+
 
