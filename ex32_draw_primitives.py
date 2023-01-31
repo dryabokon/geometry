@@ -26,6 +26,7 @@ if __name__ == '__main__':
     tools_IO.remove_files(folder_out,'*.png')
     empty = numpy.full((H, W, 3), col_empty, dtype=numpy.uint8)
     points = get_points()
+    points+=numpy.random.random(points.shape)
 
     cv2.imwrite(folder_out + 'points.png',tools_draw_numpy.draw_points(empty, points,color=color_edge,w=w,transperency=alpha))
     cv2.imwrite(folder_out + 'line.png',tools_draw_numpy.draw_line(empty, points[0][1], points[0][0], points[1][1], points[1][0], color_bgr=color_edge, alpha_transp=alpha))
@@ -44,6 +45,6 @@ if __name__ == '__main__':
     cv2.imwrite(folder_out + 'cuboid.png', tools_draw_numpy.draw_cuboid(empty, points, color=color_fill, w=w))
     cv2.imwrite(folder_out + 'contours.png',tools_draw_numpy.draw_contours(empty, points[[0,1,3,2]], color=color_fill, w=w,transperency=alpha))
 
-    cv2.imwrite(folder_out + 'text.png',tools_draw_numpy.draw_text(empty,u'\u00B0',(100,100), color_fg=(255,255,0)))
+    cv2.imwrite(folder_out + 'text.png',tools_draw_numpy.draw_text(empty,'This is \na sample text '+u'\u00B0',(100,100), color_fg=(255,255,0)))
 
 

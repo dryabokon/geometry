@@ -22,7 +22,9 @@ def example_acuro_pose_estimation():
     camera_matrix_3x3 = tools_pr_geom.compose_projection_mat_3x3(frame.shape[1], frame.shape[0],fov_x,fov_y)
 
     axes_image, r_vec, t_vec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, camera_matrix_3x3, numpy.zeros(4))
-    cv2.imwrite('./images/output/cube_CV.png', tools_render_GL.draw_cube_rvec_tvec_GL(None, axes_image, r_vec.flatten(), t_vec.flatten(), camera_matrix_3x3, scale=(0.5, 0.5, 0.5), color=(255, 128, 0), w=6))
+    cv2.imwrite('./images/output/pose.png',axes_image)
+
+    cv2.imwrite('./images/output/cube_CV.png', tools_render_GL.draw_cube_rvec_tvec_GL(None, frame, r_vec.flatten(), t_vec.flatten(), camera_matrix_3x3, scale=(0.5, 0.5, 0.5), color=(255, 128, 0), w=6))
 
     R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box_2.obj', do_normalize_model_file=False,W=frame.shape[1], H=frame.shape[0], is_visible=False, projection_type='P')
     image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),fov_x,fov_y,scale=(0.5,0.5,0.5),do_debug=True)

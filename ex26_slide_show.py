@@ -140,7 +140,8 @@ def create_slides():
     images = get_images(folder_in, H, W)
     idx = generate_idx(C,len(images),len(trjs))
 
-    bar = progressbar.ProgressBar(max_value=time_cycle * C)
+    bar = progressbar.ProgressBar(maxval=time_cycle * C)
+    bar.start()
     for time in range(time_cycle * C):
         bar.update(time)
         image = numpy.full((H, 2 * W, 3), 32, dtype=numpy.uint8)

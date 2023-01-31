@@ -13,12 +13,13 @@ def example_01_blend_avg(img1,img2,background_color=(255, 255, 255)):
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_02_blend_multi_band(img1,img2,background_color=(255, 255, 255)):
+    R = 500
     cv2.imwrite(folder_output + 'blend_multi_band.png', tools_image.blend_multi_band(img1, img2,background_color=background_color))
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_blend_multi_band_mask(img1,img2,background_color=(0, 0, 0)):
     adjust_colors = 'large'# small large
-    R = 100
+    R = 500
     res = tools_image.blend_multi_band_large_small0(img1, img2, background_color=background_color,filter_size=R, adjust_colors=adjust_colors, do_debug=True)
     cv2.imwrite(folder_output + 'blend_multi_band_mask_%s_R%02d.png'%(adjust_colors,R), res)
     return
@@ -54,12 +55,12 @@ img4 = cv2.imread('./images/ex_blend/part2.png')
 # ---------------------------------------------------------------------------------------------------------------------
 def tutorial1():
     # white
-    example_01_blend_avg(cv2.imread('./images/ex_blend/white_L.png'),
-                         cv2.imread('./images/ex_blend/white_R.png'),
-                         background_color=(255, 255, 255))
+    # example_01_blend_avg(cv2.imread('./images/ex_blend/white_L.png'),
+    #                      cv2.imread('./images/ex_blend/white_R.png'),
+    #                      background_color=(255, 255, 255))
 
-    example_02_blend_multi_band(cv2.imread('./images/ex_blend/white_L.png'),
-                                cv2.imread('./images/ex_blend/white_R.png'),
+    example_02_blend_multi_band(cv2.imread('./images/ex_blend/finger_left.png'),
+                                cv2.imread('./images/ex_blend/finger_right2.png'),
                                 background_color=(255, 255, 255))
     return
 # ---------------------------------------------------------------------------------------------------------------------
@@ -82,9 +83,9 @@ def tutorial3():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def tutorial4():
-    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/part1.png'),
-                                     cv2.imread('./images/ex_blend/part2.png'),
-                                     background_color=(0,0,0))
+    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/finger_left.png'),
+                                     cv2.imread('./images/ex_blend/finger_right2.png'),
+                                     background_color=(255,255,255))
 
     # example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/black_L.png'),
     #                                  cv2.imread('./images/ex_blend/black_R.png'),
@@ -96,4 +97,4 @@ if __name__ == '__main__':
 
     tools_IO.remove_files(folder_output)
 
-    tutorial3()
+    tutorial4()

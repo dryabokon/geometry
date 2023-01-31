@@ -29,7 +29,7 @@ def example_calibrate_camera_chess():
     else:
         tools_IO.remove_files(folder_output)
 
-    camera_matrix, dist,rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_out=folder_output)
+    camera_matrix, dist, rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_out=folder_output)
 
     image_chess = cv2.imread(folder_input+ filename_input)
     undistorted_chess = cv2.undistort(image_chess, camera_matrix, dist, None, None)
@@ -70,7 +70,7 @@ def example_calibrate_aruco_markers(filename_in, marker_length_mm = 3.75, marker
         counters = numpy.array([len(ids)])
 
         ret, camera_matrix, dist, rvecs, tvecs = aruco.calibrateCameraAruco(corners,ids,counters, board, gray.shape[:2],None, None)
-        image_markers = [tools_image.saturate(aruco.drawMarker(aruco.getPredefinedDictionary(dct), id, 100)) for id in ids]
+        image_markers = [tools_image.saturate(aruco.drawMarker(aruco.getPredefinedDictionary(dct), int(id), 100)) for id in ids]
 
         #!!!
         #camera_matrix = tools_pr_geom.compose_projection_mat_3x3(4200,4200)
@@ -80,6 +80,10 @@ def example_calibrate_aruco_markers(filename_in, marker_length_mm = 3.75, marker
 
             image_AR  = tools_render_CV.draw_image(image_AR,image_marker, camera_matrix, numpy.zeros(5), numpy.array(rvecs).flatten(), numpy.array(tvecs).flatten(),scale)
             image_cube = tools_render_CV.draw_cube_numpy(image_cube, camera_matrix, numpy.zeros(5), numpy.array(rvecs).flatten(),numpy.array(tvecs).flatten(), scale)
+
+    corners = corners.reshape((-1,2))
+    for i in range(0,corners.shape[0]):
+        image_AR = tools_draw_numpy.draw_circle(image_AR, corners[i, 1], corners[i, 0], 7, [0, 0, 255], alpha_transp=0.2)
 
     cv2.imwrite(folder_out + base_name+'_AR.png', image_AR)
     cv2.imwrite(folder_out + base_name+'_AR_cube.png', image_cube)
@@ -158,7 +162,10 @@ def evaluate_K_bruteforce_F(filename_image, filename_points, f_min=1920, f_max=1
 
         image_AR = tools_draw_numpy.draw_points(image_AR, points_2d, color=(0, 0, 190), w=16,labels=labels)
         image_AR = tools_draw_numpy.draw_points(image_AR, points_2d_check, color=(0, 128, 255), w=8)
-        for R in [10,100,1000]:image_AR = tools_render_CV.draw_compass(image_AR, camera_matrix, numpy.zeros(5), rvecs, tvecs, R)
+        #for R in [10,100,1000]:image_AR = tools_render_CV.draw_compass(image_AR, camera_matrix, numpy.zeros(5), rvecs, tvecs, R)
+        M = tools_pr_geom.compose_RT_mat(rvecs,tvecs,do_rodriges=True,do_flip=False,GL_style=False)
+        for R in [10,100,1000]:
+            image_AR = tools_render_CV.draw_compass(image_AR, camera_matrix, M, R, Z=0, step=1, color=(0,128,255),draw_labels=False)
 
         cv2.imwrite(folder_out + base_name + '_%05d'%(f) + '.png', image_AR)
 
@@ -181,8 +188,8 @@ def ex_undistort():
 # -------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     #tools_IO.remove_files(folder_out)
-    ex_undistort()
-    #example_calibrate_camera_chess()
+    #ex_undistort()
+    example_calibrate_camera_chess()
     #example_calibrate_aruco_markers('./images/ex_aruco/01.jpg', marker_length_mm=100 , marker_space_mm=5, dct=aruco.DICT_6X6_50)
     #example_calibrate_folder('./images/ex_aruco/cam01/',folder_out,dct=aruco.DICT_4X4_50)
     #evaluate_K_bruteforce_F('./images/ex_calibration/01000.jpg', './images/ex_calibration/points.csv', f_min=1920, f_max=10000)

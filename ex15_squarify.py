@@ -70,7 +70,7 @@ def ex_04_sales():
 if __name__ == '__main__':
 
     tools_IO.remove_files(folder_out)
-    # ex_01_positions()
+    #ex_01_positions()
     #ex_02_words()
     #ex_03_countries()
     ex_04_sales()

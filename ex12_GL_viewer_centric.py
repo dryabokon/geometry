@@ -1,32 +1,34 @@
+import numpy
 import math
 import numpy
-import tools_GL3D
 import glfw
+# ----------------------------------------------------------------------------------------------------------------------
+import tools_GL3D
+from CV import tools_pr_geom
 # ----------------------------------------------------------------------------------------------------------------------
 pos_button_start, pos_rotate_current = None, None
 # ----------------------------------------------------------------------------------------------------------------------
 def event_key(window, key, scancode, action, mods):
 
     delta_angle = numpy.pi/16.0
-    d=delta_angle
-
+    t=5.0
 
     if action == glfw.PRESS:
 
-        if key == ord('S'): R.rotate_model((-d,0,0))
-        if key == ord('W'): R.rotate_model((+d,0,0))
-        if key == ord('A'): R.rotate_model((0,+d,0))
-        if key == ord('D'): R.rotate_model((0,-d,0))
-        if key == ord('Z'): R.rotate_model((0,0,-d))
-        if key == ord('X'): R.rotate_model((0,0,+d))
+        if key == ord('S'): R.rotate_model((-delta_angle,0,0))
+        if key == ord('W'): R.rotate_model((+delta_angle,0,0))
+        if key == ord('A'): R.rotate_model((0,+delta_angle,0))
+        if key == ord('D'): R.rotate_model((0,-delta_angle,0))
+        if key == ord('Z'): R.rotate_model((0,0,-delta_angle))
+        if key == ord('X'): R.rotate_model((0,0,+delta_angle))
 
-        if key == ord('O'): R.rotate_view((0,0,+d))
-        if key == ord('P'): R.rotate_view((0,0,-d))
-        if key == ord('I'): R.rotate_view((+d,0,0))
-        if key == ord('K'): R.rotate_view((-d,0,0))
+        if key == ord('O'): R.rotate_view((0,0,+delta_angle))
+        if key == ord('P'): R.rotate_view((0,0,-delta_angle))
+        if key == ord('I'): R.rotate_view((+delta_angle,0,0))
+        if key == ord('K'): R.rotate_view((-delta_angle,0,0))
 
         #numpad
-        if key == 327:R.transform_model('XY')
+        if key == 327: R.transform_model('XY')
         if key == 329: R.transform_model('xy')
         if key == 324: R.transform_model('XZ')
         if key == 326: R.transform_model('xz')
@@ -38,17 +40,15 @@ def event_key(window, key, scancode, action, mods):
 
         if key == 294: R.reset_view()
 
-        # if key == 334: R.scale_model_vector((1,1.04,1))
-        # if key == 333: R.scale_model_vector((1,1.0/1.04,1))
-        if key == 334: R.scale_model_vector((1.0,1.0,1.04))
-        if key == 333: R.scale_model_vector((1.0,1.0,1.0/1.04))
+        if key == 334: R.scale_model_vector((1.04,1.04,1.04))
+        if key == 333: R.scale_model_vector((1.0/1.04,1.0/1.04,1.0/1.04))
 
         if key == ord('1'): R.inverce_transform_model('X')
         if key == ord('2'): R.inverce_transform_model('Y')
         if key == ord('3'): R.inverce_transform_model('Z')
 
         if key == ord('L'):
-            R.wired_mode = not R.wired_mode
+            R.wired_mode=(R.wired_mode+1)%3
             R.bind_VBO(R.wired_mode)
 
         if key in [32,335]: R.stage_data(folder_out)
@@ -58,8 +58,6 @@ def event_key(window, key, scancode, action, mods):
     if action ==glfw.RELEASE:
         if key == 341:
             R.ctrl_pressed = False
-
-
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -104,18 +102,37 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-filename_box     = './images/ex_GL/box/box_2.obj'
-filename_car= './images/ex_GL/car/SUV1.obj'
-filename_car_aligned = './images/ex_GL/car/SUV1.obj'
+filename_obj     = './images/ex_GL/box/box_3.obj'
+tvec_model = (0, 0, 0)
+rvec_model = (0.0, 0.0, 0.0)
+M_obj = tools_pr_geom.compose_RT_mat(rvec_model,tvec_model,do_rodriges=False,do_flip=False, GL_style=True)
+do_normalize_model_file = False
+textured = True
+eye = (0,-10,0)
+target=(0,0,0)
+up=(0,0,1)
+# ----------------------------------------------------------------------------------------------------------------------
+# filename_obj     = './images/ex_GL/sphere/Icosphere.obj'
+# tvec_model = (0, 0, 0)
+# rvec_model = (0.0, 0.0, 0.0)
+# do_normalize_model_file = False
+# textured = False
+# eye = (0,+10,0)
+# target=(0,1,0)
+# up=(0,0,1)
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
 W,H = 800,600
+cam_fov_deg = 90
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    textured = False
-    tvec = (0, 0, 0)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_car, W=W, H=H, do_normalize_model_file=True, projection_type='P',scale=(1, 1, 1),tvec=tvec,textured=textured)
+
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=W, H=H, do_normalize_model_file=do_normalize_model_file, projection_type='P',cam_fov_deg=cam_fov_deg,scale=(1, 1, 1),
+                               M_obj=M_obj,textured=textured,
+                               eye = eye,target=target,up=up)
+
+    #R.load_markers('./images/ex_GL/nuscene/markers_pos.csv', './images/ex_GL/sphere/Icosphere.obj', marker_scale=0.01)
 
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)

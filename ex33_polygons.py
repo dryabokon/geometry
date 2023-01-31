@@ -44,7 +44,7 @@ def interpolate(points1,points2,color1,color2):
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    N1 = 12
+    N1 = 13
     N2 = 15
     c1 = (400,300)
     c2 = (430,220)
@@ -56,8 +56,8 @@ if __name__ == '__main__':
     points1 = get_shape(N1,c1,r1)
     points2 = get_shape(N2,c2,r2)
 
-    cv2.imwrite(folder_out+'start.png',tools_draw_numpy.draw_contours(image, points1, color=color1,transperency=0.9))
-    cv2.imwrite(folder_out+'stop.png' ,tools_draw_numpy.draw_contours(image, points2, color=color2,transperency=0.9))
+    # cv2.imwrite(folder_out+'start.png',tools_draw_numpy.draw_contours(image, points1, color=color1,transperency=0.9))
+    # cv2.imwrite(folder_out+'stop.png' ,tools_draw_numpy.draw_contours(image, points2, color=color2,transperency=0.9))
 
     X, Y, C = interpolate(points1, points2, color1, color2)
 

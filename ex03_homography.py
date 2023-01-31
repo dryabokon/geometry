@@ -11,21 +11,24 @@ from CV import tools_pr_geom
 # ---------------------------------------------------------------------------------------------------------------------
 def example_02_homography_manual():
 
-    im_source = cv2.imread('./images/ex_homography_manual/source.png')
-    im_target = cv2.imread('./images/ex_homography_manual/target.png')
+    im_source = cv2.imread('./images/ex_homography_manual/01/Image3.png')
+    im_target = cv2.imread('./images/ex_homography_manual/01/Image1.png')
     pad = 0
-    background_color = (0, 0, 200)
+    background_color = (0, 0, 0)
 
     p_source = numpy.array([[0+pad, 0+pad],[im_source.shape[1]-pad, pad],[im_source.shape[1]-pad, im_source.shape[0]-pad],[pad, im_source.shape[0]-pad]],dtype=numpy.float32)
-    p_target = numpy.array([[20, 100], [170, 10], [320, 100], [170, 190]])
+    p_target = numpy.array([[1012, 276], [1830, 345], [1800, 989], [999, 865]])
 
-    homography2, status = tools_pr_geom.fit_euclid(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
-    image_trans = cv2.warpAffine(im_source, homography2, (im_target.shape[1], im_target.shape[0]),borderValue=background_color)
+    # homography2, status = tools_pr_geom.fit_euclid(p_source.reshape((-1,1,2)), p_target.reshape((-1,1,2)))
+    # image_trans = cv2.warpAffine(im_source, homography2, (im_target.shape[1], im_target.shape[0]),borderValue=background_color)
+
+    homography2, status = tools_pr_geom.fit_homography(p_source.reshape((-1, 1, 2)), p_target.reshape((-1, 1, 2)))
+    image_trans = cv2.warpPerspective(im_source, homography2, (im_target.shape[1], im_target.shape[0]),borderValue=background_color)
 
 
     #cv2.imwrite(filename_out, image_trans)
     result = tools_image.put_layer_on_image(im_target,image_trans,background_color = background_color)
-    cv2.imwrite('./images/output/homohraphy_result.png', result)
+    cv2.imwrite('./images/output/homohraphy_result2.png', result)
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_find_homography_manual():
@@ -34,18 +37,24 @@ def example_03_find_homography_manual():
     folder_input = 'images/ex_homography_manual_gis/05/'
     folder_output = 'images/output/'
 
-    im_target = cv2.imread(folder_input + 'map2.jpg')
-    p_target = numpy.array([[647, 290], [129, 83], [367, 690], [577, 654],[288, 380]])
+    # im_target = cv2.imread(folder_input + 'map2.jpg')
+    # p_target = numpy.array([[647, 290], [129, 83], [367, 690], [577, 654],[288, 380]])
+    #
+    # im_source = cv2.imread(folder_input + 'kad1.jpg')
+    # p_source = numpy.array([[3391, 1734], [1576, 1010], [2406, 3148], [3159, 3006],[2043, 2100]])
 
-    im_source = cv2.imread(folder_input + 'kad1.jpg')
-    p_source = numpy.array([[3391, 1734], [1576, 1010], [2406, 3148], [3159, 3006],[2043, 2100]])
+    im_source = cv2.imread('./images/ex_homography_manual_gis/05/kad1_small.jpg')
+    im_target = cv2.imread('./images/ex_homography_manual_gis/05/map3.jpg')
+    p_source = numpy.array([[716, 633], [1468, 148], [1698, 896], [1242, 1210]])
+    p_target = numpy.array([[212, 366], [671, 80], [801, 526], [511, 715]])
 
 
     if not os.path.exists(folder_output):
         os.makedirs(folder_output)
     else:
         tools_IO.remove_files(folder_output)
-    im_source_gray = tools_draw_numpy.draw_points(tools_image.desaturate(im_source), p_source, color=(0, 0, 255), w=24, put_text=True)
+    #im_source_gray = tools_draw_numpy.draw_points(tools_image.desaturate(im_source), p_source, color=(0, 0, 255), w=24, put_text=True)
+    im_source_gray = im_source.copy()
     cv2.imwrite(folder_output+'im_source.png',im_source_gray)
     cv2.imwrite(folder_output+'im_target.png',tools_draw_numpy.draw_points(tools_image.desaturate(im_target), p_target, color=(0, 0, 255), w=4, put_text=True))
 
@@ -247,14 +256,32 @@ def example_07_find_homography_live():
 
     cv2.destroyAllWindows()
     return
+
+# ---------------------------------------------------------------------------------------------------------------------
+def example_08_auto_translate(folder_in,folder_out):
+
+    filenames = tools_IO.get_filenames(folder_in,'*.png')
+    img_base =  cv2.imread(folder_in+filenames[0])
+    cv2.imwrite(folder_out + filenames[0], img_base)
+    points_base, des_base = tools_alg_match.get_keypoints_desc(img_base)
+
+    for filename in filenames[1:]:
+        img_cand = cv2.imread(folder_in + filename)
+        points_cand, des_cand = tools_alg_match.get_keypoints_desc(img_cand)
+        M = tools_calibrate.get_transform_by_keypoints_desc(points_cand, des_cand, points_base, des_base)
+        result_image2, result_image1 = tools_calibrate.get_stitched_images_using_translation(img_cand, img_base, M)
+        cv2.imwrite(folder_out+filename,result_image2)
+
+    return
+# ---------------------------------------------------------------------------------------------------------------------
+folder_out = './images/output/'
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     example_02_homography_manual()
     #example_03_find_homography_manual()
-
-    #example_04_find_homography_by_keypoints('ORB')
-    #example_05_find_translation_by_keypoints('ORB')
+    #example_05_find_translation_by_keypoints()
 
 
+    #example_08_auto_translate('./images/ex_keypoints/batch/',folder_out)
 
