@@ -26,11 +26,11 @@ def render_pointcloud():
     nusc = NuScenes(version='v1.0-mini', dataroot='./images/ex_nuscenes2/', verbose=True)
     ll = [i for i,x in enumerate(nusc.sample) if x['timestamp']==1533151604048025][0]
     my_sample = nusc.sample[ll]
-    sample_data_token = my_sample['data']['LIDAR_TOP']
     nusc.get_sample_lidarseg_stats(my_sample['token'], sort_by='count')
 
 
-    nusc.render_pointcloud_in_image(my_sample['token'],pointsensor_channel='LIDAR_TOP',camera_channel='CAM_FRONT_LEFT',render_intensity=False,
+    nusc.render_pointcloud_in_image(my_sample['token'],pointsensor_channel='LIDAR_TOP',camera_channel='CAM_FRONT_LEFT',
+                                    render_intensity=False,
                                     show_lidarseg=True,filter_lidarseg_labels=[22, 23, 24],show_lidarseg_legend=True,
                                     out_path='./images/output/')
 
@@ -73,6 +73,8 @@ def pointcloud_df_to_obj(df):
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # df = export_pointcloud_to_df()
     # df.to_csv(folder_out+'./df_lidar.csv',index=False)
@@ -80,3 +82,4 @@ if __name__ == '__main__':
     # pointcloud_df_to_obj(df)
 
     render_pointcloud()
+

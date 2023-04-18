@@ -27,8 +27,11 @@ def event_key(window, key, scancode, action, mods):
 
         if key==341:R.ctrl_pressed = True
 
-        if key == 294:
+        if key == 294:  #F5
             R.reset_view()
+
+        if key == 295: #F6
+            R.BEV_view()
 
         if key == ord('L'):
             R.update_background('./images/ex_GL/nuscene/board.obj')
@@ -83,25 +86,29 @@ def event_resize(window, W, H):
     R.resize_window(W,H)
     return
 # ----------------------------------------------------------------------------------------------------------------------
-# filename_obj     = './images/ex_GL/box/box_2.obj'
-# rvec_obj = (0.0, 0.0, 0.0)
-# tvec_obj = (0, 10, 0)
-# M_obj = tools_pr_geom.compose_RT_mat(rvec_obj, tvec_obj, do_rodriges=False,do_flip=False, GL_style=True)
-# textured = True
-# do_normalize_model_file = False
-# eye = (0,0,0)
-# target=(0,1,0)
-# up=(0,0,1)
+def init_box():
+    filename_obj     = './images/ex_GL/box/box_2.obj'
+    rvec_obj = (0.0, 0.0, 0.0)
+    tvec_obj = (0, 0, 0)
+    M_obj = tools_pr_geom.compose_RT_mat(rvec_obj, tvec_obj, do_rodriges=False,do_flip=False, GL_style=True)
+    textured = True
+    do_normalize_model_file = False
+    eye = (0,0,0)
+    target=(0,1,0)
+    up=(0,0,1)
+    return filename_obj,M_obj,textured,eye,target,up
 # ----------------------------------------------------------------------------------------------------------------------
-filename_obj     = './images/ex_GL/nuscene/lidar3.obj'
-do_normalize_model_file = False
-rvec_obj = (0.0, 0.0, 0)
-tvec_obj=(0,0,0)
-M_obj = tools_pr_geom.compose_RT_mat(rvec_obj, tvec_obj, do_rodriges=False,do_flip=False, GL_style=True)
-textured = True
-eye = (0,0,0)
-target=(0,1,0)
-up=(0,0,1)
+def init_lidar():
+    filename_obj     = './images/ex_GL/nuscene/lidar3.obj'
+    do_normalize_model_file = False
+    rvec_obj = (0.0, 0.0, 0)
+    tvec_obj=(0,0,0)
+    M_obj = tools_pr_geom.compose_RT_mat(rvec_obj, tvec_obj, do_rodriges=False,do_flip=False, GL_style=True)
+    textured = True
+    eye = (0,0,0)
+    target=(0,-1,0)
+    up=(0,0,1)
+    return filename_obj,M_obj,textured,eye,target,up
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
 W,H = 1600,900
@@ -109,7 +116,10 @@ cam_fov_deg = 90
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=W, H=H, do_normalize_model_file=do_normalize_model_file,textured=textured,projection_type='P',
+    #filename_obj, M_obj, textured, eye, target, up = init_lidar()
+    filename_obj, M_obj, textured, eye, target, up = init_box()
+
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=W, H=H, do_normalize_model_file=False,textured=textured,projection_type='P',
                                cam_fov_deg=cam_fov_deg,scale=(1, 1, 1),eye = eye,target=target,up=up,
                                M_obj=M_obj)
 

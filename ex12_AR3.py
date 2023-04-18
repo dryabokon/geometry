@@ -3,10 +3,8 @@ import numpy
 import tools_GL3D
 # ----------------------------------------------------------------------------------------------------------------------
 import tools_draw_numpy
-import tools_wavefront
 import tools_IO
 import tools_render_GL
-from CV import tools_calibrator
 from CV import tools_pr_geom
 # ----------------------------------------------------------------------------------------------------------------------
 W, H = 800, 600
@@ -32,31 +30,34 @@ W, H = 800, 600
 def example_project_GL_vs_CV(folder_out, filename_in=None):
 
 
-    cam_fov = 45
-    cam_offset_dist = 20
-    cam_height = 0
+    cam_fov = 90
+    cam_offset_dist = 0.1
+    cam_height = 14
 
     empty = numpy.full((H, W, 3), 32, dtype=numpy.uint8)
     camera_matrix_3x3, rvec, tvec, RT_GL = tools_render_GL.define_cam_position(W,H,cam_fov,cam_offset_dist,cam_height)
+    RT_CV = tools_pr_geom.from_RT_GL(RT_GL)
+
+
     tg_half_fovx = camera_matrix_3x3[0,2]/camera_matrix_3x3[0,0]
     textured = False#textured = (filename_in is not None)
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in,do_normalize_model_file=False,W=W, H=H,is_visible=False,projection_type='P',textured=textured,
-                               # rvec =(0,0,5*numpy.pi/180),
-                               # tvec=(-2,0,-5)
-                               )
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in,do_normalize_model_file=False,W=W, H=H,is_visible=False,projection_type='P',textured=textured)
     points_3d = R.object.coord_vert
 
     cv2.imwrite(folder_out + 'GL_image_perspective_V1.png', R.get_image_perspective(rvec, tvec, tg_half_fovx, tg_half_fovx, do_debug=True, mat_view_to_1=True ))
     cv2.imwrite(folder_out + 'GL_image_perspective_V0.png', R.get_image_perspective(rvec, tvec, tg_half_fovx, tg_half_fovx, do_debug=True, mat_view_to_1=False))
-    cv2.imwrite(folder_out + 'GL_image_perspective_M.png' , R.get_image_perspective_M(RT_GL   , tg_half_fovx, tg_half_fovx, do_debug=True))
-    cv2.imwrite(folder_out + 'GL_draw_cube_MVP.png'      , tools_render_GL.draw_cube_MVP_GL  (points_3d, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns))
+    cv2.imwrite(folder_out + 'GL_image_perspective_M1.png' ,R.get_image_perspective_M(RT_GL   , tg_half_fovx, tg_half_fovx, do_debug=True, mat_view_to_1=True))
+    cv2.imwrite(folder_out + 'GL_image_perspective_M0.png' ,R.get_image_perspective_M(RT_GL   , tg_half_fovx, tg_half_fovx, do_debug=True, mat_view_to_1=False))
+    cv2.imwrite(folder_out + 'GL_cuboids_RT.png'         , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_RT_GL(points_3d,RT_GL,camera_matrix_3x3,R.mat_trns)   ,color=(0, 90, 255), w=2,idx_mode=2))
+    cv2.imwrite(folder_out + 'GL_cuboids_rvec_tvec.png'  , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_rvec_tvec_GL(points_3d, rvec,tvec, camera_matrix_3x3,R.mat_trns),color=(0,190, 255), w=2,idx_mode=2))
+
+    cv2.imwrite(folder_out + 'GL_draw_cube_MVP.png'      , tools_render_GL.draw_cube_MVP_GL  (points_3d, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns,idx_mode=2))
     cv2.imwrite(folder_out + 'GL_draw_pnts_MVP.png'      , tools_render_GL.draw_points_MVP_GL(points_3d, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns))
     cv2.imwrite(folder_out + 'GL_draw_pnts_RT.png'       , tools_render_GL.draw_points_RT_GL (points_3d, empty, RT_GL, camera_matrix_3x3, R.mat_trns))
     cv2.imwrite(folder_out + 'GL_draw_pnts_rvec_tvec.png', tools_render_GL.draw_points_rvec_tvec_GL(points_3d, empty, rvec, tvec, camera_matrix_3x3, R.mat_trns))
-    cv2.imwrite(folder_out + 'CV_draw_cube_rvec_tvec.png', tools_render_GL.draw_cube_rvec_tvec_GL  (points_3d, empty, rvec, tvec, camera_matrix_3x3, R.mat_trns))
-    cv2.imwrite(folder_out + 'CV_cuboids_RT.png'         , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_RT_GL(points_3d,RT_GL,camera_matrix_3x3,R.mat_trns)   ,color=(0, 90, 255), w=2,idx_mode=2))
-    cv2.imwrite(folder_out + 'CV_cuboids_rvec_tvec.png'  , tools_draw_numpy.draw_cuboid(empty,tools_render_GL.project_points_rvec_tvec_GL(points_3d, rvec,tvec, camera_matrix_3x3,R.mat_trns),color=(0,190, 255), w=2))
+    cv2.imwrite(folder_out + 'GL_draw_cube_rvec_tvec.png', tools_render_GL.draw_cube_rvec_tvec_GL  (points_3d, empty, rvec, tvec, camera_matrix_3x3, R.mat_trns))
+    cv2.imwrite(folder_out + 'CV_cuboids_RT.png',tools_draw_numpy.draw_cuboid(empty,tools_pr_geom.project_points_M(points_3d, RT_CV, camera_matrix_3x3=camera_matrix_3x3, do_flip=True),idx_mode=2))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------

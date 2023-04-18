@@ -3,6 +3,7 @@ import numpy
 import tools_GL3D
 import pyrr
 # ----------------------------------------------------------------------------------------------------------------------
+import tools_plot_v2
 import tools_wavefront
 import tools_image
 import tools_draw_numpy
@@ -16,22 +17,37 @@ marker_length = 0.1
 # ----------------------------------------------------------------------------------------------------------------------
 def example_acuro_pose_estimation():
     marker_length = 1
-    fov_x,fov_y = 0.5, 0.5
+
+    fov_x,fov_y = 0.7, 0.7
 
     frame = cv2.imread('./images/ex_aruco/01.jpg')
     camera_matrix_3x3 = tools_pr_geom.compose_projection_mat_3x3(frame.shape[1], frame.shape[0],fov_x,fov_y)
 
     axes_image, r_vec, t_vec = tools_aruco.detect_marker_and_draw_axes(frame, marker_length, camera_matrix_3x3, numpy.zeros(4))
-    cv2.imwrite('./images/output/pose.png',axes_image)
+    r_vec, t_vec = r_vec.flatten(), t_vec.flatten()
+    #cv2.imwrite('./images/output/pose.png',axes_image)
 
-    cv2.imwrite('./images/output/cube_CV.png', tools_render_GL.draw_cube_rvec_tvec_GL(None, frame, r_vec.flatten(), t_vec.flatten(), camera_matrix_3x3, scale=(0.5, 0.5, 0.5), color=(255, 128, 0), w=6))
+    M_obj = numpy.eye(4)
+    M_obj[3,3]=2
 
-    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box_2.obj', do_normalize_model_file=False,W=frame.shape[1], H=frame.shape[0], is_visible=False, projection_type='P')
-    image_3d = R.get_image_perspective(r_vec.flatten(), t_vec.flatten(),fov_x,fov_y,scale=(0.5,0.5,0.5),do_debug=True)
+    R = tools_GL3D.render_GL3D(filename_obj='./images/ex_GL/box/box_2.obj', do_normalize_model_file=False,W=frame.shape[1], H=frame.shape[0], is_visible=False, projection_type='P',M_obj=M_obj)
+    image_3d = R.get_image_perspective(r_vec,t_vec,fov_x,fov_y,scale=(0.5,0.5,0.5),do_debug=True)
     cv2.imwrite('./images/output/cube_GL.png', tools_image.blend_avg(frame, image_3d, (255 * numpy.array(R.bg_color)).astype(numpy.int32), weight=0))
 
-    r_vec, t_vec = r_vec.flatten(), t_vec.flatten()
-    print('[ %1.2f, %1.2f, %1.2f], [%1.2f,  %1.2f,  %1.2f],  %1.2f' % (r_vec[0], r_vec[1], r_vec[2], t_vec[0], t_vec[1], t_vec[2],fov_x))
+
+    point_2d = numpy.array((323, 132))
+    #point_2d = numpy.array((300, 100))
+    #point_2d = numpy.array((253, 117))
+    image_cube_CV = tools_render_GL.draw_cube_rvec_tvec_GL(None, frame, r_vec, t_vec, camera_matrix_3x3, scale=(0.5, 0.5, 0.5),color=(255, 128, 0), w=6)
+    ray_begin, ray_end = tools_render_CV.get_ray(point_2d, frame, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns, d=10)
+    point_3d = tools_render_CV.get_interception_ray_triangle(ray_begin, (ray_begin - ray_end), numpy.array([(100,0,-1),(-100,0,-1),(0,100,-1)]), allow_outside=True)
+    #collisions_3d = tools_render_CV.get_interceptions_ray_triangles(ray_begin, (ray_begin - ray_end),R.object.coord_vert, R.object.idx_vertex)
+
+    point_2dp, _ = tools_pr_geom.project_points(point_3d, r_vec, t_vec, camera_matrix_3x3)
+    #point_2dp, _ = tools_pr_geom.project_points(collisions_3d, r_vec, t_vec, camera_matrix_3x3)
+    image_cube_CV = tools_draw_numpy.draw_points(image_cube_CV, point_2dp, color=(0, 0, 200), w=4)
+    cv2.imwrite('./images/output/cube_CV.png', image_cube_CV)
+    ii=0
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def example_face_perspective(filename_actor,filename_obj,filename_3dmarkers=None,do_debug=False):
@@ -87,47 +103,39 @@ def example_face_ortho(filename_actor,filename_obj,filename_3dmarkers=None):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def example_ray(filename_in, folder_out):
-    W, H = 800, 800
+    W, H = 800, 600
     empty = numpy.full((H,W,3),32,dtype=numpy.uint8 )
-    rvec, tvec = numpy.array((0, 0.1, 0)), numpy.array((0, 1, 5))
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize_model_file=True,projection_type='P')
-    object = tools_wavefront.ObjLoader()
-    object.load_mesh(filename_in, do_autoscale=True)
-    points_3d = object.coord_vert
+    rvec_model, tvec_model = (0, 0, 0), (0, 0, 0)
+    M_obj = tools_pr_geom.compose_RT_mat(rvec_model, tvec_model, do_rodriges=False, do_flip=False, GL_style=True)
 
-    mat_camera = tools_pr_geom.compose_projection_mat_3x3(W, H)
+    # d = +3.0
+    # eye,target,up = (0, d, 0),(0, d-1, 0), (0, 0, 1)
+    eye = (0,-10,0)
+    target=(0,0,0)
+    up=(0,0,1)
 
-    cv2.imwrite(folder_out + 'cube_GL.png', R.get_image_perspective(rvec, tvec))
-    cv2.imwrite(folder_out + 'cube_CV.png',tools_render_CV.draw_cube_numpy(empty, mat_camera, numpy.zeros(4), rvec,tvec))
-    cv2.imwrite(folder_out + 'cube_CV_MVP.png', tools_render_CV.draw_cube_numpy_MVP_GL  (numpy.full((H, W, 3), 76, dtype=numpy.uint8), R.mat_projection, R.mat_view, R.mat_model, R.mat_trns))
-    cv2.imwrite(folder_out + 'points_MVP.png', tools_render_CV.draw_points_numpy_MVP_GL(points_3d, numpy.full((H, W, 3), 76, dtype=numpy.uint8), R.mat_projection, R.mat_view, R.mat_model, R.mat_trns))
+    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, M_obj=M_obj,is_visible=False, do_normalize_model_file=False,projection_type='P',eye = eye,target=target,up=up)
+    tg_half_fovx = 1/R.mat_projection[0][0]
+    cv2.imwrite(folder_out + 'GL_image_perspective.png'  , R.get_image(do_debug=True))
+    # cv2.imwrite(folder_out + 'GL_image_perspective_V1.png',R.get_image_perspective_M(numpy.eye(4), tg_half_fovx, tg_half_fovx, do_debug=True, mat_view_to_1=True))
+    # cv2.imwrite(folder_out + 'GL_image_perspective_M1.png',R.get_image_perspective_M(numpy.eye(4), tg_half_fovx, tg_half_fovx, do_debug=True, mat_view_to_1=False))
 
-    point_2d = (W-500,500)
-    ray_begin, ray_end = tools_render_CV.get_ray(point_2d, mat_camera, R.mat_view, R.mat_model, R.mat_trns)
-    ray_inter1 = tools_render_CV.line_plane_intersection((1, 0, 0), (-1, 0, 1), ray_begin - ray_end, ray_begin)
-    ray_inter2 = tools_render_CV.line_plane_intersection((1, 0, 0), (+1, 0, 1), ray_begin - ray_end, ray_begin)
-    points_3d_ray = numpy.array([ray_begin,ray_end,ray_inter1,ray_inter2])
+    point_2d = numpy.array((W//2-40,H//2-30))
+    ray_begin, ray_end = tools_render_CV.get_ray(point_2d,empty,R.mat_projection, R.mat_view, R.mat_model, R.mat_trns,d=10)
 
-    result = tools_draw_numpy.draw_ellipse(empty,((W-point_2d[0]-10,point_2d[1]-10,W-point_2d[0]+10,point_2d[1]+10)),(0,0,90))
-    result = tools_render_CV.draw_points_numpy_MVP_GL(points_3d_ray, result, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns, color=(255, 255, 255))
-    cv2.imwrite(folder_out +  'points_MVP.png', result)
+    collisions_3d = tools_render_CV.get_interceptions_ray_triangles(ray_begin, (ray_begin-ray_end), R.object.coord_vert,R.object.idx_vertex)
+    collision_3d = R.get_best_collision(collisions_3d)
+    points_3d = numpy.array([ray_begin,ray_end])
+    if collision_3d is not None:
+        points_3d = numpy.concatenate([points_3d,collision_3d.reshape((-1,3))])
 
+    points_2d = tools_render_GL.project_points_MVP_GL(points_3d, W, H, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns)
 
-    return
-# ----------------------------------------------------------------------------------------------------------------------
-def example_ray_interception(filename_in):
-    W, H = 800, 800
-    rvec, tvec = (0, 0, 0), (0, 0, 5)
-    point_2d = (W - 266, 266)
-    R = tools_GL3D.render_GL3D(filename_obj=filename_in, W=W, H=H, is_visible=False, do_normalize_model_file=True,projection_type='P')
-    cv2.imwrite('./images/output/cube_GL.png', R.get_image_perspective(rvec, tvec))
-    mat_camera_3x3 = tools_pr_geom.compose_projection_mat_3x3(W, H)
+    cv2.imwrite(folder_out + 'CV_draw_pnts_numpy_MVP_GL.png', tools_render_CV.draw_points_numpy_MVP_GL(points_3d, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns, color=(255, 255, 255)))
+    cv2.imwrite(folder_out + 'GL_draw_pnts_MVP.png'         , tools_render_GL.draw_points_MVP_GL(points_3d, empty, R.mat_projection, R.mat_view, R.mat_model, R.mat_trns))
+    cv2.imwrite(folder_out + 'points_ray.png', tools_draw_numpy.draw_points(empty, points_2d))
+    cv2.imwrite(folder_out + 'points_orig.png', tools_draw_numpy.draw_points(empty, [point_2d]))
 
-    ray_begin, ray_end= tools_render_CV.get_ray(point_2d, mat_camera_3x3,R.mat_view, R.mat_model, R.mat_trns)
-
-    triangle = numpy.array([[+1, -2, -2], [+1, -2, 2], [+1, +2, 2]])
-    collision = tools_render_CV.get_interception_ray_triangle(ray_begin, ray_end - ray_begin, triangle)
-    print(collision)
     return
 # ----------------------------------------------------------------------------------------------------------------------
 filename_box= './images/ex_GL/box/box_2.obj'

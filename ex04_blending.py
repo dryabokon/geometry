@@ -84,7 +84,7 @@ def tutorial3():
 # ---------------------------------------------------------------------------------------------------------------------
 def tutorial4():
     example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/finger_left.png'),
-                                     cv2.imread('./images/ex_blend/finger_right2.png'),
+                                     cv2.imread('./images/ex_blend/car_right.png'),
                                      background_color=(255,255,255))
 
     # example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/black_L.png'),

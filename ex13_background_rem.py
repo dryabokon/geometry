@@ -4,7 +4,7 @@ import numpy
 # ----------------------------------------------------------------------------------------------------------------------
 import tools_image
 import tools_IO
-from detector import detector_YOLO3
+#from detector import detector_YOLO3
 # ---------------------------------------------------------------------------------------------------------------------
 filename_in = 'images/ex13/01.jpg'
 filename_out = 'images/output/res.png'
@@ -42,14 +42,13 @@ def demo_bg_removal_cam():
 
 	return
 # ---------------------------------------------------------------------------------------------------------------------
-def demo_bg_removal_viseo(folder_in,folder_out):
+def demo_bg_removal_video(folder_in,folder_out):
 	filenames = tools_IO.get_filenames(folder_in,'*.jpg')
 	#frame = cv2.imread(filename_in)
 	fgbg = cv2.createBackgroundSubtractorMOG2()
 
 	for filename in filenames:
 		frame = cv2.imread(folder_in+filename)
-
 
 		fgmask = fgbg.get_flow_image(frame)
 		cv2.imwrite(folder_out+filename,fgmask)
@@ -61,11 +60,48 @@ def demo_bg_removal_viseo(folder_in,folder_out):
 
 	return
 # ---------------------------------------------------------------------------------------------------------------------
+def remove_bg(folder_in, list_of_masks='*.jpg', limit=255):
+
+	filenames = tools_IO.get_filenames(folder_in, list_of_masks)[:limit]
+	image = cv2.imread(folder_in + filenames[0])
+	image_S = numpy.zeros((image.shape[0], image.shape[1], 3), dtype='long')
+	image_C = numpy.full((image.shape[0], image.shape[1]),1e-4, dtype='float')
+
+
+	for filename in filenames:
+		image = cv2.imread(folder_in + filename)
+		image_S += image
+
+	im_mean = image_S/(len(filenames)*1.0)
+
+	th = 50
+	for filename in filenames:
+		image = cv2.imread(folder_in + filename)
+		mask1 = 1*(abs(im_mean[:,:,0] - image[:,:,0])<th)
+		mask2 = 1*(abs(im_mean[:,:,1] - image[:,:,1])<th)
+		mask3 = 1*(abs(im_mean[:,:,2] - image[:,:,2])<th)
+
+		mask = ((mask1 + mask2 + mask3)==0).astype(bool)
+		mask = ~mask
+
+		image[mask] = 0
+		image_S += image
+		image_C += mask
+
+	for c in [0, 1, 2]:
+		image_S[:, :,c] = image_S[:, :,c] / image_C
+
+
+	return im_mean.astype('uint8')
+# ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
 
-	model_in = './data/ex_YOLO/models/model_default.h5'
-	metadata_in = './data/ex_YOLO/models/metadata_default.txt'
-	filename_image = './data/ex_detector/bike/Image.png'
-	D = detector_YOLO3.detector_YOLO3(model_in, metadata_in)
-	D.process_file(filename_image, './data/output/res_yolo.jpg')
+	# model_in = './data/ex_YOLO/models/model_default.h5'
+	# metadata_in = './data/ex_YOLO/models/metadata_default.txt'
+	# filename_image = './data/ex_detector/bike/Image.png'
+	# D = detector_YOLO3.detector_YOLO3(model_in, metadata_in)
+	# D.process_file(filename_image, './data/output/res_yolo.jpg')
+
+	im = remove_bg('./images/ex_bgremoval/')
+	cv2.imwrite(folder_out+'clear.jpg',im)

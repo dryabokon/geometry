@@ -130,5 +130,5 @@ folder_in = './images/ex_optical_flow/'
 S = tools_Skeletone.Skelenonizer(folder_out)
 # --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    example_cam(OF_LK)
-    #example_folder(OF_lines,folder_in,folder_out)
+    #example_cam(OF_LK)
+    example_folder(OF_LK,folder_in,folder_out)

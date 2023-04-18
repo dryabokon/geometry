@@ -2,11 +2,11 @@ import cv2
 import numpy
 from zhou_accv_2018 import p3l,p3p
 import tools_render_CV
-import tools_pr_geom
+from CV import tools_pr_geom
 import tools_IO
-import tools_soccer_GT_data
+import tools_draw_numpy
 # ----------------------------------------------------------------------------------------------------------------------
-soccer_data = tools_soccer_GT_data.Soccer_Field_GT_data()
+#soccer_data = tools_soccer_GT_data.Soccer_Field_GT_data()
 # ----------------------------------------------------------------------------------------------------------------------
 def example_p3l():
 
@@ -148,7 +148,7 @@ def check_pnp(H,W,rvec,tvec):
 
     noise = 0*numpy.random.rand(8,1,2)
 
-    colors = tools_IO.get_colors(8)
+    colors = tools_draw_numpy.get_colors(8)
     rvec2, tvec2, landmarks_2d_check = tools_pr_geom.fit_pnp(landmarks_3d, landmarks_2d+noise, mat_camera)
 
     for i, point in enumerate(landmarks_2d_check):
@@ -194,39 +194,36 @@ def check_p3p(H,W,rvec,tvec):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def check_p3l(H,W,rvec,tvec):
-
-    landmarks_3d = numpy.array([[-1, -1, -1], [-1, +1, -1], [+1, +1, -1], [+1, -1, -1], [-1, -1, +1], [-1, +1, +1], [+1, +1, +1],[+1, -1, +1]], dtype=numpy.float32)
     mat_camera = tools_pr_geom.compose_projection_mat_3x3(W, H, 0.5, 0.5)
 
-    line1 = numpy.hstack((landmarks_3d[3].flatten(), landmarks_3d[0].flatten()))
-    line2 = numpy.hstack((landmarks_3d[0].flatten(), landmarks_3d[1].flatten()))
-    line3 = numpy.hstack((landmarks_3d[1].flatten(), landmarks_3d[2].flatten()))
-    lines_3d = numpy.array([line1, line2, line3])
+    landmarks_3d = numpy.array([[-1, -1, -1], [-1, +1, -1], [+1, +1, -1], [+1, -1, -1], [-1, -1, +1], [-1, +1, +1], [+1, +1, +1],[+1, -1, +1]], dtype=numpy.float32)
+    line_3d_a = numpy.hstack((landmarks_3d[3], landmarks_3d[0]))
+    line_3d_b = numpy.hstack((landmarks_3d[0], landmarks_3d[1]))
+    line_3d_c = numpy.hstack((landmarks_3d[1], landmarks_3d[2]))
+    lines_3d = numpy.array([line_3d_a, line_3d_b, line_3d_c])
 
-    #landmarks_2d, jac = tools_pr_geom.project_points(landmarks_3d, rvec, tvec, mat_camera, numpy.zeros(5))
-    #landmarks_2d = landmarks_2d.reshape((-1,2))
-    #line1 = numpy.hstack((landmarks_2d[3].flatten(),landmarks_2d[0].flatten()))
-    #line2 = numpy.hstack((landmarks_2d[0].flatten(),landmarks_2d[1].flatten()))
-    #line3 = numpy.hstack((landmarks_2d[1].flatten(),landmarks_2d[2].flatten()))
-    #lines_2d = numpy.array([line1,line2,line3])
-    lines_2d = 0.75*numpy.array([[772, 495, 1020, 520], [1020, 520, 525, 700], [525, 700, 240, 665]])
+    # manual case
+    lines_2d = 0.75 * numpy.array([[772, 495, 1020, 520], [1020, 520, 525, 700], [525, 700, 240, 665]])
+
+    # automated case
+    # landmarks_2d, jac = tools_pr_geom.project_points(landmarks_3d, rvec, tvec, mat_camera, numpy.zeros(5))
+    # landmarks_2d = landmarks_2d.reshape((-1,2))
+    # line_2da = numpy.concatenate([landmarks_2d[3],landmarks_2d[0]])
+    # line_2db = numpy.concatenate([landmarks_2d[0],landmarks_2d[1]])
+    # line_2dc = numpy.concatenate([landmarks_2d[1],landmarks_2d[2]])
+    # lines_2d = numpy.array([line_2da,line_2db,line_2dc])
 
     poses = tools_pr_geom.fit_p3l(lines_3d,lines_2d,mat_camera)
 
     for option, (R,translation) in enumerate(poses):
         image = numpy.full((H, W, 3), 64, dtype=numpy.uint8)
+        points_3d_proj, jac = tools_pr_geom.project_points(landmarks_3d.reshape((-1, 3)), R, translation, mat_camera,numpy.zeros(5))
+        lines_3d_proj, jac = tools_pr_geom.project_points(lines_3d.reshape((-1,3)), R, translation, mat_camera, numpy.zeros(5))
+        image = tools_draw_numpy.draw_cuboid(image, points_3d_proj, idx_mode=0)
+        image = tools_draw_numpy.draw_lines(image, lines_3d_proj.reshape((-1,4)),color=(0, 128, 255),antialiasing=False,w=5)
+        image = tools_draw_numpy.draw_lines(image, lines_2d, color=(0, 0, 255), w=1)
 
-        lines_start, jac = tools_pr_geom.project_points(lines_3d[:,:3], R, translation, mat_camera, numpy.zeros(5))
-        lines_start = lines_start.reshape((-1, 2))
-        lines_end, jac = tools_pr_geom.project_points(lines_3d[:, 3:], R, translation, mat_camera, numpy.zeros(5))
-        lines_end = lines_end.reshape((-1, 2))
 
-        for line_start, line_end in zip(lines_start, lines_end):
-            cv2.line(image, (int(line_start[0]), int(line_start[1])), (int(line_end[0]), int(line_end[1])),(0, 128, 255), thickness=5)
-
-        for line in lines_2d:cv2.line(image, (int(line[0]), int(line[1])), (int(line[2]), int(line[3])), (0, 0, 255),thickness=2)
-
-        image = tools_render_CV.draw_cube_numpy(image, mat_camera, numpy.zeros(5), R, translation)
         cv2.imwrite(folder_out + 'check_p3l_%02d.png'%option, image)
 
     return
@@ -238,7 +235,6 @@ tvec = numpy.array([0, 0, -7])
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    draw_cube(H,W,rvec,tvec)
     check_p3l(H,W,rvec, tvec)
 
 
