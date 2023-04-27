@@ -36,4 +36,4 @@ if __name__ == '__main__':
     for i,pr in enumerate(zip(precisions,recalls)):
         tools_mAP.plot_precision_recall(pr[0],pr[1], filename_out=folder_out+'PR_%d.png'%i)
 
-    tools_mAP.draw_boxes(class_ID=0, folder_annotation=folder_in, file_markup_true=folder_in+'boxes.txt', file_markup_pred=folder_out+'pred.txt', path_out=folder_out, delim=' ', confidence=0.01,metric='pr')
+    tools_mAP.draw_boxes(class_ID=0, folder_annotation=folder_in, file_markup_true=folder_in+'boxes.txt', file_markup_pred=folder_out+'pred.txt', path_out=folder_out, delim=' ', confidence=0.01,metric='recall')

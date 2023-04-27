@@ -102,5 +102,6 @@ if __name__ == '__main__':
     #tools_animation.merge_videos_ffmpeg('D:/Projects/GL/Hire/ffmpeg/pre_prod2/', '*.mp4')
     #tools_video.extract_frames('D:/Projects/GL/Sugar/images/0563.gif','D:/Projects/GL/Sugar/media/01/scene_03b/',prefix='',start_time_sec=0,end_time_sec=None,stride=1,scale=1)
 
+    tools_animation.merge_images_in_folders('./images/out1/', './images/out2/', './images/output/', mask='*.png,*.jpg')
+    tools_animation.folder_to_animated_gif_imageio('./images/output/', './images/output/render.gif', mask='*.jpg,*.png',stop_ms=3000, resize_H=2160//4, resize_W=1290//4,framerate=1,do_reverce=False)
 
-    tools_animation.folder_to_animated_gif_imageio('D:/ccc/', 'D:/render.gif', mask='*.jpg,*.png',stop_ms=3000, resize_H=720//2, resize_W=1280//2,framerate=2,do_reverce=True)
