@@ -57,7 +57,7 @@ def demo_03(folder_in,folder_out):
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    folder_in = './images/ex_faceswap/01/'
+    folder_in = './images/ex_faceswap/02/'
     folder_out = './images/output/'
     list_filenames = tools_IO.get_filenames(folder_in, '*.jpg')
     #list_filenames = ['Person2h.jpg','Person2c.jpg']

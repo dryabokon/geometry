@@ -18,8 +18,8 @@ def example_02_blend_multi_band(img1,img2,background_color=(255, 255, 255)):
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def example_03_blend_multi_band_mask(img1,img2,background_color=(0, 0, 0)):
-    adjust_colors = 'large'# small large
-    R = 500
+    adjust_colors = 'small'# small large
+    R = 35
     res = tools_image.blend_multi_band_large_small0(img1, img2, background_color=background_color,filter_size=R, adjust_colors=adjust_colors, do_debug=True)
     cv2.imwrite(folder_output + 'blend_multi_band_mask_%s_R%02d.png'%(adjust_colors,R), res)
     return
@@ -83,8 +83,8 @@ def tutorial3():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def tutorial4():
-    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/finger_left.png'),
-                                     cv2.imread('./images/ex_blend/car_right.png'),
+    example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/02/target.png'),
+                                     cv2.imread('./images/ex_blend/02/source4.png'),
                                      background_color=(255,255,255))
 
     # example_03_blend_multi_band_mask(cv2.imread('./images/ex_blend/black_L.png'),

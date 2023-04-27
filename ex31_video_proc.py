@@ -103,4 +103,4 @@ if __name__ == '__main__':
     #tools_video.extract_frames('D:/Projects/GL/Sugar/images/0563.gif','D:/Projects/GL/Sugar/media/01/scene_03b/',prefix='',start_time_sec=0,end_time_sec=None,stride=1,scale=1)
 
 
-    tools_animation.folder_to_animated_gif_imageio('D:/ccc/', 'D:/render.gif', mask='*.jpg,*.png',stop_ms=3000, framerate=8,do_reverce=False)
+    tools_animation.folder_to_animated_gif_imageio('D:/ccc/', 'D:/render.gif', mask='*.jpg,*.png',stop_ms=3000, resize_H=720//2, resize_W=1280//2,framerate=2,do_reverce=True)
