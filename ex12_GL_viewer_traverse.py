@@ -87,20 +87,19 @@ def event_resize(window, W, H):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def init_box():
-    filename_obj     = './images/ex_GL/box/box_2.obj'
+    filename_obj     = './images/ex_GL/box/box_5_aruco.obj'
     rvec_obj = (0.0, 0.0, 0.0)
-    tvec_obj = (0, 0, 0)
+    tvec_obj =  (50, 0.0, +10.0)
+
     M_obj = tools_pr_geom.compose_RT_mat(rvec_obj, tvec_obj, do_rodriges=False,do_flip=False, GL_style=True)
     textured = True
-    do_normalize_model_file = False
-    eye = (0,0,0)
-    target=(0,1,0)
-    up=(0,0,1)
+    eye = (0, 0, 0)
+    target = (0, -1, 0)
+    up = (-1, 0, 0)
     return filename_obj,M_obj,textured,eye,target,up
 # ----------------------------------------------------------------------------------------------------------------------
 def init_lidar():
     filename_obj     = './images/ex_GL/nuscene/lidar3.obj'
-    do_normalize_model_file = False
     rvec_obj = (0.0, 0.0, 0)
     tvec_obj=(0,0,0)
     M_obj = tools_pr_geom.compose_RT_mat(rvec_obj, tvec_obj, do_rodriges=False,do_flip=False, GL_style=True)
@@ -111,18 +110,15 @@ def init_lidar():
     return filename_obj,M_obj,textured,eye,target,up
 # ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
-W,H = 1600,900
-cam_fov_deg = 90
+W, H = 1080, 720
+cam_fov_deg = 89.9
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     #filename_obj, M_obj, textured, eye, target, up = init_lidar()
     filename_obj, M_obj, textured, eye, target, up = init_box()
 
-    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=W, H=H, do_normalize_model_file=False,textured=textured,projection_type='P',
-                               cam_fov_deg=cam_fov_deg,scale=(1, 1, 1),eye = eye,target=target,up=up,
-                               M_obj=M_obj)
-
+    R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=W, H=H, do_normalize_model_file=False,textured=textured,projection_type='P',cam_fov_deg=cam_fov_deg,scale=(1, 1, 1),eye = eye,target=target,up=up,M_obj=M_obj)
     glfw.set_key_callback(R.window, event_key)
     glfw.set_mouse_button_callback(R.window, event_button)
     glfw.set_cursor_pos_callback(R.window, event_position)

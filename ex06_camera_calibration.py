@@ -1,7 +1,7 @@
 import cv2
 import os
 import numpy
-from cv2 import aruco
+#from cv2 import aruco
 # ---------------------------------------------------------------------------------------------------------------------
 from CV import tools_calibrate
 import tools_IO
@@ -17,6 +17,24 @@ def get_image_grid(W,H,dist = 0.0):
     image_grid[:, numpy.arange(0, W, 10), :] = 128
     return image_grid
 # ---------------------------------------------------------------------------------------------------------------------
+def undistort(u,v,camera_matrix,dist):
+    K = camera_matrix
+    k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4, tx, ty = dist[0]
+    u0 = K[0, 2]  # cx
+    v0 = K[1, 2]  # cy
+    fx = K[0, 0]
+    fy = K[1, 1]
+    _fx = 1.0 / fx
+    _fy = 1.0 / fy
+    y = (v - v0) * _fy
+    x = (u - u0) * _fx
+    r = numpy.sqrt(x ** 2 + y ** 2)
+    u_undistort = (x * (1 + (k1 * r ** 2) + (k2 * r ** 4) + (k3 * r ** 6))) + 2 * p1 * x * y + p2 * (r ** 2 + 2 * x ** 2)
+    v_undistort = (y * (1 + (k1 * r ** 2) + (k2 * r ** 4) + (k3 * r ** 6))) + 2 * p2 * y * x + p1 * (r ** 2 + 2 * y ** 2)
+    x_undistort = fx * u_undistort + u0
+    y_undistort = fy * v_undistort + v0
+    return int(x_undistort),int(y_undistort)
+# ---------------------------------------------------------------------------------------------------------------------
 def example_calibrate_camera_chess():
 
     folder_input  = 'images/ex_chessboard/'
@@ -31,101 +49,108 @@ def example_calibrate_camera_chess():
 
     camera_matrix, dist, rvecs, tvecs = tools_calibrate.get_proj_dist_mat_for_images(folder_input, chess_rows, chess_cols, folder_out=folder_output)
 
+
     image_chess = cv2.imread(folder_input+ filename_input)
     undistorted_chess = cv2.undistort(image_chess, camera_matrix, dist, None, None)
     cv2.imwrite(folder_output+'undistorted_'+filename_input, undistorted_chess)
 
-    image_grid = get_image_grid(image_chess.shape[1],image_chess.shape[0])
+    imageSize = (image_chess.shape[1], image_chess.shape[0])
+    # newCameraMatrix, _ = cv2.getOptimalNewCameraMatrix(camera_matrix, dist, imageSize, 0,imageSize)
+    # map1, map2 = cv2.initUndistortRectifyMap(camera_matrix, dist, None, newCameraMatrix, imageSize, cv2.CV_16SC2)
+    # cv2.imwrite(folder_out + 'undistorted_2.jpg', cv2.remap(image_chess, map1, map2, cv2.INTER_LINEAR))
 
+    dist3 = get_inverse_dist_coeffs(camera_matrix, dist, imageSize)
+    cv2.imwrite(folder_out + 'undistorted_3.jpg', cv2.undistort(image_chess, camera_matrix, dist3, None, None))
+
+    image_grid = get_image_grid(image_chess.shape[1],image_chess.shape[0])
     undistorted_grid = cv2.undistort(image_grid, camera_matrix, dist, None, None)
     cv2.imwrite(folder_output+'undistorted_grid.jpg', undistorted_grid)
-
     print(camera_matrix)
 
     return
 # -------------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/'
 # -------------------------------------------------------------------------------------------------------------------------
-def example_calibrate_aruco_markers(filename_in, marker_length_mm = 3.75, marker_space_mm = 0.5, dct = aruco.DICT_6X6_1000):
-
-    image = cv2.imread(filename_in)
-    gray = tools_image.desaturate(image)
-
-    scale = (marker_length_mm / 2, marker_length_mm / 2, marker_length_mm / 2)
-    num_cols, num_rows = 4,5
-    board = aruco.GridBoard_create(num_cols, num_rows, marker_length_mm, marker_space_mm,aruco.getPredefinedDictionary(dct))
-    image_AR, image_cube = gray.copy(), gray.copy()
-    base_name, ext = filename_in.split('/')[-1].split('.')[0], filename_in.split('/')[-1].split('.')[1]
-    #board_width_px = int((num_cols * marker_length_mm + (num_cols - 1) * marker_space_mm))
-    #board_height_px= int((num_rows * marker_length_mm + (num_rows - 1) * marker_space_mm))
-    #image_board = aruco.drawPlanarBoard(board, (board_width_px, board_height_px))
-
-
-    camera_matrix = None#tools_pr_geom.compose_projection_mat_3x3(image.shape[1], image.shape[0])
-    corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), aruco.getPredefinedDictionary(dct))
-
-    if len(corners)>0:
-        if len(corners)==1:corners,ids = numpy.array([corners]),numpy.array([ids])
-        else:corners, ids = numpy.array(corners), numpy.array(ids)
-        counters = numpy.array([len(ids)])
-
-        ret, camera_matrix, dist, rvecs, tvecs = aruco.calibrateCameraAruco(corners,ids,counters, board, gray.shape[:2],None, None)
-        image_markers = [tools_image.saturate(aruco.drawMarker(aruco.getPredefinedDictionary(dct), int(id), 100)) for id in ids]
-
-        #!!!
-        #camera_matrix = tools_pr_geom.compose_projection_mat_3x3(4200,4200)
-        for i,image_marker in enumerate(image_markers):
-            rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(corners[i], marker_length_mm, camera_matrix, numpy.zeros(5))
-
-
-            image_AR  = tools_render_CV.draw_image(image_AR,image_marker, camera_matrix, numpy.zeros(5), numpy.array(rvecs).flatten(), numpy.array(tvecs).flatten(),scale)
-            image_cube = tools_render_CV.draw_cube_numpy(image_cube, camera_matrix, numpy.zeros(5), numpy.array(rvecs).flatten(),numpy.array(tvecs).flatten(), scale)
-
-    corners = corners.reshape((-1,2))
-    for i in range(0,corners.shape[0]):
-        image_AR = tools_draw_numpy.draw_circle(image_AR, corners[i, 1], corners[i, 0], 7, [0, 0, 255], alpha_transp=0.2)
-
-    cv2.imwrite(folder_out + base_name+'_AR.png', image_AR)
-    cv2.imwrite(folder_out + base_name+'_AR_cube.png', image_cube)
-
-    print(camera_matrix)
-
-    return camera_matrix
+# def example_calibrate_aruco_markers(filename_in, marker_length_mm = 3.75, marker_space_mm = 0.5, dct = aruco.DICT_6X6_1000):
+#
+#     image = cv2.imread(filename_in)
+#     gray = tools_image.desaturate(image)
+#
+#     scale = (marker_length_mm / 2, marker_length_mm / 2, marker_length_mm / 2)
+#     num_cols, num_rows = 4,5
+#     board = aruco.GridBoard_create(num_cols, num_rows, marker_length_mm, marker_space_mm,aruco.getPredefinedDictionary(dct))
+#     image_AR, image_cube = gray.copy(), gray.copy()
+#     base_name, ext = filename_in.split('/')[-1].split('.')[0], filename_in.split('/')[-1].split('.')[1]
+#     #board_width_px = int((num_cols * marker_length_mm + (num_cols - 1) * marker_space_mm))
+#     #board_height_px= int((num_rows * marker_length_mm + (num_rows - 1) * marker_space_mm))
+#     #image_board = aruco.drawPlanarBoard(board, (board_width_px, board_height_px))
+#
+#
+#     camera_matrix = None#tools_pr_geom.compose_projection_mat_3x3(image.shape[1], image.shape[0])
+#     corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), aruco.getPredefinedDictionary(dct))
+#
+#     if len(corners)>0:
+#         if len(corners)==1:corners,ids = numpy.array([corners]),numpy.array([ids])
+#         else:corners, ids = numpy.array(corners), numpy.array(ids)
+#         counters = numpy.array([len(ids)])
+#
+#         ret, camera_matrix, dist, rvecs, tvecs = aruco.calibrateCameraAruco(corners,ids,counters, board, gray.shape[:2],None, None)
+#         image_markers = [tools_image.saturate(aruco.drawMarker(aruco.getPredefinedDictionary(dct), int(id), 100)) for id in ids]
+#
+#         #!!!
+#         #camera_matrix = tools_pr_geom.compose_projection_mat_3x3(4200,4200)
+#         for i,image_marker in enumerate(image_markers):
+#             rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(corners[i], marker_length_mm, camera_matrix, numpy.zeros(5))
+#
+#
+#             image_AR  = tools_render_CV.draw_image(image_AR,image_marker, camera_matrix, numpy.zeros(5), numpy.array(rvecs).flatten(), numpy.array(tvecs).flatten(),scale)
+#             image_cube = tools_render_CV.draw_cube_numpy(image_cube, camera_matrix, numpy.zeros(5), numpy.array(rvecs).flatten(),numpy.array(tvecs).flatten(), scale)
+#
+#     corners = corners.reshape((-1,2))
+#     for i in range(0,corners.shape[0]):
+#         image_AR = tools_draw_numpy.draw_circle(image_AR, corners[i, 1], corners[i, 0], 7, [0, 0, 255], alpha_transp=0.2)
+#
+#     cv2.imwrite(folder_out + base_name+'_AR.png', image_AR)
+#     cv2.imwrite(folder_out + base_name+'_AR_cube.png', image_cube)
+#
+#     print(camera_matrix)
+#
+#     return camera_matrix
 # -------------------------------------------------------------------------------------------------------------------------
-def example_calibrate_folder(folder_in, folder_out,marker_length_mm = 3.75, marker_space_mm = 0.5,dct = aruco.DICT_6X6_1000):
-    tools_IO.remove_files(folder_out)
-
-    num_cols, num_rows = 4, 5
-    board = aruco.GridBoard_create(num_cols, num_rows, marker_length_mm, marker_space_mm,aruco.getPredefinedDictionary(dct))
-    filenames = numpy.unique(tools_IO.get_filenames(folder_in, '*.jpg,*.png'))[:3]
-
-    counter, corners_list, id_list, first = [], [], [], True
-    for filename_in in filenames:
-        base_name, ext = filename_in.split('/')[-1].split('.')[0], filename_in.split('/')[-1].split('.')[1]
-        image = cv2.imread(folder_in + filename_in)
-        img_gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(img_gray, aruco.getPredefinedDictionary(dct))
-        if first == True:
-            corners_list = corners
-            id_list = ids
-            first = False
-        else:
-            corners_list = numpy.vstack((corners_list, corners))
-            id_list = numpy.vstack((id_list,ids))
-        counter.append(len(ids))
-
-        image_temp = tools_image.desaturate(image.copy())
-        aruco.drawDetectedMarkers(image_temp, corners)
-        cv2.imwrite(folder_out+base_name+'.png',image_temp)
-        print(base_name)
-
-
-    counter = numpy.array(counter)
-    ret, camera_matrix, dist, rvecs, tvecs = aruco.calibrateCameraAruco(corners_list, id_list, counter, board, img_gray.shape, None, None )
-
-    print(camera_matrix)
-
-    return
+# def example_calibrate_folder(folder_in, folder_out,marker_length_mm = 3.75, marker_space_mm = 0.5,dct = aruco.DICT_6X6_1000):
+#     tools_IO.remove_files(folder_out)
+#
+#     num_cols, num_rows = 4, 5
+#     board = aruco.GridBoard_create(num_cols, num_rows, marker_length_mm, marker_space_mm,aruco.getPredefinedDictionary(dct))
+#     filenames = numpy.unique(tools_IO.get_filenames(folder_in, '*.jpg,*.png'))[:3]
+#
+#     counter, corners_list, id_list, first = [], [], [], True
+#     for filename_in in filenames:
+#         base_name, ext = filename_in.split('/')[-1].split('.')[0], filename_in.split('/')[-1].split('.')[1]
+#         image = cv2.imread(folder_in + filename_in)
+#         img_gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+#         corners, ids, rejectedImgPoints = aruco.detectMarkers(img_gray, aruco.getPredefinedDictionary(dct))
+#         if first == True:
+#             corners_list = corners
+#             id_list = ids
+#             first = False
+#         else:
+#             corners_list = numpy.vstack((corners_list, corners))
+#             id_list = numpy.vstack((id_list,ids))
+#         counter.append(len(ids))
+#
+#         image_temp = tools_image.desaturate(image.copy())
+#         aruco.drawDetectedMarkers(image_temp, corners)
+#         cv2.imwrite(folder_out+base_name+'.png',image_temp)
+#         print(base_name)
+#
+#
+#     counter = numpy.array(counter)
+#     ret, camera_matrix, dist, rvecs, tvecs = aruco.calibrateCameraAruco(corners_list, id_list, counter, board, img_gray.shape, None, None )
+#
+#     print(camera_matrix)
+#
+#     return
 # -------------------------------------------------------------------------------------------------------------------------
 def load_points(filename_in):
     X = tools_IO.load_mat_pd(filename_in)
@@ -172,28 +197,49 @@ def evaluate_K_bruteforce_F(filename_image, filename_points, f_min=1920, f_max=1
     return
 # -------------------------------------------------------------------------------------------------------------------------
 def ex_undistort():
-    # W, H = 1200,800
-    # dist = 0.1
-    # image_grid = get_image_grid(W,H)
 
-
-    image_grid = cv2.imread('./images/ex_BEV/CityHealth/00000.jpg')
+    #image_grid = cv2.imread('./images/ex_BEV/CityHealth/00000.jpg')
+    image_grid = cv2.imread('./images/ex_calibration/road_CZ.jpg')
     H,W = image_grid.shape[:2]
     camera_matrix = numpy.array([[W, 0., W / 2], [0., H, H / 2], [0., 0., 1.]])
-    dist = -0.85
-
-    undistorted_grid = cv2.undistort(image_grid, camera_matrix, dist, None, None)
-    cv2.imwrite(folder_out + 'undistorted_grid.jpg', undistorted_grid)
+    for i,dist in enumerate(numpy.arange(-2,2,0.1)):
+        undistorted_grid = cv2.undistort(image_grid, camera_matrix, dist, None, None)
+        cv2.imwrite(folder_out + 'undistorted_%02d.jpg'%i, undistorted_grid)
     return
 # -------------------------------------------------------------------------------------------------------------------------
+def xxx():
+    image = cv2.imread('./images/ex_BEV/CityHealth/00000.jpg')
+
+    cameraMatrix = numpy.array([[894.96803896, 0, 470.38713516],
+                             [0, 901.32629374, 922.41232898],
+                             [0, 0, 1]])
+    distCoeffs = numpy.array([[-0.340671222, 0.110426603, -0.000867987573, 0.000189669273, -0.0160049526]])
+    imageSize = (image.shape[1], image.shape[0])
+    newCameraMatrix, validPixROI = cv2.getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1)
+    map1, map2 = cv2.initUndistortRectifyMap(cameraMatrix, distCoeffs, None, newCameraMatrix, imageSize, cv2.CV_16SC2)
+    undistortedImage = cv2.remap(image, map1, map2, cv2.INTER_LINEAR)
+    cv2.imwrite(folder_out + 'undistorted_grid.jpg', undistortedImage)
+
+    return
+# -------------------------------------------------------------------------------------------------------------------------
+def get_inverse_dist_coeffs(camera_matrix, dist_coeffs, image_size):
+    camera_matrix = numpy.eye(3)
+    image_size = (100,100)
+    dist_coeffs = None
+
+
+    objp = numpy.zeros((9 * 6, 3), numpy.float32)
+    objp[:, :2] = numpy.mgrid[0:9, 0:6].T.reshape(-1, 2)
+    image_points = numpy.random.rand(9 * 6, 2).astype(numpy.float32)
+    ret, camera_matrix, dist, rvecs, tvecs = cv2.calibrateCamera([objp], [image_points], image_size, camera_matrix, dist_coeffs)
+
+    return dist
+# -------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    #tools_IO.remove_files(folder_out)
+    tools_IO.remove_files(folder_out)
+    #get_inverse_dist_coeffs(None,None,None)
     #ex_undistort()
-    example_calibrate_camera_chess()
+    #example_calibrate_camera_chess()
     #example_calibrate_aruco_markers('./images/ex_aruco/01.jpg', marker_length_mm=100 , marker_space_mm=5, dct=aruco.DICT_6X6_50)
     #example_calibrate_folder('./images/ex_aruco/cam01/',folder_out,dct=aruco.DICT_4X4_50)
     #evaluate_K_bruteforce_F('./images/ex_calibration/01000.jpg', './images/ex_calibration/points.csv', f_min=1920, f_max=10000)
-
-
-
-

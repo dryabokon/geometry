@@ -15,10 +15,13 @@ def BEV_van_point3(filename_in, fov_x_deg,point_van_xy_ver,point_van_xy_hor=None
     image = cv2.imread(filename_in)
     fov_y_deg = fov_x_deg*image.shape[0]/image.shape[1]
     VP.H, VP.W = image.shape[:2]
-    image_BEV, h_ipersp, cam_height_px, p_camera_BEV_xy, p_center_BEV_xy, lines_edges = VP.build_BEV_by_fov_van_point(image , fov_x_deg, fov_y_deg, point_van_xy_ver, point_van_xy_hor, do_rotation=do_rotation)
+    image_BEV1, h_ipersp, cam_height_px, p_camera_BEV_xy, p_center_BEV_xy, lines_edges = VP.build_BEV_by_fov_van_point(image , fov_x_deg, fov_y_deg, point_van_xy_ver, point_van_xy_hor, do_rotation=do_rotation)
+    image_BEV2, h_ipersp, cam_height_px, p_camera_BEV_xy, p_center_BEV_xy, lines_edges = VP.build_BEV_by_fov_van_point(image , fov_x_deg, fov_y_deg, point_van_xy_ver, point_van_xy_hor, do_rotation=do_rotation,do_crop=True)
+
     #image_BEV, df_keypoints_pitch, df_vertical = VP.draw_grid_at_BEV(image_BEV, p_camera_BEV_xy, p_center_BEV_xy,lines_edges, fov_x_deg, fov_y_deg)
 
-    cv2.imwrite(folder_out + filename_in.split('/')[-1], image_BEV)
+    cv2.imwrite(folder_out + filename_in.split('/')[-1], image_BEV1)
+    cv2.imwrite(folder_out + 'BEV2.png', image_BEV2)
 
     # image_BEV = tools_image.auto_crop(image_BEV, background_color=(32, 32, 32))
     # image_BEV = tools_image.do_resize(image_BEV,numpy.array((-1,image.shape[0])))
@@ -77,6 +80,12 @@ if __name__ == '__main__':
     # BEV_van_point3('./images/ex_BEV/TNO-7180R_20220525174045.jpg', fov_x_deg=9, point_van_xy_ver=(-391,-935), point_van_xy_hor=(6755,-46), do_rotation=do_rotation)
     # BEV_van_point3('./images/ex_BEV/TNO-7180R_20220418134537.jpg', fov_x_deg=8.5, point_van_xy_ver=(1047, -1522),point_van_xy_hor=(-103164, 3660), do_rotation=do_rotation)
 
-    #pipeline_BEV('./images/ex_BEV/CityHealth/')
-    pipeline_BEV('D://ccc/')
+    #point_van_xy_hor = tools_render_CV.line_intersection((726, 42, 805, 816), (1017, 403, 800, 24))
+    BEV_van_point3('./images/ex_BEV/frame_183.jpg', fov_x_deg=80,point_van_xy_ver = (1611,119),do_rotation=False)
 
+
+
+    #pipeline_BEV('./images/ex_BEV/CityHealth/')
+    #pipeline_BEV('D://ccc/')
+
+    #BEV_lines('./images/ex_BEV/0000000000.png')

@@ -5,12 +5,13 @@ import tools_optical_flow
 import tools_IO
 # --------------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/'
-folder_in = './images/ex_optical_flow/02/'
+folder_in = './images/ex_optical_flow/01/'
 # --------------------------------------------------------------------------------------------------------------------------
 capturing_device = 'cam'
 # --------------------------------------------------------------------------------------------------------------------------
-# capturing_device = 'mp4'
-# filename_video = './images/ex_optical_flow/03.mp4'
+capturing_device = 'mp4'
+#filename_video = './images/ex_optical_flow/ex_01.mp4'
+filename_video = './images/ex_optical_flow/Naft11.mp4'
 # --------------------------------------------------------------------------------------------------------------------------
 def exampl_GUI_loop():
 
@@ -39,10 +40,11 @@ def exampl_GUI_loop():
 
     while not should_be_closed:
         ret, image = cap.read()
+        if image is None:break
         if capturing_device == 'cam':
             image = cv2.flip(image, 1)
 
-        M = OF.evaluate_flow(image)
+        OF.evaluate_flow(image)
         cv2.imshow(window_name, OF.draw_current_frame())
         OF.next_step()
 
@@ -83,5 +85,5 @@ def example_batch():
 if __name__ == '__main__':
 
     tools_IO.remove_files(folder_out,'*.jpg')
-    example_batch()
-
+    #example_batch()
+    exampl_GUI_loop()

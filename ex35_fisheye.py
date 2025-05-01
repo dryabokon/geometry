@@ -2,9 +2,11 @@ import cv2
 import numpy as numpy
 from CV import tools_fisheye
 from CV import tools_panoram
+import tools_draw_numpy
 import tools_IO
 import tools_image
 import tools_animation
+from defisheye import Defisheye
 # ----------------------------------------------------------------------------------------------------------------------
 C = tools_fisheye.Converter()
 P = tools_panoram.Panoramer()
@@ -52,15 +54,12 @@ def ex_rooms_multivew(folder_in,folder_out):
     return
 # ----------------------------------------------------------------------------------------------------------------------
 def ex_cubemap_earth():
-    im_equirect = cv2.imread('./images/ex_fisheye/planet_eq_polytical.jpg')
+    im_equirect = cv2.imread('./images/ex_fisheye/Image31.jpg')
 
-    img_cube1 = P.equirect2cubemap(im_equirect,side=256,cube_format='dice')
-    img_cube2 = C.equirect2cubemap(im_equirect,side=256,modif=False,dice=True)
-    cv2.imwrite(folder_out + 'im_cube1.png', img_cube1)
-    cv2.imwrite(folder_out + 'im_cube2.png', img_cube2)
-
-    image_equirect2 = P.cubemap2equirect(img_cube2,512, 1024)
-    cv2.imwrite(folder_out + 'im_eq2.png', image_equirect2)
+    cv2.imwrite(folder_out + 'im_cube1_dice.png', P.equirect2cubemap(im_equirect,side=256,cube_format='dice'))
+    cv2.imwrite(folder_out + 'im_cube2_dice.png', C.equirect2cubemap(im_equirect,side=256,modif=False,dice=True))
+    cv2.imwrite(folder_out + 'im_cube3_dice.png', C.equirect2cubemap(im_equirect,side=256,modif=True, dice=True))
+    cv2.imwrite(folder_out + 'im_eq2.png', P.cubemap2equirect(cv2.imread(folder_out + 'im_cube2_dice.png'),512, 1024))
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
@@ -72,15 +71,34 @@ def ex_planar_earth():
 
     return
 # ----------------------------------------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    import tools_IO
-    #tools_IO.remove_files(folder_out)
+def ex_defisheye():
+    _fov = 140
+    _pfov = 140
+    _format = 'fullframe'
+    img = cv2.imread('./images/ex_homography_manual_gis/08/quCj3QQWJbg_cam.jpg')
 
+    _dtype = 'linear'
+    pfov = 150
+    for fov in [150]:
+        for _dtype in ['linear', 'equalarea', 'orthographic', 'stereographic']:
+            C.iI = None
+            cv2.imwrite(folder_out+f"{_dtype}_{fov}.jpg", C.remove_fisheye_effect(img, _dtype=_dtype,_format=_format, _fov=fov, _pfov=pfov)[0])
+
+    return
+# ----------------------------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+
+    tools_IO.remove_files(folder_out)
     #image = cv2.imread('./images/ex_fisheye/room04.jpg')
-    #ex_room_from_fisheye(image)
-    #ex_room_cubemap(image)
+    #image = cv2.imread('./images/ex_homography_manual_gis/07/road_CZ.jpg')
+
+    # ex_room_from_fisheye(image)
+    # ex_room_cubemap(image)
     #ex_room_planar_multiview(image)
     #ex_rooms_multivew('./images/ex_fisheye/Meeting2/',folder_out)
 
-    tools_animation.folder_to_animated_gif_imageio('./images/ex_fisheye/Meeting2/', folder_out+'pano3.gif', framerate=6,resize_H=200, resize_W=200,stride=1)
+    #tools_animation.folder_to_animated_gif_imageio('./images/ex_fisheye/Meeting2/', folder_out+'pano3.gif', framerate=6,resize_H=200, resize_W=200,stride=1)
     #tools_animation.folder_to_video(folder_out, folder_out+'room04.mp4', mask='*.png')
+    #ex_cubemap_earth()
+
+    ex_defisheye()

@@ -140,7 +140,7 @@ def draw_legend(image):
 # ---------------------------------------------------------------------------------------------------------------------
 def GUI_loop():
 
-    image0 = cv2.imread('./images/ex_fisheye/room3a.jpg')
+    image0 = cv2.imread('./images/ex_fisheye/room03a.jpg')
     image0 = tools_image.do_resize(image0,(1024,1024))
 
     global g_shift_x,g_shift_y,g_angle_deg

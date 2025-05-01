@@ -66,10 +66,10 @@ def example_find_matches_for_homography(img1, img2, detector='SIFT', matchtype='
 # --------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     tools_IO.remove_files(folder_output)
-    img1 = cv2.imread('./images/ex_keypoints/left.jpg')
-    img2 = cv2.imread('./images/ex_keypoints/rght.jpg')
-    # img1 = cv2.imread('./images/ex_chessboard/01.jpg')
-    # img2 = cv2.imread('./images/ex_chessboard/02.jpg')
+    # img1 = cv2.imread('./images/ex_keypoints/left.jpg')
+    # img2 = cv2.imread('./images/ex_keypoints/rght.jpg')
+    img1 = cv2.imread('./images/ex_keypoints/profile_001/000003.png')
+    img2 = cv2.imread('./images/ex_keypoints/profile_001/000004.png')
 
     example_find_matches_for_homography(img1, img2, detector='ORB', matchtype='knn')
     example_find_matches_for_homography(img1, img2, detector='ORB', matchtype='flann')

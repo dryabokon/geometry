@@ -31,13 +31,13 @@ def example_project_GL_vs_CV(folder_out, filename_in=None):
 
 
     cam_fov = 90
+    #cam_pos_x
     cam_offset_dist = 0.1
     cam_height = 14
 
     empty = numpy.full((H, W, 3), 32, dtype=numpy.uint8)
     camera_matrix_3x3, rvec, tvec, RT_GL = tools_render_GL.define_cam_position(W,H,cam_fov,cam_offset_dist,cam_height)
     RT_CV = tools_pr_geom.from_RT_GL(RT_GL)
-
 
     tg_half_fovx = camera_matrix_3x3[0,2]/camera_matrix_3x3[0,0]
     textured = False#textured = (filename_in is not None)

@@ -3,7 +3,7 @@ import numpy
 import cv2
 # ---------------------------------------------------------------------------------------------------------------------
 import tools_image
-import tools_CV3D
+#from CV import tools_CV3D
 # ---------------------------------------------------------------------------------------------------------------------
 import warnings
 warnings.filterwarnings("ignore")
@@ -40,7 +40,7 @@ class Render_Window:
         return
 # ---------------------------------------------------------------------------------------------------------------------
 # =====================================================================================================================
-g_coord, g_current_mouse_pos, g_mouse_event_code = [], numpy.zeros(4,dtype=numpy.int), None
+g_coord, g_current_mouse_pos, g_mouse_event_code = [], numpy.zeros(4,dtype=int), None
 RW = Render_Window(filename_image='./images/ex_GL/nuscene/n008-2018-08-01-15-16-36-0400__CAM_BACK__1533151604037558.jpg',filename_obj='./images/output/lidar.obj')
 # ---------------------------------------------------------------------------------------------------------------------
 def click_handler(event, x, y, flags, param):

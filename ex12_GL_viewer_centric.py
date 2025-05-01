@@ -4,8 +4,8 @@ import glfw
 # ----------------------------------------------------------------------------------------------------------------------
 import tools_GL3D
 from CV import tools_pr_geom
-import tools_wavefront
 import tools_render_CV
+import tools_wavefront
 # ----------------------------------------------------------------------------------------------------------------------
 pos_button_start, pos_rotate_current = None, None
 # ----------------------------------------------------------------------------------------------------------------------
@@ -58,7 +58,12 @@ def event_key(window, key, scancode, action, mods):
         if (key == ord('Z') and R.ctrl_pressed) or (key== glfw.KEY_BACKSPACE):
             R.my_VBO.remove_last_object()
 
-        if key in [32,335]: R.stage_data(folder_out)
+        if key == 32:
+            R.stage_data(folder_out,do_debug=True)
+
+        if key == 335:
+            R.stage_data(folder_out,do_debug=False,annotation=True)
+
 
         if key == glfw.KEY_ESCAPE:
             glfw.set_window_should_close(R.window,True)
@@ -125,7 +130,8 @@ def event_resize(window, W, H):
 # ----------------------------------------------------------------------------------------------------------------------
 def init_earth_ego():
     # press numkey "1"
-    filename_obj = './images/ex_GL/earth/uv_sphere2.obj'
+    #filename_obj = './images/ex_GL/earth/uv_sphere2.obj'
+
 
     textured = True
     rvec_model, tvec_model = (0, 0, 0), (0.0, 0.0, 0.0)
@@ -137,7 +143,9 @@ def init_earth_ego():
 # ----------------------------------------------------------------------------------------------------------------------
 def init_box():
 
-    filename_obj = './images/ex_GL/box/box_2.obj'
+    #filename_obj = './images/ex_GL/box/box_2.obj'
+    filename_obj = './images/ex_GL/box/box_5_aruco.obj'
+
     textured = True
     rvec_model, tvec_model = (0, 0, 0),(0.0, 0.0, 0.0)
     M_obj = tools_pr_geom.compose_RT_mat(rvec_model,tvec_model,do_rodriges=False,do_flip=False, GL_style=True)
@@ -156,14 +164,27 @@ def init_box_ego():
     up=(0,0,-1)
     return filename_obj,M_obj,textured,eye,target,up
 # ----------------------------------------------------------------------------------------------------------------------
+def init_boat():
+    filename_obj = './images/ex_GL/kater/model.obj'
+    textured = False
+    rvec_model, tvec_model = (0, 0, 0), (0.0, 0.0, 0.0)
+    M_obj = tools_pr_geom.compose_RT_mat(rvec_model, tvec_model, do_rodriges=False, do_flip=False, GL_style=True)
+    eye = (0, 10, 0)
+    target = (0, 0, 0)
+    up = (0, 0, +1)
+    return filename_obj, M_obj, textured, eye, target, up
+# ----------------------------------------------------------------------------------------------------------------------
 folder_out = './images/output/gl/'
 W,H = 800,600
 cam_fov_deg = 90
-do_normalize_model_file = False
+do_normalize_model_file = True
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    #filename_obj,M_obj,textured,eye,target,up = init_box()
-    filename_obj,M_obj,textured,eye,target,up = init_earth_ego()
+    filename_obj,M_obj,textured,eye,target,up = init_box()
+    #filename_obj,M_obj,textured,eye,target,up = init_earth_ego()
+    #filename_obj,M_obj,textured,eye,target,up = init_boat()
+    # obj = tools_wavefront.ObjLoader()
+    # obj.convert(filename_obj, './images/output/yyy.obj')
 
 
     R = tools_GL3D.render_GL3D(filename_obj=filename_obj, W=W, H=H, do_normalize_model_file=do_normalize_model_file, projection_type='P',cam_fov_deg=cam_fov_deg,scale=(1, 1, 1),

@@ -1,11 +1,12 @@
 import cv2
 import numpy
-import cv2.aruco as aruco
+from cv2 import aruco
+#aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_250)
 import tools_image
 # ---------------------------------------------------------------------------------------------------------------------
 #filename_in = 'images/ex_aruco/01.jpg'
-filename_in = 'images/ex_aruco/Image1.png'
-filename_out = 'images/output/aruco_out.jpg'
+filename_in = './images/ex_aruco/01.jpg'
+filename_out = './images/output/aruco_out.jpg'
 USE_CAMERA = False
 # ---------------------------------------------------------------------------------------------------------------------
 def demo_aruco(image=None):
@@ -25,7 +26,8 @@ def demo_aruco(image=None):
 
 
 
-    aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
+
 
     while (True):
         if USE_CAMERA:
@@ -41,7 +43,8 @@ def demo_aruco(image=None):
             gray_rgb = aruco.drawDetectedMarkers(gray_rgb, corners)
             for each in corners:
                 rvec, tvec, _ = aruco.estimatePoseSingleMarkers(each, marker_length, camera_matrix, dist)
-                aruco.drawAxis(gray_rgb, camera_matrix, dist, rvec[0], tvec[0], marker_length/2)
+                #aruco.drawAxis(gray_rgb, camera_matrix, dist, rvec[0], tvec[0], marker_length/2)
+
 
         cv2.imshow('frame', gray_rgb)
         if cv2.waitKey(1) & 0xFF == 27:

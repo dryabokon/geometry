@@ -73,7 +73,7 @@ def create_placeholders_x2(parents,trajectories):
 # ---------------------------------------------------------------------------------------------------------------------
 def get_images(folder_in,H,W):
     images=[]
-    for filename in tools_IO.get_filenames(folder_in,'*.jpg'):
+    for filename in tools_IO.get_filenames(folder_in,'*.jpg,*.png'):
         image = cv2.imread(folder_in+filename)
         image = tools_image.smart_resize(image,H,W)
         images.append(image)
@@ -159,7 +159,7 @@ def create_slides():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    create_slides()
-    #tools_animation.folder_to_animated_gif_imageio(folder_out,folder_out+'ani.gif', mask='*.png', framerate=12,resize_H=512//2, resize_W=896//2,do_reverce=False)
+    #create_slides()
+    tools_animation.folder_to_animated_gif_imageio(folder_out,folder_out+'AI_team2.gif', mask='*.png', framerate=12,resize_H=512//3, resize_W=896//3,do_reverce=False)
     #tools_animation.folder_to_video(folder_out, folder_out + 'ani.avi', mask='*.png',framerate=18,resize_W=896,resize_H=512)
 

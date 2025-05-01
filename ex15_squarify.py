@@ -43,8 +43,9 @@ def word_count(filename_in,delim=','):
     return df
 # ---------------------------------------------------------------------------------------------------------------------
 def ex_01_positions():
-    df = pd.read_csv('./images/ex_pack_text/positions.txt', sep='\t')
-    P.plot_squarify(df, idx_label=1, idx_size=0, palette='~RdBu', stat='%', alpha=0, filename_out='positions.png')
+    #df = pd.read_csv('./images/ex_pack_text/positions.txt', sep='\t')
+    df = pd.read_csv('./images/ex_pack_text/designations.txt', sep='\t')
+    P.plot_squarify(df, idx_label=0, idx_size=1, palette='tab20', stat='%', alpha=0, filename_out='positions.png')
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def ex_02_words():
@@ -55,10 +56,12 @@ def ex_02_words():
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def ex_03_countries():
-    df = pd.read_csv('./images/ex_pack_text/countries.csv', sep=',')
-    df = df.sort_values(by='pop',ascending=False)[:13]
-    colors =  tools_draw_numpy.values_to_colors(df['gdpPercap'],'warm')
-    P.plot_squarify(df, idx_label=0, idx_size=4, colors=colors, stat='', filename_out='countries.png')
+    # df = pd.read_csv('./images/ex_pack_text/countries.csv', sep=',')
+    # df = df.sort_values(by='pop',ascending=False)[:13]
+    df = pd.read_csv('./images/ex_pack_text/designations.txt', sep='\t')
+    #colors =  tools_draw_numpy.values_to_colors(df['gdpPercap'],'warm')
+    colors =  tools_draw_numpy.get_colors(df.shape[0],colormap='Pastel1')
+    P.plot_squarify(df, idx_label=0, idx_size=1, colors=colors, stat='', filename_out='countries.png')
     return
 # ---------------------------------------------------------------------------------------------------------------------
 def ex_04_sales():
@@ -69,11 +72,11 @@ def ex_04_sales():
 # ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
-    tools_IO.remove_files(folder_out)
+    #tools_IO.remove_files(folder_out)
     #ex_01_positions()
     #ex_02_words()
-    #ex_03_countries()
-    ex_04_sales()
+    ex_03_countries()
+    #ex_04_sales()
 
 
 

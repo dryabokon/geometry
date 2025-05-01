@@ -203,15 +203,15 @@ def check_p3l(H,W,rvec,tvec):
     lines_3d = numpy.array([line_3d_a, line_3d_b, line_3d_c])
 
     # manual case
-    lines_2d = 0.75 * numpy.array([[772, 495, 1020, 520], [1020, 520, 525, 700], [525, 700, 240, 665]])
+    #lines_2d = 0.75 * numpy.array([[772, 495, 1020, 520], [1020, 520, 525, 700], [525, 700, 240, 665]])
 
     # automated case
-    # landmarks_2d, jac = tools_pr_geom.project_points(landmarks_3d, rvec, tvec, mat_camera, numpy.zeros(5))
-    # landmarks_2d = landmarks_2d.reshape((-1,2))
-    # line_2da = numpy.concatenate([landmarks_2d[3],landmarks_2d[0]])
-    # line_2db = numpy.concatenate([landmarks_2d[0],landmarks_2d[1]])
-    # line_2dc = numpy.concatenate([landmarks_2d[1],landmarks_2d[2]])
-    # lines_2d = numpy.array([line_2da,line_2db,line_2dc])
+    landmarks_2d, jac = tools_pr_geom.project_points(landmarks_3d, rvec, tvec, mat_camera, numpy.zeros(5))
+    landmarks_2d = landmarks_2d.reshape((-1,2))
+    line_2da = numpy.concatenate([landmarks_2d[3],landmarks_2d[0]])
+    line_2db = numpy.concatenate([landmarks_2d[0],landmarks_2d[1]])
+    line_2dc = numpy.concatenate([landmarks_2d[1],landmarks_2d[2]])
+    lines_2d = numpy.array([line_2da,line_2db,line_2dc])
 
     poses = tools_pr_geom.fit_p3l(lines_3d,lines_2d,mat_camera)
 
